@@ -10,8 +10,10 @@ None so far :(.
 
 ```shell
 yarn install
-yarn electron:build --mac --windows --linux
+yarn electron:build
 ```
+
+`yarn electron:buildall` will build a binary for all platforms.
 
 ### Package Manager
 
