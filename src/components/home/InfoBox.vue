@@ -49,7 +49,7 @@
 
 <script>
 import General from "@/assets/elementGeneral.json";
-import 'chemical-element-visualisation/chemical-element-visualisation.js';
+import '../../molarity-lib/chemical-element-visualisation/chemical-element-visualisation.js';
 
 export default {
   name: "InfoBox",

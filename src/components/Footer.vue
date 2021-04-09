@@ -1,18 +1,15 @@
 <template>
     <v-footer height="auto" :style="'width: '+ width">
-        <v-layout justify-center row wrap>
-            <v-card-text class="pt-0 about">
-                Periodicity, the tendency of elements to form trends that repeat over intervals, is one of the most beautiful concepts in chemistry. This MIT licensed,
-                <a
-                    href="https://github.com/kadinzhang/Periodic-Table"
-                >open source</a> application graphs and animates periodic data with the aim of making the concept of periodicity easier to grasp.
-            </v-card-text>
-            <v-flex primary lighten-2 py-3 text-xs-center xs12 class="copy">
+            <div class="about">
+                Periodicity is the tendency for periodic elements to form patterns, this MIT licensed tool aims to help in day to day use of a periodic table.
+            </div>
+            <div class="copy">
                 &copy;{{new Date().getFullYear()}} -
-                <span>Kadin Zhang</span> |
-                <span>Forked by Haakon Smith</span>
-            </v-flex>
-        </v-layout>
+                <span>Haakon Smith</span>
+            </div>
+            <!-- <v-flex primary py-2 text-xs-center xs12 class="copy">
+                
+            </v-flex> -->
     </v-footer>
 </template>
 
@@ -37,29 +34,36 @@ footer {
     padding-bottom: 10px;
     margin: 1vw auto auto auto;
 }
+.about {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+.copy {
+    padding: 10px;
+    background-color: rgb(24, 8, 34);
+    width: 100%;
+}
 .v-footer {
     background: rgb(26, 31, 44) !important;
     color: rgba(255, 255, 255, 0.8) !important;
     width: 88%;
-    .copy {
-        padding-left: 10px !important;
-        background: none !important;
-        border: none !important;
-    }
+    padding: 0;
 }
-.about {
-    padding-top: 20px !important;
-    border-bottom: 0.5px solid rgba(240, 240, 240, 0.5);
-    padding-bottom: 20px;
-    font-size: 15px;
-    a {
-        text-decoration: none;
-        color: rgba(255, 255, 255, 0.6);
-    }
-}
-span {
-    font-weight: 400;
-}
+// .about {
+//     margin: -16px;
+//     padding-top: 20px !important;
+//     // border-bottom: 0.5px solid rgba(240, 240, 240, 0.5);
+//     // padding-bottom: 20px;
+//     font-size: 15px;
+//     a {
+//         text-decoration: none;
+//         color: rgba(255, 255, 255, 0.6);
+//     }
+// }
+// span {
+//     font-weight: 400;
+// }
 @media only screen and (max-width: 600px) {
     footer {
         color: rgba(255, 255, 255, 0.7);
