@@ -126,7 +126,7 @@ class _AtomicBohrModelState extends State<AtomicBohrModel> with TickerProviderSt
 
     controller.addListener(() => setState(() {
           // set all the parameters as needed for the desired affect
-          angle = controller.value * 360; // rotate in a complete circle
+          angle = controller.value; // rotate in a complete circle
         }));
     updateSvg(0);
 
@@ -142,7 +142,9 @@ class _AtomicBohrModelState extends State<AtomicBohrModel> with TickerProviderSt
           rawSvg,
         ),
         builder: (BuildContext context, Widget? child) {
-          return Transform.rotate(alignment: Alignment.center, angle: angle, child: child);
+          return CustomPaint(
+            painter: AtomicModelPainter(rotationOffset: controller.value),
+          );
         },
       ),
     );
@@ -275,6 +277,24 @@ class _AtomicBohrModelState extends State<AtomicBohrModel> with TickerProviderSt
   // List<int> _calculateConfiguration(ElementData element) {
   //   element
   // }
+}
+
+class AtomicModelPainter extends CustomPainter {
+  double rotationOffset = 0;
+
+  AtomicModelPainter({this.rotationOffset = 0});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    Paint paint = Paint()..color = Colors.white;
+    canvas.drawCircle(Offset.zero, 10, paint);
+    canvas.drawLine(Offset.zero, Offset(0, 20 + rotationOffset * 10), paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant AtomicModelPainter oldDelegate) {
+    return (rotationOffset != oldDelegate.rotationOffset);
+  }
 }
 
 extension HexColor on Color {
