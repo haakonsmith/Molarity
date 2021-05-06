@@ -56,7 +56,7 @@ class _InfoBoxState extends State<InfoBox> {
               Expanded(child: IconWithText(Icons.library_add, size: icon_size, header: "Right Click", text: "to mass compounds")),
               Expanded(child: IconWithText(Icons.poll, size: icon_size, header: "Switch Views", text: "to explore the rest of the app")),
               Expanded(child: IconWithText(Icons.assignment, size: icon_size, header: "Click Element", text: "to naviage to a detailed description")),
-              Expanded(child: AtomicBohrModel(ElementsBloc.of(context).getElementBySymbol('pt'))),
+              Expanded(child: AtomicBohrModel(ElementsBloc.of(context).getElementBySymbol('be'))),
             ]),
           ),
         ));
@@ -114,7 +114,7 @@ class AtomicBohrModel extends StatefulWidget {
 }
 
 class _AtomicBohrModelState extends State<AtomicBohrModel> with TickerProviderStateMixin {
-  late AnimationController controller;
+  late AnimationController _controller;
   late String rawSvg;
 
   int size = 100;
@@ -122,11 +122,11 @@ class _AtomicBohrModelState extends State<AtomicBohrModel> with TickerProviderSt
 
   @override
   void initState() {
-    controller = AnimationController(duration: const Duration(seconds: 2), vsync: this)..repeat();
+    _controller = AnimationController(duration: const Duration(seconds: 2), vsync: this)..repeat();
 
-    controller.addListener(() => setState(() {
+    _controller.addListener(() => setState(() {
           // set all the parameters as needed for the desired affect
-          angle = controller.value; // rotate in a complete circle
+          angle = _controller.value; // rotate in a complete circle
         }));
     updateSvg(0);
 
@@ -136,18 +136,13 @@ class _AtomicBohrModelState extends State<AtomicBohrModel> with TickerProviderSt
   @override
   Widget build(BuildContext context) {
     return Container(
-      child: AnimatedBuilder(
-        animation: controller,
-        child: flutter_svg.SvgPicture.string(
-          rawSvg,
-        ),
-        builder: (BuildContext context, Widget? child) {
-          return CustomPaint(
-            painter: AtomicModelPainter(rotationOffset: controller.value),
-          );
-        },
+        child: CustomPaint(
+      painter: AtomicModelPainter(
+        element: widget.element,
+        rotationOffset: _controller.value,
+        listenable: _controller,
       ),
-    );
+    ));
   }
 
   void updateSvg(double angle) {
@@ -274,26 +269,118 @@ class _AtomicBohrModelState extends State<AtomicBohrModel> with TickerProviderSt
     return radius;
   }
 
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
   // List<int> _calculateConfiguration(ElementData element) {
   //   element
   // }
 }
 
 class AtomicModelPainter extends CustomPainter {
+  final Animation listenable;
+  final List electronConfiguration = [];
+  final ElementData element;
+  double size = 100;
   double rotationOffset = 0;
+  Offset centerOffset = Offset.zero;
 
-  AtomicModelPainter({this.rotationOffset = 0});
+  AtomicModelPainter({required this.listenable, this.rotationOffset = 0, required this.element}) : super(repaint: listenable) {
+    final configKeys = element.electronConfiguration.split(" ");
+
+    for (var i = 0; i < element.shells.length; i++) {
+      electronConfiguration.add({"s": 0, "p": 0, "d": 0, "f": 0});
+    }
+
+    for (var ckey in configKeys) {
+      final shell = ckey[0];
+      final sublevel = ckey[1];
+      final numElectron = ckey[2];
+
+      electronConfiguration[int.parse(shell) - 1][sublevel] += int.parse(numElectron);
+    }
+  }
 
   @override
-  void paint(Canvas canvas, Size size) {
+  void paint(Canvas canvas, Size canvasSize) {
+    rotationOffset = listenable.value;
+    size = canvasSize.width;
     Paint paint = Paint()..color = Colors.white;
-    canvas.drawCircle(Offset.zero, 10, paint);
-    canvas.drawLine(Offset.zero, Offset(0, 20 + rotationOffset * 10), paint);
+    TextPainter textPainter = TextPainter(
+      text: TextSpan(text: element.symbol, style: TextStyle(color: Colors.black)),
+      textAlign: TextAlign.left,
+      textDirection: TextDirection.ltr,
+    );
+    textPainter.layout();
+
+    centerOffset = Offset(canvasSize.width / 2, canvasSize.height / 2);
+
+    canvas.drawCircle(centerOffset, 15, paint);
+    textPainter.paint(canvas, centerOffset - Offset(textPainter.size.width / 2, textPainter.size.height / 2 + 1));
+    canvas.drawLine(centerOffset, Offset(0, 20 + rotationOffset * 10), paint);
+
+    _paintRings(canvas);
+    _paintElectrons(canvas);
   }
 
   @override
   bool shouldRepaint(covariant AtomicModelPainter oldDelegate) {
     return (rotationOffset != oldDelegate.rotationOffset);
+  }
+
+  void _paintRings(Canvas canvas) {
+    Paint ringPaint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.stroke;
+
+    Iterable<int>.generate(element.shells.length).forEach((e) {
+      canvas.drawCircle(centerOffset, _calculateRingRadius(e, element.shells.length), ringPaint);
+    });
+  }
+
+  void _paintElectrons(Canvas canvas) {
+    Paint electronPaint = Paint()..color = Colors.white;
+    // final outerShell = widget.electronConfiguration[widget.electronConfiguration.length - 1];
+    // final secondOuterShell = widget.electronConfiguration[widget.electronConfiguration.length - 2];
+
+    // final electrons = [];
+    // final electronBackgrounds = [];
+
+    final minimumRadius = size / 6.0;
+    final maximumRadius = size / 2.0;
+
+    for (var i = 0; i < electronConfiguration.length; i++) {
+      final configuration = electronConfiguration[i];
+      final totalValenceElectrons = configuration['s'] + configuration['p'] + configuration['d'] + configuration['f'];
+
+      for (var j = 0; j < totalValenceElectrons; j++) {
+        final ringRadius = minimumRadius + (i + 1) * (maximumRadius - minimumRadius) / (electronConfiguration.length + 1);
+        final phaseShift = i * math.pi / 8.0;
+
+        final cx = (math.sin((2 * math.pi) * (j / totalValenceElectrons) + phaseShift) * ringRadius);
+        final cy = (math.cos((2 * math.pi) * (j / totalValenceElectrons) + phaseShift) * ringRadius);
+
+        // final electronType = this._getElectronType(j, configuration);
+        // final opacity = this._getOpacity(i, j, configuration, electronConfiguration, outerShell, secondOuterShell);
+
+        // final electron = '<circle cx="${cx}" cy="${cy}" r="${size / 50.0}"/>';
+        // final electronBackground = '<circle cx="${cx}" cy="${cy}" r="${size / 50.0 + size / 75.0}"/>';
+        //
+        canvas.drawCircle(centerOffset - Offset(cx, cy), 3, electronPaint);
+      }
+    }
+  }
+
+  double _calculateRingRadius(ringIndex, amountOfRings) {
+    final minimumRadius = (size) / 6.0;
+    final maximumRadius = (size) / 2.0;
+
+    final radius = minimumRadius + (ringIndex + 1) * (maximumRadius - minimumRadius) / (amountOfRings + 1);
+
+    return radius;
   }
 }
 
