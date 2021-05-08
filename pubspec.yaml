@@ -25,11 +25,11 @@ dependencies:
     sdk: flutter
   provider:
   flutter_layout_grid: ^1.0.1
+  msix: ^2.1.0
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
-  flutter_svg: ^0.22.0
 
 dev_dependencies:
   flutter_test:
@@ -47,16 +47,17 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
-  # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
-  #   - images/a_dot_ham.jpeg
-
-  # An image asset can refer to one or more resolution-specific "variants", see
-  # https://flutter.dev/assets-and-images/#resolution-aware.
-
-  # For details regarding adding assets from package dependencies, see
-  # https://flutter.dev/assets-and-images/#from-packages
+msix_config:
+  display_name: Molarity
+  publisher_display_name: Haakon Smith
+  identity_name: com.flutter.Molarity
+  msix_version: 1.0.0.0
+  logo_path: assets/distribution/icons/icon.png
+  start_menu_icon_path: assets/distribution/icons/icon.png
+  tile_icon_path: assets/distribution/icons/icon.png
+  icons_background_color: transparent
+  architecture: x64
+  capabilities: ''
 
   # To add custom fonts to your application, add a fonts section here,
   # in this "flutter" section. Each entry in this list should have a

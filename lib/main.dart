@@ -18,7 +18,7 @@ class Molarity extends StatelessWidget {
       theme: ThemeData(
         // This is the theme of your application.
         primarySwatch: Colors.blue,
-        // brightness: Brightness.dark,
+        brightness: Brightness.dark,
         scaffoldBackgroundColor: Color.fromRGBO(26, 31, 44, 1),
       ),
       home: PeriodicTableScreen(),

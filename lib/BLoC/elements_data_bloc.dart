@@ -59,43 +59,11 @@ class ElementsBloc extends ChangeNotifier {
   ElementData getElementBySymbol(String symbol) => _elements.firstWhere((element) => element.symbol.toLowerCase() == symbol.toLowerCase());
 
   List<Widget> get elementsTable {
-    // if (!loading) return [];
-
     List<Widget> elements = [];
 
     for (var i = 0; i < _elements.length; i++) {
       elements.add(PeriodicTableTile(_elements[i]));
     }
-
-    // elements.insertAll(
-    //     7,
-    //     Iterable<Widget>.generate(
-    //         15,
-    //         (i) => SizedBox(
-    //               width: 50,
-    //               height: 50,
-    //               child: Text('test'),
-    //             )));
-
-    // elements.insertAll(
-    //     4,
-    //     Iterable<Widget>.generate(
-    //         15,
-    //         (i) => SizedBox(
-    //               width: 50,
-    //               height: 50,
-    //               child: Text('test'),
-    //             )));
-
-    // elements.insertAll(
-    //     1,
-    //     Iterable<Widget>.generate(
-    //         16,
-    //         (i) => SizedBox(
-    //               width: 50,
-    //               height: 50,
-    //               child: Text('test'),
-    //             )));
 
     return elements;
   }
@@ -110,14 +78,31 @@ class ElementData {
   String symbol;
   List<int> shells;
   AtomicElementCategory category;
+  String categoryValue;
   String electronConfiguration;
+  String name;
   int x, y;
+  String meltingPointValue;
+  String boilingPointValue;
+  String phase;
 
-  ElementData({required this.electronConfiguration, required this.shells, required this.x, required this.y, required this.category, required this.atomicNumber, required this.symbol});
+  double? get meltingPoint => double.tryParse(meltingPointValue);
+
+  ElementData(
+      {required this.name,
+      required this.categoryValue,
+      required this.meltingPointValue,
+      required this.boilingPointValue,
+      required this.electronConfiguration,
+      required this.shells,
+      required this.phase,
+      required this.x,
+      required this.y,
+      required this.category,
+      required this.atomicNumber,
+      required this.symbol});
 
   static AtomicElementCategory atomicElementCategoryFromString(String string) {
-    // print(string);
-    // print(AtomicElementCategory.values.map((e) => e.toString().replaceAll(' ', '').replaceFirst("AtomicElementCategory.", "")));
     switch (string) {
       case 'actinide':
         return AtomicElementCategory.actinide;
@@ -153,6 +138,11 @@ class ElementData {
         this.electronConfiguration = json["electron_configuration"] as String,
         this.shells = (json["shells"] as List).cast<int>(),
         this.category = atomicElementCategoryFromString(json['category'] as String),
+        this.categoryValue = json["category"] as String,
+        this.meltingPointValue = (json["melt"]).toString(),
+        this.boilingPointValue = (json["boil"]).toString(),
+        this.phase = json["phase"] as String,
+        this.name = json["name"] as String,
         this.x = (json['xpos'] as int) - 1,
         this.y = (json['ypos'] as int) - 1;
 
