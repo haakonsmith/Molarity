@@ -26,6 +26,7 @@ dependencies:
   provider:
   flutter_layout_grid: ^1.0.1
   msix: ^2.1.0
+  auto_size_text: 3.0.0-nullsafety.0
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

@@ -15,6 +15,8 @@ class Molarity extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Molarity',
+      checkerboardOffscreenLayers: true,
+      // checkerboardRasterCacheImages: true,
       theme: ThemeData(
         // This is the theme of your application.
         primarySwatch: Colors.blue,

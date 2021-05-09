@@ -85,6 +85,16 @@ class ElementData {
   String meltingPointValue;
   String boilingPointValue;
   String phase;
+  String summary;
+  String density;
+  String atomicMass;
+  String color;
+  String molarHeat;
+  String discoveredBy;
+  String electronAffinity;
+  String electronNegativity;
+  String semanticElectronConfiguration;
+  List<double> ionisationEnergies;
 
   double? get meltingPoint => double.tryParse(meltingPointValue);
 
@@ -96,6 +106,16 @@ class ElementData {
       required this.electronConfiguration,
       required this.shells,
       required this.phase,
+      required this.summary,
+      required this.density,
+      required this.atomicMass,
+      required this.molarHeat,
+      required this.electronNegativity,
+      required this.electronAffinity,
+      required this.discoveredBy,
+      required this.color,
+      required this.semanticElectronConfiguration,
+      required this.ionisationEnergies,
       required this.x,
       required this.y,
       required this.category,
@@ -142,6 +162,16 @@ class ElementData {
         this.meltingPointValue = (json["melt"]).toString(),
         this.boilingPointValue = (json["boil"]).toString(),
         this.phase = json["phase"] as String,
+        this.electronNegativity = (json["electronegativity_pauling"]).toString(),
+        this.semanticElectronConfiguration = json["electron_configuration_semantic"] as String,
+        this.ionisationEnergies = (json["ionization_energies"] as List).cast<double>(),
+        this.summary = json["summary"] as String,
+        this.electronAffinity = (json["electron_affinity"]).toString(),
+        this.discoveredBy = (json["discovered_by"] ?? "Unknown") as String,
+        this.molarHeat = json["molar_heat"].toString(),
+        this.color = (json["color"] ?? "Uknown") as String,
+        this.density = json["density"].toString() as String,
+        this.atomicMass = json["atomic_mass"].toStringAsPrecision(3) as String,
         this.name = json["name"] as String,
         this.x = (json['xpos'] as int) - 1,
         this.y = (json['ypos'] as int) - 1;

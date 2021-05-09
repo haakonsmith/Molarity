@@ -1,24 +1,12 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_layout_grid/flutter_layout_grid.dart';
-import 'dart:convert';
-import 'dart:math' as math;
 
 import 'package:molarity/BLoC/elements_data_bloc.dart';
+import 'package:molarity/screen/atomic_info_screen.dart';
 import 'package:molarity/widgets/info_box.dart';
 
-final Map<AtomicElementCategory, Color> categoryColorMapping = {
-  AtomicElementCategory.actinide: HSLColor.fromAHSL(0.8, 279, 32 / 100, 25 / 100).toColor(),
-  AtomicElementCategory.alkaliMetal: HSLColor.fromAHSL(0.8, 345, 37 / 100, 45 / 100).toColor(),
-  AtomicElementCategory.alkalineEarthMetal: HSLColor.fromAHSL(0.8, 23, 27 / 100, 49 / 100).toColor(),
-  AtomicElementCategory.lanthanide: Color.fromRGBO(120, 107, 151, 0.9),
-  AtomicElementCategory.metalloid: Color.fromRGBO(74, 114, 146, 0.9),
-  AtomicElementCategory.nobleGas: Color.fromRGBO(136, 100, 170, 0.9),
-  AtomicElementCategory.otherNonmetal: Color.fromRGBO(91, 93, 153, 0.9),
-  AtomicElementCategory.postTransitionMetal: Color.fromRGBO(74, 134, 119, 0.9),
-  AtomicElementCategory.transitionMetal: HSLColor.fromAHSL(0.8, 218, 18 / 100, 44 / 100).toColor(),
-  AtomicElementCategory.unknown: Color(0xffcccccc),
-};
+import '../theme.dart';
 
 class PeriodicTable extends StatefulWidget {
   @override
@@ -31,8 +19,6 @@ class _PeriodicTableState extends State<PeriodicTable> {
     final elementsBloc = ElementsBloc.of(context, listen: true);
 
     return elementsBloc.loading ? Center(child: Text('Loading...')) : _buildGrid(context);
-
-    // : GridView.count(crossAxisCount: 18, childAspectRatio: 1, mainAxisSpacing: 2, crossAxisSpacing: 2, children: elementsBloc.elementsTable);
   }
 
   final ValueNotifier<ElementData?> trackedElement = ValueNotifier(null);
@@ -50,9 +36,11 @@ class _PeriodicTableState extends State<PeriodicTable> {
         ValueListenableBuilder<ElementData?>(
             valueListenable: trackedElement,
             builder: (BuildContext context, ElementData? element, Widget? child) {
-              return InfoBox(
-                element: element,
-              ).withGridPlacement(columnSpan: 10, rowStart: 0, columnStart: 2, rowSpan: 3);
+              return AspectRatio(
+                  aspectRatio: 40.1 / 12.4,
+                  child: InfoBox(
+                    element: element,
+                  )).withGridPlacement(columnSpan: 10, rowStart: 0, columnStart: 2, rowSpan: 3);
             }),
         for (final e in elementsBloc.elements)
           AspectRatio(
@@ -61,7 +49,6 @@ class _PeriodicTableState extends State<PeriodicTable> {
               e,
               onHover: (element) {
                 trackedElement.value = element;
-                print("test");
               },
               key: ValueKey(e.symbol),
             ),
@@ -71,7 +58,7 @@ class _PeriodicTableState extends State<PeriodicTable> {
   }
 }
 
-class PeriodicTableTile extends StatelessWidget {
+class PeriodicTableTile extends StatefulWidget {
   final ElementData element;
   final Function(ElementData)? onHover;
 
@@ -82,38 +69,76 @@ class PeriodicTableTile extends StatelessWidget {
   }) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (context, constraints) {
-      var elementTitle = Text(element.symbol.toString(), style: TextStyle(fontWeight: FontWeight.w400, fontSize: constraints.maxWidth / 2.5));
+  State<StatefulWidget> createState() => _PeriodicTableTileState();
+}
 
-      return InkWell(
-        onTap: () {},
-        onHover: (value) => onHover!(element),
-        child: Container(
-          constraints: BoxConstraints(maxWidth: 50, maxHeight: 50),
-          color: categoryColorMapping[element.category],
-          padding: EdgeInsets.all(1),
-          child: DefaultTextStyle.merge(
-            style: TextStyle(color: Colors.white60.withOpacity(0.8)),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  element.atomicNumber.toString(),
-                  style: TextStyle(fontSize: constraints.maxWidth / 5),
+class _PeriodicTableTileState extends State<PeriodicTableTile> {
+  Color tileColor = Colors.white;
+
+  @override
+  void initState() {
+    super.initState();
+
+    tileColor = categoryColorMapping[widget.element.category]!;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    var elementTitle = Text(
+      widget.element.symbol.toString(),
+      style: TextStyle(fontWeight: FontWeight.w400, fontSize: 15),
+      textScaleFactor: 1.5,
+    );
+
+    return InkWell(
+      onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => AtomicInfoScreen(widget.element))),
+      onHover: (value) => widget.onHover!(widget.element),
+      child: Container(
+        constraints: BoxConstraints(maxWidth: 50, maxHeight: 50),
+        color: tileColor,
+        padding: EdgeInsets.all(1),
+        child: DefaultTextStyle.merge(
+          style: TextStyle(color: Colors.white60.withOpacity(0.8)),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                flex: 3,
+                child: FittedBox(
+                  fit: BoxFit.fitHeight,
+                  child: Text(
+                    widget.element.atomicNumber.toString(),
+                    style: TextStyle(fontWeight: FontWeight.w200, fontSize: 14),
+                    textScaleFactor: 0.7,
+                    // style: TextStyle(fontSize: 10),
+                  ),
                 ),
-                Expanded(child: Center(child: elementTitle)),
-                Text(
-                  element.symbol,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: constraints.maxWidth / 5),
-                )
-                // Expanded(child: Center(child: elementTitle)),
-              ],
-            ),
+              ),
+              Expanded(
+                flex: 5,
+                child: Center(
+                  child: FittedBox(
+                    fit: BoxFit.fitHeight,
+                    child: elementTitle,
+                  ),
+                ),
+              ),
+              Expanded(
+                flex: 3,
+                child: FittedBox(
+                  fit: BoxFit.fitHeight,
+                  child: Text(
+                    widget.element.symbol,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontWeight: FontWeight.w200, fontSize: 14),
+                  ),
+                ),
+              ),
+              // Expanded(child: Center(child: elementTitle)),
+            ],
           ),
         ),
-      );
-    });
+      ),
+    );
   }
 }
