@@ -56,7 +56,7 @@ class AtomicInfoScreen extends StatelessWidget {
         child: LayoutGrid(
       gridFit: GridFit.loose,
       columnSizes: repeat(3, [1.fr]),
-      rowSizes: repeat(2, [1.fr]),
+      rowSizes: repeat(2, [auto]),
       areas: '''
       preview trend trend
       info info info
@@ -64,8 +64,8 @@ class AtomicInfoScreen extends StatelessWidget {
       columnGap: 1,
       rowGap: 1,
       children: [
-        _AtomicInfoPreview(element).inGridArea('preview'),
-        _AtomicInfoPreview(element).inGridArea('trend'),
+        AspectRatio(aspectRatio: 1 / 1.5, child: _AtomicInfoPreview(element)).inGridArea('preview'),
+        // _AtomicInfoPreview(element).inGridArea('trend'),
         _AtomicDetails(element).inGridArea('info'),
       ],
     ));
@@ -82,34 +82,58 @@ class _AtomicInfoPreview extends StatelessWidget {
     return Padding(
         padding: const EdgeInsets.all(8),
         child: Container(
+          width: 200,
           color: Colors.white.withOpacity(0.1),
           child: Column(mainAxisAlignment: MainAxisAlignment.start, children: [
             Expanded(
-              flex: 7,
-              child: Container(width: 200, height: 300, child: AtomicBohrModel(element)),
+              flex: 6,
+              child: FittedBox(fit: BoxFit.contain, child: Container(width: 200, height: 300, child: AtomicBohrModel(element))),
             ),
-            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-              _buildAttribute(context, "Atomic Number", element.atomicNumber.toString()),
-              _buildAttribute(context, "Atomic Mass", element.atomicMass),
-            ]),
-            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-              _buildAttribute(context, "Electron Configuration", element.semanticElectronConfiguration),
-              _buildAttribute(context, "Atomic Number", element.atomicNumber.toString()),
-            ]),
+            Expanded(
+              flex: 2,
+              child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                FittedBox(
+                  fit: BoxFit.fitWidth,
+                  child: _buildAttribute(context, "Atomic Number", element.atomicNumber.toString()),
+                ),
+                FittedBox(
+                  fit: BoxFit.fitWidth,
+                  child: _buildAttribute(context, "Atomic Mass", element.atomicMass),
+                ),
+              ]),
+            ),
+            Expanded(
+                flex: 2,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    FittedBox(
+                      fit: BoxFit.fitWidth,
+                      child: _buildAttribute(context, "Electron Configuration", element.semanticElectronConfiguration),
+                    ),
+                    FittedBox(
+                      fit: BoxFit.fitWidth,
+                      child: _buildAttribute(context, "Atomic Number", element.atomicNumber.toString()),
+                    ),
+                  ],
+                )),
           ]),
         ));
   }
 
   Widget _buildAttribute(BuildContext context, String name, String value) {
     return Padding(
-        padding: const EdgeInsets.all(8),
-        child: Column(children: [
+      padding: const EdgeInsets.all(8),
+      child: Column(
+        children: [
           Text(
             value,
             style: const TextStyle(fontWeight: FontWeight.w200),
           ),
           Text(name),
-        ]));
+        ],
+      ),
+    );
   }
 }
 
