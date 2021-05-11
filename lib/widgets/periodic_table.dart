@@ -91,48 +91,49 @@ class _PeriodicTableTileState extends State<PeriodicTableTile> {
 
   @override
   Widget build(BuildContext context) {
-    final main = InkWell(
-      onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => AtomicInfoScreen(widget.element))),
+    return MouseRegion(
       onHover: (value) => widget.onHover!(widget.element),
-      child: Container(
-        color: tileColor,
-        padding: const EdgeInsets.all(1),
-        child: DefaultTextStyle.merge(
-          style: TextStyle(color: Colors.white60.withOpacity(0.8)),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                flex: 3,
-                child: FittedBox(
-                  fit: BoxFit.fitHeight,
-                  child: _TileSub(widget.element.atomicNumber.toString()),
-                ),
-              ),
-              Expanded(
-                flex: 5,
-                child: Center(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => AtomicInfoScreen(widget.element))),
+        child: Container(
+          color: tileColor,
+          padding: const EdgeInsets.all(1),
+          child: DefaultTextStyle.merge(
+            style: TextStyle(color: Colors.white60.withOpacity(0.8)),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  flex: 3,
                   child: FittedBox(
                     fit: BoxFit.fitHeight,
-                    child: _TileSymbol(widget.element.symbol),
+                    child: _TileSub(widget.element.atomicNumber.toString()),
                   ),
                 ),
-              ),
-              Expanded(
-                flex: 3,
-                child: FittedBox(
-                  fit: BoxFit.fitHeight,
-                  child: _TileSub(widget.element.symbol),
+                Expanded(
+                  flex: 5,
+                  child: Center(
+                    child: FittedBox(
+                      fit: BoxFit.fitHeight,
+                      child: _TileSymbol(widget.element.symbol),
+                    ),
+                  ),
                 ),
-              ),
-              // Expanded(child: Center(child: elementTitle)),
-            ],
+                Expanded(
+                  flex: 3,
+                  child: FittedBox(
+                    fit: BoxFit.fitHeight,
+                    child: _TileSub(widget.element.symbol),
+                  ),
+                ),
+                // Expanded(child: Center(child: elementTitle)),
+              ],
+            ),
           ),
         ),
       ),
     );
-
-    return main;
   }
 }
 
