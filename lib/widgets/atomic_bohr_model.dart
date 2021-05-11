@@ -5,28 +5,12 @@ import 'dart:math' as math;
 import '../theme.dart';
 
 class AtomicBohrModel extends StatefulWidget {
-  ElementData element;
-  List electronConfiguration;
-  double width, height;
+  final ElementData element;
+  final double width, height;
 
   AtomicBohrModel(_element, {this.width = 100, this.height = 100, Key? key})
-      : this.electronConfiguration = [],
-        this.element = _element,
-        super(key: key) {
-    final configKeys = element.electronConfiguration.split(" ");
-
-    for (var i = 0; i < element.shells.length; i++) {
-      electronConfiguration.add({"s": 0, "p": 0, "d": 0, "f": 0});
-    }
-
-    for (var ckey in configKeys) {
-      final shell = ckey[0];
-      final sublevel = ckey[1];
-      final numElectron = ckey[2];
-
-      electronConfiguration[int.parse(shell) - 1][sublevel] += int.parse(numElectron);
-    }
-  }
+      : this.element = _element,
+        super(key: key);
 
   @override
   _AtomicBohrModelState createState() => _AtomicBohrModelState();
@@ -38,23 +22,34 @@ class _AtomicBohrModelState extends State<AtomicBohrModel> with TickerProviderSt
 
   @override
   void initState() {
+    super.initState();
+
     _controller = AnimationController(duration: const Duration(seconds: 2), vsync: this)..forward();
     _animation = Tween<double>(begin: 0, end: -2 * math.pi).animate(CurvedAnimation(parent: _controller, curve: Curves.decelerate));
+  }
 
-    super.initState();
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    _controller.reset();
+    _controller.forward();
   }
 
   @override
   Widget build(BuildContext context) {
-    _controller.reset();
-    _controller.forward();
-
-    return Container(
-      child: CustomPaint(
-        painter: AtomicModelPainter(
-          element: widget.element,
-          rotationOffset: _controller.value,
-          listenable: _animation,
+    return FittedBox(
+      fit: BoxFit.fitWidth,
+      child: Container(
+        width: 100,
+        height: 100,
+        child: RepaintBoundary(
+          child: CustomPaint(
+            painter: AtomicModelPainter(
+              element: widget.element,
+              listenable: _animation,
+            ),
+          ),
         ),
       ),
     );
@@ -71,6 +66,7 @@ class AtomicModelPainter extends CustomPainter {
   final Animation listenable;
   final List electronConfiguration = [];
   final ElementData element;
+
   double size = 100;
   double rotationOffset = 0;
   Offset centerOffset = Offset.zero;
@@ -107,7 +103,7 @@ class AtomicModelPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size canvasSize) {
     rotationOffset = listenable.value;
-    size = canvasSize.width;
+    // size = canvasSize.width;
 
     Paint paint = Paint()..color = categoryColorMapping[element.category]!;
 
@@ -129,7 +125,7 @@ class AtomicModelPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant AtomicModelPainter oldDelegate) {
-    return (rotationOffset != oldDelegate.rotationOffset);
+    return rotationOffset != oldDelegate.rotationOffset;
   }
 
   void _paintRings(Canvas canvas) {
@@ -166,7 +162,7 @@ class AtomicModelPainter extends CustomPainter {
 
         electronType.color = electronType.color.withOpacity(opacity);
 
-        canvas.drawCircle(centerOffset - Offset(cx, cy), 3, electronType);
+        canvas.drawCircle(centerOffset - Offset(cx, cy), 300 / size, electronType);
       }
     }
   }

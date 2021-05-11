@@ -23,6 +23,13 @@ class _PeriodicTableState extends State<PeriodicTable> {
 
   final ValueNotifier<ElementData?> trackedElement = ValueNotifier(null);
 
+  @override
+  void dispose() {
+    trackedElement.dispose();
+
+    super.dispose();
+  }
+
   Widget _buildGrid(BuildContext context) {
     final elementsBloc = ElementsBloc.of(context, listen: true);
 
@@ -30,8 +37,8 @@ class _PeriodicTableState extends State<PeriodicTable> {
       gridFit: GridFit.loose,
       columnSizes: repeat(18, [1.fr]),
       rowSizes: repeat(10, [auto]),
-      columnGap: 1,
-      rowGap: 1,
+      columnGap: 1.5,
+      rowGap: 1.5,
       children: [
         ValueListenableBuilder<ElementData?>(
             valueListenable: trackedElement,
@@ -84,19 +91,12 @@ class _PeriodicTableTileState extends State<PeriodicTableTile> {
 
   @override
   Widget build(BuildContext context) {
-    var elementTitle = Text(
-      widget.element.symbol.toString(),
-      style: TextStyle(fontWeight: FontWeight.w400, fontSize: 15),
-      textScaleFactor: 1.5,
-    );
-
-    return InkWell(
+    final main = InkWell(
       onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => AtomicInfoScreen(widget.element))),
       onHover: (value) => widget.onHover!(widget.element),
       child: Container(
-        constraints: BoxConstraints(maxWidth: 50, maxHeight: 50),
         color: tileColor,
-        padding: EdgeInsets.all(1),
+        padding: const EdgeInsets.all(1),
         child: DefaultTextStyle.merge(
           style: TextStyle(color: Colors.white60.withOpacity(0.8)),
           child: Column(
@@ -106,12 +106,7 @@ class _PeriodicTableTileState extends State<PeriodicTableTile> {
                 flex: 3,
                 child: FittedBox(
                   fit: BoxFit.fitHeight,
-                  child: Text(
-                    widget.element.atomicNumber.toString(),
-                    style: TextStyle(fontWeight: FontWeight.w200, fontSize: 14),
-                    textScaleFactor: 0.7,
-                    // style: TextStyle(fontSize: 10),
-                  ),
+                  child: _TileSub(widget.element.atomicNumber.toString()),
                 ),
               ),
               Expanded(
@@ -119,7 +114,7 @@ class _PeriodicTableTileState extends State<PeriodicTableTile> {
                 child: Center(
                   child: FittedBox(
                     fit: BoxFit.fitHeight,
-                    child: elementTitle,
+                    child: _TileSymbol(widget.element.symbol),
                   ),
                 ),
               ),
@@ -127,11 +122,7 @@ class _PeriodicTableTileState extends State<PeriodicTableTile> {
                 flex: 3,
                 child: FittedBox(
                   fit: BoxFit.fitHeight,
-                  child: Text(
-                    widget.element.symbol,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontWeight: FontWeight.w200, fontSize: 14),
-                  ),
+                  child: _TileSub(widget.element.symbol),
                 ),
               ),
               // Expanded(child: Center(child: elementTitle)),
@@ -139,6 +130,44 @@ class _PeriodicTableTileState extends State<PeriodicTableTile> {
           ),
         ),
       ),
+    );
+
+    return main;
+  }
+}
+
+class _TileSymbol extends StatelessWidget {
+  final String symbol;
+
+  const _TileSymbol(
+    this.symbol, {
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      symbol,
+      style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 15),
+      textScaleFactor: 1.5,
+    );
+  }
+}
+
+class _TileSub extends StatelessWidget {
+  final String value;
+
+  const _TileSub(
+    this.value, {
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      value,
+      style: const TextStyle(fontWeight: FontWeight.w200, fontSize: 15),
+      textScaleFactor: 0.7,
     );
   }
 }

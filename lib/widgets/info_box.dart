@@ -20,26 +20,6 @@ class _InfoBoxState extends State<InfoBox> {
   }
 
   Widget _buildElementInfo(BuildContext context) {
-    var title = FittedBox(
-        fit: BoxFit.fitHeight,
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(
-            "${widget.element!.atomicNumber.toString()} – ${widget.element!.name}",
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w200,
-            ),
-          ),
-          Text(
-            widget.element!.categoryValue.capitalizeFirstofEach,
-            textAlign: TextAlign.left,
-            style: TextStyle(
-              color: categoryColorMapping[widget.element!.category],
-              fontSize: 7,
-            ),
-          ),
-        ]));
-
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Container(
@@ -53,48 +33,15 @@ class _InfoBoxState extends State<InfoBox> {
             children: [
               Expanded(
                 flex: 2,
-                child: title,
-              ),
-              Expanded(
-                flex: 3,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: FittedBox(
-                        fit: BoxFit.fitHeight,
-                        child: ElementalInfo(
-                          widget.element!,
-                          intialValue: "Boiling Point",
-                          intialGetter: () => widget.element!.boilingPointValue,
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      child: FittedBox(
-                        fit: BoxFit.fitWidth,
-                        child: ElementalInfo(
-                          widget.element!,
-                          intialValue: "Melting Point",
-                          intialGetter: () => widget.element!.meltingPointValue,
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      child: FittedBox(
-                        fit: BoxFit.fitWidth,
-                        child: ElementalInfo(
-                          widget.element!,
-                          intialValue: "Phase",
-                          intialGetter: () => widget.element!.phase,
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      child: AtomicBohrModel(widget.element),
-                    ),
-                  ],
+                child: FittedBox(
+                  fit: BoxFit.fitHeight,
+                  child: _InfoTitle(
+                    element: widget.element!,
+                  ),
                 ),
+              ),
+              _InfoDataRow(
+                element: widget.element!,
               ),
             ],
           ),
@@ -123,6 +70,108 @@ class _InfoBoxState extends State<InfoBox> {
   }
 }
 
+class _InfoTitle extends StatelessWidget {
+  const _InfoTitle({
+    Key? key,
+    required this.element,
+  }) : super(key: key);
+
+  final ElementData element;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Text(
+        "${element.atomicNumber.toString()} – ${element.name}",
+        style: TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.w200,
+        ),
+      ),
+      Text(
+        element.categoryValue.capitalizeFirstofEach,
+        textAlign: TextAlign.left,
+        style: TextStyle(
+          color: categoryColorMapping[element.category],
+          fontSize: 7,
+        ),
+      ),
+    ]);
+  }
+}
+
+class _InfoDataRow extends StatefulWidget {
+  const _InfoDataRow({
+    Key? key,
+    required this.element,
+  }) : super(key: key);
+
+  final ElementData element;
+
+  @override
+  State<StatefulWidget> createState() => _InfoDataRowState();
+}
+
+class _InfoDataRowState extends State<_InfoDataRow> {
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      flex: 3,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: FittedBox(
+              fit: BoxFit.fitHeight,
+              child: ElementalInfo(
+                widget.element,
+                intialValue: "Boiling Point",
+                intialGetter: () => widget.element.boilingPointValue,
+              ),
+            ),
+          ),
+          Expanded(
+            child: FittedBox(
+              fit: BoxFit.fitWidth,
+              child: ElementalInfo(
+                widget.element,
+                intialValue: "Melting Point",
+                intialGetter: () => widget.element.meltingPointValue,
+              ),
+            ),
+          ),
+          Expanded(
+            child: FittedBox(
+              fit: BoxFit.fitWidth,
+              child: ElementalInfo(
+                widget.element,
+                intialValue: "Phase",
+                intialGetter: () => widget.element.phase,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(8),
+              child: AtomicBohrModel(
+                widget.element,
+                key: ValueKey(widget.element.symbol + "atomic"),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ElementalAttributeDataWrapper {
+  final String Function()? infoGetter;
+  final String? value;
+
+  _ElementalAttributeDataWrapper(this.value, this.infoGetter);
+}
+
 class ElementalInfo extends StatefulWidget {
   final ElementData elementData;
   final String Function()? intialGetter;
@@ -131,21 +180,69 @@ class ElementalInfo extends StatefulWidget {
   ElementalInfo(this.elementData, {this.intialGetter, this.intialValue, Key? key}) : super(key: key);
 
   @override
-  _ElementalInfoState createState() => _ElementalInfoState(displayedInfoGetter: intialGetter, displayedValue: intialValue);
+  _ElementalInfoState createState() => _ElementalInfoState(infoGetter: intialGetter, displayedValue: intialValue);
 }
 
 class _ElementalInfoState extends State<ElementalInfo> {
-  String Function()? displayedInfoGetter = () => "Fuclk something is wrong";
-  String? displayedValue = "Melting Point";
+  final ValueNotifier<_ElementalAttributeDataWrapper> attribute;
 
-  _ElementalInfoState({this.displayedInfoGetter, this.displayedValue});
+  _ElementalInfoState({infoGetter, displayedValue}) : this.attribute = ValueNotifier(_ElementalAttributeDataWrapper(displayedValue, infoGetter)) {
+    this.attribute.addListener(() {
+      setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    attribute.dispose();
+
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    var dropDown = Container(
+    var dropDown = _ElementAttributeSelector(
+      attribute: attribute,
+      element: widget.elementData,
+    );
+
+    return Column(
+      children: [
+        dropDown,
+        FittedBox(
+          fit: BoxFit.fitWidth,
+          child: Text(
+            attribute.value.infoGetter!() == "null" ? "Unknown" : attribute.value.infoGetter!(),
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w200),
+          ),
+        )
+      ],
+    );
+  }
+}
+
+class _ElementAttributeSelector extends StatefulWidget {
+  const _ElementAttributeSelector({
+    required this.attribute,
+    Key? key,
+    required this.element,
+  }) : super(key: key);
+
+  final ElementData element;
+  final ValueNotifier<_ElementalAttributeDataWrapper> attribute;
+
+  @override
+  State<StatefulWidget> createState() => _ElementAttributeSelectorState();
+}
+
+class _ElementAttributeSelectorState extends State<_ElementAttributeSelector> {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(8),
       child: DropdownButton<String>(
-        underline: Container(),
-        value: displayedValue,
+        // underline: Container(),
+        value: widget.attribute.value.value,
         items: <String>[
           'Melting Point',
           'Boiling Point',
@@ -161,60 +258,46 @@ class _ElementalInfoState extends State<ElementalInfo> {
             value: value,
             child: Text(
               value,
-              style: TextStyle(fontWeight: FontWeight.w200, color: Colors.white54),
+              style: const TextStyle(fontWeight: FontWeight.w200, color: Colors.white54),
             ),
           );
         }).toList(),
         onChanged: (value) {
-          setState(() {
-            displayedValue = value!;
+          String Function() infoGetter = () => "Oh no";
+          switch (value) {
+            case "Melting Point":
+              infoGetter = () => widget.element.meltingPointValue;
+              break;
+            case "Boiling Point":
+              infoGetter = () => widget.element.boilingPointValue;
+              break;
+            case "Phase":
+              infoGetter = () => widget.element.phase;
+              break;
+            case "Density":
+              infoGetter = () => widget.element.density;
+              break;
+            case "Atomic Mass":
+              infoGetter = () => widget.element.atomicMass;
+              break;
+            case "Molar Heat":
+              infoGetter = () => widget.element.molarHeat;
+              break;
+            case "Electron Negativity":
+              infoGetter = () => widget.element.electronNegativity;
+              break;
+            // case "First Ionisation Energy":
+            //   infoGetter = () => widget.element.ionisationEnergies.isEmpty ? "Uknown" : widget.element.ionisationEnergies[0].toString();
+            //   break;
+            case "Electron Configuration":
+              infoGetter = () => widget.element.semanticElectronConfiguration;
+              break;
+          }
+          widget.attribute.value = _ElementalAttributeDataWrapper(value, infoGetter);
 
-            switch (value) {
-              case "Melting Point":
-                displayedInfoGetter = () => widget.elementData.meltingPointValue;
-                print(widget.elementData.ionisationEnergies);
-                break;
-              case "Boiling Point":
-                displayedInfoGetter = () => widget.elementData.boilingPointValue;
-                break;
-              case "Phase":
-                displayedInfoGetter = () => widget.elementData.phase;
-                break;
-              case "Density":
-                displayedInfoGetter = () => widget.elementData.density;
-                break;
-              case "Atomic Mass":
-                displayedInfoGetter = () => widget.elementData.atomicMass;
-                break;
-              case "Molar Heat":
-                displayedInfoGetter = () => widget.elementData.molarHeat;
-                break;
-              case "Electron Negativity":
-                displayedInfoGetter = () => widget.elementData.electronNegativity;
-                break;
-              // case "First Ionisation Energy":
-              //   displayedInfoGetter = () => widget.elementData.ionisationEnergies.isEmpty ? "Uknown" : widget.elementData.ionisationEnergies[0].toString();
-              //   break;
-              case "Electron Configuration":
-                displayedInfoGetter = () => widget.elementData.semanticElectronConfiguration;
-                break;
-            }
-          });
+          setState(() {});
         },
       ),
-    );
-
-    return Column(
-      children: [
-        dropDown,
-        FittedBox(
-          fit: BoxFit.fitWidth,
-          child: Text(
-            displayedInfoGetter!() == "null" ? "Unknown" : displayedInfoGetter!(),
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w200),
-          ),
-        )
-      ],
     );
   }
 }

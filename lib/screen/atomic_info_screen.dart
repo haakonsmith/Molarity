@@ -19,10 +19,7 @@ class AtomicInfoScreen extends StatelessWidget {
             title: Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
               Text(
                 "${element.atomicNumber.toString()} – ${element.name}",
-                style: TextStyle(
-                  fontSize: 25,
-                  fontWeight: FontWeight.w200,
-                ),
+                style: const TextStyle(fontSize: 25, fontWeight: FontWeight.w200),
               ),
               Text(
                 element.categoryValue.capitalizeFirstofEach,
@@ -30,24 +27,27 @@ class AtomicInfoScreen extends StatelessWidget {
                 style: TextStyle(color: categoryColorMapping[element.category], fontWeight: FontWeight.w200),
               ),
             ])),
-        body: LayoutBuilder(builder: (context, constraints) {
-          return Padding(padding: const EdgeInsets.all(8), child: _buildLargeScreen(context));
-        }));
+        body: SingleChildScrollView(child: LayoutBuilder(builder: (context, constraints) {
+          return Padding(padding: const EdgeInsets.all(8), child: constraints.maxWidth > 800 ? _buildLargeScreen(context) : _buildSmallScreen(context));
+        })));
   }
 
   Widget _buildSmallScreen(BuildContext context) {
     return Container(
         child: LayoutGrid(
       gridFit: GridFit.loose,
-      columnSizes: repeat(18, [1.fr]),
-      rowSizes: repeat(10, [auto]),
+      columnSizes: repeat(1, [1.fr]),
+      rowSizes: repeat(2, [auto]),
       areas: '''
-      header header header
-      
+      preview
+      info
       ''',
       columnGap: 1,
       rowGap: 1,
-      children: [],
+      children: [
+        AspectRatio(aspectRatio: 2 / 1.5, child: _AtomicInfoPreview(element)).inGridArea('preview'),
+        _AtomicDetails(element).inGridArea('info'),
+      ],
     ));
   }
 
@@ -106,7 +106,7 @@ class _AtomicInfoPreview extends StatelessWidget {
         child: Column(children: [
           Text(
             value,
-            style: TextStyle(fontWeight: FontWeight.w200),
+            style: const TextStyle(fontWeight: FontWeight.w200),
           ),
           Text(name),
         ]));
@@ -120,13 +120,16 @@ class _AtomicDetails extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          color: Colors.black.withOpacity(0.4),
-          child: _buildGeneralDescription(context),
-        ),
-      ],
+    return Padding(
+      padding: const EdgeInsets.all(8),
+      child: Column(
+        children: [
+          Container(
+            color: Colors.white.withOpacity(0.1),
+            child: _buildGeneralDescription(context),
+          ),
+        ],
+      ),
     );
   }
 
@@ -149,21 +152,3 @@ class _AtomicDetails extends StatelessWidget {
     );
   }
 }
-
-// class _AtomicInfoHeader extends StatelessWidget {
-//   final ElementData element;
-
-//   const _AtomicInfoHeader(this.element, {Key? key}) : super(key: key);
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return AspectRatio(
-//       aspectRatio: 3 / 1,
-//       child: Row(children: [
-//         Column(
-//           children: [Text(element.name)],
-//         ),
-//       ]),
-//     );
-//   }
-// }

@@ -94,7 +94,7 @@ class ElementData {
   String electronAffinity;
   String electronNegativity;
   String semanticElectronConfiguration;
-  List<double> ionisationEnergies;
+  List<String> ionisationEnergies;
 
   double? get meltingPoint => double.tryParse(meltingPointValue);
 
@@ -164,19 +164,19 @@ class ElementData {
         this.phase = json["phase"] as String,
         this.electronNegativity = (json["electronegativity_pauling"]).toString(),
         this.semanticElectronConfiguration = json["electron_configuration_semantic"] as String,
-        this.ionisationEnergies = (json["ionization_energies"] as List).cast<double>(),
+        this.ionisationEnergies = (json["ionization_energies"] as List).cast<String>(),
         this.summary = json["summary"] as String,
         this.electronAffinity = (json["electron_affinity"]).toString(),
         this.discoveredBy = (json["discovered_by"] ?? "Unknown") as String,
         this.molarHeat = json["molar_heat"].toString(),
         this.color = (json["color"] ?? "Uknown") as String,
-        this.density = json["density"].toString() as String,
+        this.density = json["density"].toString(),
         this.atomicMass = json["atomic_mass"].toStringAsPrecision(3) as String,
         this.name = json["name"] as String,
         this.x = (json['xpos'] as int) - 1,
         this.y = (json['ypos'] as int) - 1;
 
-  String toString() => "Z: ${atomicNumber}";
+  String toString() => "Z: $atomicNumber";
 }
 
 enum AtomicElementCategory {

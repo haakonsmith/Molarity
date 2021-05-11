@@ -5,9 +5,11 @@ class PeriodicTableScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.fromLTRB(30.0, 50.0, 30.0, 0),
-        child: PeriodicTable(),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(30.0, 50.0, 30.0, 0),
+          child: PeriodicTable(),
+        ),
       ),
     );
   }
