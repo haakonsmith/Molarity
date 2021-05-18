@@ -1,8 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_math_fork/flutter_math.dart';
 import 'package:molarity/BLoC/elements_data_bloc.dart';
 
 import '../theme.dart';
 import 'atomic_bohr_model.dart';
+
+final Map<String, Widget> atomicUnitMap = {
+  "Melting Point": Math.tex(r'K', textScaleFactor: 1.5, textStyle: const TextStyle(fontWeight: FontWeight.w200)),
+  "Boiling Point": Math.tex(r'K', textScaleFactor: 1.5, textStyle: const TextStyle(fontWeight: FontWeight.w200)),
+  "Density": Math.tex(r'gL^{-1}', textScaleFactor: 1.5, textStyle: const TextStyle(fontWeight: FontWeight.w200)),
+  "Phase": const SizedBox(width: 10, height: 10),
+  "Atomic Mass": Math.tex(r'u', textScaleFactor: 1.5, textStyle: const TextStyle(fontWeight: FontWeight.w200)),
+  "Molar Heat": Math.tex(r'Jmol^{-1}', textScaleFactor: 1.5, textStyle: const TextStyle(fontWeight: FontWeight.w200)),
+  "Electron Negativity": Math.tex(r'\text{Pauling scale}', textScaleFactor: 1.5, textStyle: const TextStyle(fontWeight: FontWeight.w200)),
+};
 
 class InfoBox extends StatefulWidget {
   final ElementData? element;
@@ -126,7 +137,7 @@ class _InfoDataRowState extends State<_InfoDataRow> {
               child: ElementalInfo(
                 widget.element,
                 intialValue: "Boiling Point",
-                intialGetter: () => widget.element.boilingPointValue,
+                intialGetter: (element) => element.boilingPointValue,
               ),
             ),
           ),
@@ -136,7 +147,7 @@ class _InfoDataRowState extends State<_InfoDataRow> {
               child: ElementalInfo(
                 widget.element,
                 intialValue: "Melting Point",
-                intialGetter: () => widget.element.meltingPointValue,
+                intialGetter: (element) => element.meltingPointValue,
               ),
             ),
           ),
@@ -146,7 +157,7 @@ class _InfoDataRowState extends State<_InfoDataRow> {
               child: ElementalInfo(
                 widget.element,
                 intialValue: "Phase",
-                intialGetter: () => widget.element.phase,
+                intialGetter: (element) => element.phase,
               ),
             ),
           ),
@@ -166,7 +177,7 @@ class _InfoDataRowState extends State<_InfoDataRow> {
 }
 
 class _ElementalAttributeDataWrapper {
-  final String Function()? infoGetter;
+  final String Function(ElementData)? infoGetter;
   final String? value;
 
   _ElementalAttributeDataWrapper(this.value, this.infoGetter);
@@ -174,7 +185,7 @@ class _ElementalAttributeDataWrapper {
 
 class ElementalInfo extends StatefulWidget {
   final ElementData elementData;
-  final String Function()? intialGetter;
+  final String Function(ElementData)? intialGetter;
   final String? intialValue;
 
   ElementalInfo(this.elementData, {this.intialGetter, this.intialValue, Key? key}) : super(key: key);
@@ -207,13 +218,25 @@ class _ElementalInfoState extends State<ElementalInfo> {
     );
 
     return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         dropDown,
-        FittedBox(
-          fit: BoxFit.fitWidth,
-          child: Text(
-            attribute.value.infoGetter!() == "null" ? "Unknown" : attribute.value.infoGetter!(),
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w200),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 0, 0, 0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              FittedBox(
+                fit: BoxFit.fitWidth,
+                child: SelectableText(
+                  attribute.value.infoGetter!(widget.elementData) == "null" ? "Unknown" : attribute.value.infoGetter!(widget.elementData),
+                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w200),
+                ),
+              ),
+              FittedBox(fit: BoxFit.fitHeight, child: atomicUnitMap[attribute.value.value]!)
+            ],
           ),
         )
       ],
@@ -263,36 +286,37 @@ class _ElementAttributeSelectorState extends State<_ElementAttributeSelector> {
           );
         }).toList(),
         onChanged: (value) {
-          String Function() infoGetter = () => "Oh no";
+          String Function(ElementData) infoGetter = (_) => "Oh no";
           switch (value) {
             case "Melting Point":
-              infoGetter = () => widget.element.meltingPointValue;
+              infoGetter = (ElementData element) => element.meltingPointValue;
               break;
             case "Boiling Point":
-              infoGetter = () => widget.element.boilingPointValue;
+              infoGetter = (element) => element.boilingPointValue;
               break;
             case "Phase":
-              infoGetter = () => widget.element.phase;
+              infoGetter = (element) => element.phase;
               break;
             case "Density":
-              infoGetter = () => widget.element.density;
+              infoGetter = (element) => element.density;
               break;
             case "Atomic Mass":
-              infoGetter = () => widget.element.atomicMass;
+              infoGetter = (element) => element.atomicMass;
               break;
             case "Molar Heat":
-              infoGetter = () => widget.element.molarHeat;
+              infoGetter = (element) => element.molarHeat;
               break;
             case "Electron Negativity":
-              infoGetter = () => widget.element.electronNegativity;
+              infoGetter = (element) => element.electronNegativity;
               break;
             // case "First Ionisation Energy":
-            //   infoGetter = () => widget.element.ionisationEnergies.isEmpty ? "Uknown" : widget.element.ionisationEnergies[0].toString();
+            //   infoGetter = (element) => element.ionisationEnergies.isEmpty ? "Uknown" : widget.element.ionisationEnergies[0].toString();
             //   break;
             case "Electron Configuration":
-              infoGetter = () => widget.element.semanticElectronConfiguration;
+              infoGetter = (element) => element.semanticElectronConfiguration;
               break;
           }
+
           widget.attribute.value = _ElementalAttributeDataWrapper(value, infoGetter);
 
           setState(() {});
