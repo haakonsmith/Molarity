@@ -21,7 +21,7 @@ class _PeriodicTableState extends State<PeriodicTable> {
   Widget build(BuildContext context) {
     final elementsBloc = ElementsBloc.of(context, listen: true);
 
-    return elementsBloc.loading ? Center(child: Text('Loading...')) : _buildGrid(context);
+    return elementsBloc.loading ? Center(child: CircularProgressIndicator()) : _buildGrid(context);
   }
 
   final ValueNotifier<ElementData?> trackedElement = ValueNotifier(null);
@@ -146,7 +146,7 @@ class _PeriodicTableTileState extends State<PeriodicTableTile> {
       onHover: (value) => widget.onHover!(widget.element),
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
-        onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => AtomicInfoScreen(widget.element))),
+        onTap: () => Navigator.of(context).push(_createRoute()),
         onSecondaryTap: () => widget.addCalcElement!(widget.element),
         child: Container(
           color: tileColor,
@@ -185,6 +185,12 @@ class _PeriodicTableTileState extends State<PeriodicTableTile> {
           ),
         ),
       ),
+    );
+  }
+
+  Route _createRoute() {
+    return MaterialPageRoute(
+      builder: (context) => AtomicInfoScreen(widget.element),
     );
   }
 }

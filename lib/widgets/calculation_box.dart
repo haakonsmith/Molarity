@@ -52,6 +52,7 @@ class _MolarMassBoxState extends State<MolarMassBox> {
       padding: const EdgeInsets.fromLTRB(8, 8, 8, 4),
       child: Container(
         color: Colors.white.withOpacity(0.1),
+        padding: const EdgeInsets.all(8),
         child: Stack(children: [
           Positioned(
             top: 0,

@@ -71,8 +71,12 @@ class _InfoBoxState extends State<InfoBox> {
           child: Padding(
             padding: const EdgeInsets.all(8.0),
             child: Row(children: [
-              Center(child: IconWithText(Icons.library_add, size: iconSize, header: "Right Click", text: "to mass compounds")),
-              Expanded(child: IconWithText(Icons.poll, size: iconSize, header: "Switch Views", text: "to explore the rest of the app")),
+              Expanded(
+                child: IconWithText(Icons.library_add, size: iconSize, header: "Right Click", text: "to mass compounds"),
+              ),
+              Expanded(
+                child: IconWithText(Icons.poll, size: iconSize, header: "Switch Views", text: "to explore the rest of the app"),
+              ),
               Expanded(child: IconWithText(Icons.assignment, size: iconSize, header: "Click Element", text: "to naviage to a detailed description")),
               Expanded(child: AtomicBohrModel(ElementsBloc.of(context).getElementBySymbol('pt'))),
             ]),
@@ -176,11 +180,11 @@ class _InfoDataRowState extends State<_InfoDataRow> {
   }
 }
 
-class _ElementalAttributeDataWrapper {
+class ElementalAttributeDataWrapper {
   final String Function(ElementData)? infoGetter;
   final String? value;
 
-  _ElementalAttributeDataWrapper(this.value, this.infoGetter);
+  ElementalAttributeDataWrapper(this.value, this.infoGetter);
 }
 
 class ElementalInfo extends StatefulWidget {
@@ -195,9 +199,9 @@ class ElementalInfo extends StatefulWidget {
 }
 
 class _ElementalInfoState extends State<ElementalInfo> {
-  final ValueNotifier<_ElementalAttributeDataWrapper> attribute;
+  final ValueNotifier<ElementalAttributeDataWrapper> attribute;
 
-  _ElementalInfoState({infoGetter, displayedValue}) : this.attribute = ValueNotifier(_ElementalAttributeDataWrapper(displayedValue, infoGetter)) {
+  _ElementalInfoState({infoGetter, displayedValue}) : this.attribute = ValueNotifier(ElementalAttributeDataWrapper(displayedValue, infoGetter)) {
     this.attribute.addListener(() {
       setState(() {});
     });
@@ -212,9 +216,8 @@ class _ElementalInfoState extends State<ElementalInfo> {
 
   @override
   Widget build(BuildContext context) {
-    var dropDown = _ElementAttributeSelector(
+    var dropDown = ElementAttributeSelector(
       attribute: attribute,
-      element: widget.elementData,
     );
 
     return Column(
@@ -244,25 +247,27 @@ class _ElementalInfoState extends State<ElementalInfo> {
   }
 }
 
-class _ElementAttributeSelector extends StatefulWidget {
-  const _ElementAttributeSelector({
+class ElementAttributeSelector extends StatefulWidget {
+  const ElementAttributeSelector({
     required this.attribute,
     Key? key,
-    required this.element,
+    this.backgroundColor = Colors.transparent,
   }) : super(key: key);
 
-  final ElementData element;
-  final ValueNotifier<_ElementalAttributeDataWrapper> attribute;
+  final ValueNotifier<ElementalAttributeDataWrapper> attribute;
+
+  final backgroundColor;
 
   @override
   State<StatefulWidget> createState() => _ElementAttributeSelectorState();
 }
 
-class _ElementAttributeSelectorState extends State<_ElementAttributeSelector> {
+class _ElementAttributeSelectorState extends State<ElementAttributeSelector> {
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(8),
+      color: widget.backgroundColor,
       child: DropdownButton<String>(
         // underline: Container(),
         value: widget.attribute.value.value,
@@ -317,7 +322,7 @@ class _ElementAttributeSelectorState extends State<_ElementAttributeSelector> {
               break;
           }
 
-          widget.attribute.value = _ElementalAttributeDataWrapper(value, infoGetter);
+          widget.attribute.value = ElementalAttributeDataWrapper(value, infoGetter);
 
           setState(() {});
         },
@@ -343,8 +348,14 @@ class IconWithText extends StatelessWidget {
         child: Column(
           children: [
             Icon(icon, size: size, color: Colors.white70),
-            Text(header, textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold)),
-            Text(text, textAlign: TextAlign.center),
+            Flexible(child: Text(header, textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold))),
+            Flexible(
+              child: Text(
+                text,
+                textAlign: TextAlign.center,
+                maxLines: 2,
+              ),
+            )
           ],
         ),
       ),

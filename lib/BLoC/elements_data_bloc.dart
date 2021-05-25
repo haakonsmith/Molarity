@@ -5,6 +5,8 @@ import 'package:flutter/widgets.dart';
 import 'package:molarity/widgets/periodic_table.dart';
 import 'package:provider/provider.dart';
 
+import 'package:fl_chart/fl_chart.dart';
+
 class ElementsBloc extends ChangeNotifier {
   static Future<String> getTemplateJsonString() async {
     return await rootBundle.loadString(path);
@@ -54,6 +56,10 @@ class ElementsBloc extends ChangeNotifier {
 
   List<ElementData> get elements {
     return !_loading ? _elements : [];
+  }
+
+  List<FlSpot> getSpotData(double Function(ElementData) getter) {
+    return elements.mapIndexed((e, i) => FlSpot(i.toDouble(), getter(e))).toList();
   }
 
   ElementData getElementBySymbol(String symbol) => _elements.firstWhere((element) => element.symbol.toLowerCase() == symbol.toLowerCase());
@@ -190,4 +196,17 @@ enum AtomicElementCategory {
   postTransitionMetal,
   transitionMetal,
   unknown,
+}
+
+extension ExtendedIterable<E> on Iterable<E> {
+  /// Like Iterable<T>.map but callback have index as second argument
+  Iterable<T> mapIndexed<T>(T Function(E e, int i) f) {
+    var i = 0;
+    return map((e) => f(e, i++));
+  }
+
+  void forEachIndexed(void Function(E e, int i) f) {
+    var i = 0;
+    forEach((e) => f(e, i++));
+  }
 }
