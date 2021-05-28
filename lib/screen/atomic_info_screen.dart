@@ -11,8 +11,6 @@ import 'package:molarity/widgets/info_box.dart';
 
 import '../theme.dart';
 
-// TODO FIX state recreation of trends widget
-
 class AtomicInfoScreen extends StatelessWidget {
   final ElementData element;
 
@@ -92,10 +90,10 @@ class AtomicInfoScreen extends StatelessWidget {
       columnGap: 1,
       rowGap: 1,
       children: [
-        AspectRatio(aspectRatio: 1 / 1.5, child: _AtomicInfoPreview(element, key: _trendKey)).inGridArea('preview'),
+        AspectRatio(aspectRatio: 1 / 1.5, child: _AtomicInfoPreview(element)).inGridArea('preview'),
         // _AtomicInfoPreview(element).inGridArea('trend'),
         _AtomicDetails(element).inGridArea('info'),
-        AtomicTrends().inGridArea('trend'),
+        AtomicTrends(element: element, key: _trendKey).inGridArea('trend'),
       ],
     ));
   }
@@ -208,7 +206,7 @@ class _AtomicDetails extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
               )),
-          Text(element.summary),
+          SelectableText(element.summary),
         ],
       ),
     );

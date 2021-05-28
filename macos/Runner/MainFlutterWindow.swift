@@ -10,6 +10,7 @@ class MainFlutterWindow: NSWindow {
     // self.titleVisibility = .hidden
     self.styleMask.insert(NSWindow.StyleMask.fullSizeContentView)
     self.setFrame(windowFrame, display: true)
+    self.minSize = NSSize(width: 400, height: 300)
 
     RegisterGeneratedPlugins(registry: flutterViewController)
 
