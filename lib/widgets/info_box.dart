@@ -5,15 +5,60 @@ import 'package:molarity/BLoC/elements_data_bloc.dart';
 import '../theme.dart';
 import 'atomic_bohr_model.dart';
 
-final Map<String, Widget> atomicUnitMap = {
-  "Melting Point": Math.tex(r'K', textScaleFactor: 1.5, textStyle: const TextStyle(fontWeight: FontWeight.w200)),
-  "Boiling Point": Math.tex(r'K', textScaleFactor: 1.5, textStyle: const TextStyle(fontWeight: FontWeight.w200)),
-  "Density": Math.tex(r'gL^{-1}', textScaleFactor: 1.5, textStyle: const TextStyle(fontWeight: FontWeight.w200)),
-  "Phase": const SizedBox(width: 10, height: 10),
-  "Atomic Mass": Math.tex(r'u', textScaleFactor: 1.5, textStyle: const TextStyle(fontWeight: FontWeight.w200)),
-  "Molar Heat": Math.tex(r'Jmol^{-1}', textScaleFactor: 1.5, textStyle: const TextStyle(fontWeight: FontWeight.w200)),
-  "Electron Negativity": Math.tex(r'\text{Pauling scale}', textScaleFactor: 1.5, textStyle: const TextStyle(fontWeight: FontWeight.w200)),
-};
+class AtomicUnit extends StatelessWidget {
+  final double fontSize;
+
+  const AtomicUnit(this.value, {Key? key, this.fontSize = 24}) : super(key: key);
+
+  final String value;
+
+  // final Map<String, Widget> atomicUnitMap = {
+  //   "Melting Point": Math.tex(r'K', textStyle: const TextStyle(fontSize: 24, fontWeight: FontWeight.w200)),
+  //   "Boiling Point": Math.tex(r'K', textStyle: const TextStyle(fontSize: 24, fontWeight: FontWeight.w200)),
+  //   "Density": Math.tex(r'gL^{-1}', textStyle: const TextStyle(fontWeight: FontWeight.w200)),
+  //   "Phase": const SizedBox(width: 10, height: 10),
+  //   "Atomic Mass": Math.tex(r'u', textStyle: const TextStyle(fontSize: 24, fontWeight: FontWeight.w200)),
+  //   "Molar Heat": Math.tex(r'Jmol^{-1}', textStyle: const TextStyle(fontSize: 24, fontWeight: FontWeight.w200)),
+  //   "Electron Negativity": Math.tex(r'\text{Pauling scale}', textStyle: const TextStyle(fontSize: 24, fontWeight: FontWeight.w200)),
+  //   "Electron Configuration": const SizedBox(width: 10, height: 10),
+  // };
+
+  @override
+  Widget build(BuildContext context) {
+    return _unitSwitch();
+  }
+
+  Widget _unitSwitch() {
+    switch (value) {
+      case "Melting Point":
+        return Math.tex(r'K', textStyle: TextStyle(fontSize: fontSize, fontWeight: FontWeight.w200));
+
+      case "Boiling Point":
+        return Math.tex(r'K', textStyle: TextStyle(fontSize: fontSize, fontWeight: FontWeight.w200));
+
+      case "Density":
+        return Math.tex(r'gL^{-1}', textStyle: const TextStyle(fontWeight: FontWeight.w200));
+
+      case "Phase":
+        return const SizedBox(width: 10, height: 10);
+
+      case "Atomic Mass":
+        return Math.tex(r'u', textStyle: TextStyle(fontSize: fontSize, fontWeight: FontWeight.w200));
+
+      case "Molar Heat":
+        return Math.tex(r'Jmol^{-1}', textStyle: TextStyle(fontSize: fontSize, fontWeight: FontWeight.w200));
+
+      case "Electron Negativity":
+        return Math.tex(r'\text{Pauling scale}', textStyle: TextStyle(fontSize: fontSize, fontWeight: FontWeight.w200));
+
+      case "Electron Configuration":
+        return const SizedBox(width: 10, height: 10);
+
+      default:
+        return const SizedBox(width: 10, height: 10);
+    }
+  }
+}
 
 class InfoBox extends StatefulWidget {
   final ElementData? element;
@@ -223,6 +268,7 @@ class _ElementalInfoState extends State<ElementalInfo> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.max,
       children: [
         dropDown,
         Padding(
@@ -230,18 +276,16 @@ class _ElementalInfoState extends State<ElementalInfo> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              FittedBox(
-                fit: BoxFit.fitWidth,
-                child: SelectableText(
-                  attribute.value.infoGetter!(widget.elementData) == "null" ? "Unknown" : attribute.value.infoGetter!(widget.elementData),
-                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w200),
-                ),
+              SelectableText(
+                attribute.value.infoGetter!(widget.elementData) == "null" ? "Unknown" : attribute.value.infoGetter!(widget.elementData),
+                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w200),
               ),
-              FittedBox(fit: BoxFit.fitHeight, child: atomicUnitMap[attribute.value.value]!)
+              AtomicUnit(attribute.value.value!)
             ],
           ),
-        )
+        ),
       ],
     );
   }
@@ -251,10 +295,24 @@ class ElementAttributeSelector extends StatefulWidget {
   const ElementAttributeSelector({
     required this.attribute,
     Key? key,
+    this.selectables = defualtSelectables,
     this.backgroundColor = Colors.transparent,
   }) : super(key: key);
 
   final ValueNotifier<ElementalAttributeDataWrapper> attribute;
+  final List<String> selectables;
+
+  static const defualtSelectables = const <String>[
+    'Melting Point',
+    'Boiling Point',
+    'Phase',
+    'Density',
+    'Atomic Mass',
+    'Molar Heat',
+    'Electron Negativity',
+    // 'First Ionisation Energy',
+    'Electron Configuration',
+  ];
 
   final backgroundColor;
 
@@ -271,17 +329,7 @@ class _ElementAttributeSelectorState extends State<ElementAttributeSelector> {
       child: DropdownButton<String>(
         // underline: Container(),
         value: widget.attribute.value.value,
-        items: <String>[
-          'Melting Point',
-          'Boiling Point',
-          'Phase',
-          'Density',
-          'Atomic Mass',
-          'Molar Heat',
-          'Electron Negativity',
-          // 'First Ionisation Energy',
-          'Electron Configuration',
-        ].map((String value) {
+        items: widget.selectables.map((String value) {
           return DropdownMenuItem<String>(
             value: value,
             child: Text(
@@ -318,7 +366,17 @@ class _ElementAttributeSelectorState extends State<ElementAttributeSelector> {
             //   infoGetter = (element) => element.ionisationEnergies.isEmpty ? "Uknown" : widget.element.ionisationEnergies[0].toString();
             //   break;
             case "Electron Configuration":
-              infoGetter = (element) => element.semanticElectronConfiguration;
+              infoGetter = (element) {
+                String electronConfig = '';
+                element.semanticElectronConfiguration.split(' ').forEachIndexed((element, i) {
+                  if (i == 3)
+                    electronConfig += '\n' + element;
+                  else
+                    electronConfig += ' ' + element;
+                });
+
+                return electronConfig.trim();
+              };
               break;
           }
 

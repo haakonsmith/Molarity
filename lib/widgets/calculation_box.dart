@@ -33,6 +33,19 @@ class Compound {
     rawCompound.update(element, (value) => value + 1, ifAbsent: () => 1);
     return this;
   }
+
+  String toTex() {
+    String tex = "";
+
+    rawCompound.forEach((key, value) {
+      if (value == 1)
+        tex += "${key.symbol}";
+      else
+        tex += "${key.symbol}_$value";
+    });
+
+    return tex;
+  }
 }
 
 class MolarMassBox extends StatefulWidget {
@@ -48,16 +61,29 @@ class MolarMassBox extends StatefulWidget {
 class _MolarMassBoxState extends State<MolarMassBox> {
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+
+    print(screenSize.width / 80);
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(8, 8, 8, 4),
       child: Container(
         color: Colors.white.withOpacity(0.1),
         padding: const EdgeInsets.all(8),
         child: Stack(children: [
-          Positioned(
-            top: 0,
-            right: 0,
-            child: IconButton(onPressed: widget.onClear!, icon: Icon(Icons.cancel_presentation_sharp)),
+          Align(
+            alignment: Alignment.topRight,
+            child: IconButton(
+              onPressed: widget.onClear!,
+              icon: Icon(
+                Icons.close,
+                // size: screenSize.width / 40,
+              ),
+              padding: const EdgeInsets.all(0),
+              iconSize: screenSize.width / 40,
+              splashRadius: screenSize.width / 40,
+              constraints: BoxConstraints.tightFor(width: screenSize.width / 20, height: screenSize.width / 20),
+            ),
           ),
           Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -65,11 +91,27 @@ class _MolarMassBoxState extends State<MolarMassBox> {
               Expanded(
                   child: Text(
                 _generateText(),
-                style: const TextStyle(fontSize: 20),
+                style: TextStyle(fontSize: screenSize.width / 80),
                 maxLines: 3,
               )),
               Expanded(
-                child: Row(children: [Spacer(), Text(widget.compound.molarMass.toStringAsFixed(2)), Math.tex(r"molg^{-1}")]),
+                child: Row(
+                  children: [
+                    Math.tex(
+                      widget.compound.toTex(),
+                      textScaleFactor: screenSize.width / 1000,
+                    ),
+                    Spacer(),
+                    Text(
+                      widget.compound.molarMass.toStringAsFixed(2),
+                      textScaleFactor: screenSize.width / 1000,
+                    ),
+                    Math.tex(
+                      r"molg^{-1}",
+                      textScaleFactor: screenSize.width / 1000,
+                    ),
+                  ],
+                ),
               )
             ],
           ),

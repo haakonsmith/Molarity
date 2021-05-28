@@ -8,7 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 
 class ElementsBloc extends ChangeNotifier {
-  static Future<String> getTemplateJsonString() async {
+  static Future<String> getElementsJsonString() async {
     return await rootBundle.loadString(path);
   }
 
@@ -20,19 +20,15 @@ class ElementsBloc extends ChangeNotifier {
 
   late List<ElementData> _elements;
 
-  static Future<List<ElementData>> _loadTemplates() async {
-    String jsonString = await getTemplateJsonString();
+  static Future<List<ElementData>> _loadElements() async {
+    String jsonString = await getElementsJsonString();
     var json = jsonDecode(jsonString);
 
     assert(json is List);
 
     List<ElementData> elements = [];
 
-    // print(json);
-    // print(templatesJson);
     elements.addAll(json.map((d) => ElementData.fromJson(d)).toList().cast<ElementData>());
-
-    // print(templates.map((e) => e.toJson()));
 
     return elements;
   }
@@ -41,7 +37,7 @@ class ElementsBloc extends ChangeNotifier {
     _loading = true;
 
     // set defaults
-    _elements = await _loadTemplates();
+    _elements = await _loadElements();
 
     _loading = false;
 
@@ -58,11 +54,38 @@ class ElementsBloc extends ChangeNotifier {
     return !_loading ? _elements : [];
   }
 
-  List<FlSpot> getSpotData(double Function(ElementData) getter) {
-    return elements.mapIndexed((e, i) => FlSpot(i.toDouble(), getter(e))).toList();
+  List<ElementData> getElements({bool Function(ElementData)? ignoreThisValue}) {
+    if (_loading) return [];
+
+    List<ElementData> newElements = [];
+
+    for (var i = 0; i < elements.length; i++) {
+      bool toBeAdded = !(ignoreThisValue ?? (_) => false)(elements[i]);
+
+      if (toBeAdded) {
+        newElements.add(elements[i]);
+      }
+    }
+
+    return newElements;
+  }
+
+  List<FlSpot> getSpotData(double? Function(ElementData) getter, {bool removeNullValues: false}) {
+    List<FlSpot> spotData = [];
+
+    for (var i = 0; i < elements.length; i++) {
+      final gotten = getter(elements[i]);
+
+      if (removeNullValues && gotten == null) continue;
+
+      spotData.add(FlSpot(i.toDouble() + 1, gotten ?? 0));
+    }
+
+    return spotData;
   }
 
   ElementData getElementBySymbol(String symbol) => _elements.firstWhere((element) => element.symbol.toLowerCase() == symbol.toLowerCase());
+  ElementData getElementByAtomicNumber(int atomicNumber) => _elements.firstWhere((element) => element.atomicNumber == atomicNumber);
 
   List<Widget> get elementsTable {
     List<Widget> elements = [];

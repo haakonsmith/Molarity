@@ -11,10 +11,14 @@ import 'package:molarity/widgets/info_box.dart';
 
 import '../theme.dart';
 
+// TODO FIX state recreation of trends widget
+
 class AtomicInfoScreen extends StatelessWidget {
   final ElementData element;
 
-  const AtomicInfoScreen(this.element, {Key? key}) : super(key: key);
+  AtomicInfoScreen(this.element, {Key? key}) : super(key: key);
+
+  final _trendKey = GlobalKey();
 
   @override
   Widget build(BuildContext context) {
@@ -45,10 +49,13 @@ class AtomicInfoScreen extends StatelessWidget {
       ),
     );
     return Scaffold(
-        appBar: Platform.isMacOS ? preferredSize : appBar,
-        body: SingleChildScrollView(child: LayoutBuilder(builder: (context, constraints) {
+      appBar: Platform.isMacOS ? preferredSize : appBar,
+      body: SingleChildScrollView(
+        child: LayoutBuilder(builder: (context, constraints) {
           return Padding(padding: const EdgeInsets.all(8), child: constraints.maxWidth > 940 ? _buildLargeScreen(context) : _buildSmallScreen(context));
-        })));
+        }),
+      ),
+    );
   }
 
   Widget _buildSmallScreen(BuildContext context) {
@@ -67,7 +74,7 @@ class AtomicInfoScreen extends StatelessWidget {
       children: [
         AspectRatio(aspectRatio: 2 / 1.5, child: _AtomicInfoPreview(element)).inGridArea('preview'),
         _AtomicDetails(element).inGridArea('info'),
-        AspectRatio(aspectRatio: 2 / 1.5, child: AtomicTrends()).inGridArea('trend'),
+        AspectRatio(aspectRatio: 2 / 1.5, child: AtomicTrends(element: element, key: _trendKey)).inGridArea('trend'),
       ],
     ));
   }
@@ -85,7 +92,7 @@ class AtomicInfoScreen extends StatelessWidget {
       columnGap: 1,
       rowGap: 1,
       children: [
-        AspectRatio(aspectRatio: 1 / 1.5, child: _AtomicInfoPreview(element)).inGridArea('preview'),
+        AspectRatio(aspectRatio: 1 / 1.5, child: _AtomicInfoPreview(element, key: _trendKey)).inGridArea('preview'),
         // _AtomicInfoPreview(element).inGridArea('trend'),
         _AtomicDetails(element).inGridArea('info'),
         AtomicTrends().inGridArea('trend'),
@@ -209,74 +216,174 @@ class _AtomicDetails extends StatelessWidget {
 }
 
 class AtomicTrends extends StatefulWidget {
-  AtomicTrends({Key? key}) : super(key: key);
+  final ElementData? element;
+
+  const AtomicTrends({this.element, Key? key}) : super(key: key);
+
+  static const colorMap = {
+    "Boiling Point": Color.fromRGBO(252, 69, 56, 1),
+    "Melting Point": Color.fromRGBO(252, 88, 56, 1),
+    "Density": Color.fromRGBO(88, 56, 252, 1),
+    "Atomic Mass": Color.fromRGBO(72, 252, 56, 1),
+    "Molar Heat": Color.fromRGBO(252, 56, 118, 1),
+    "Electron Negativity": Color.fromRGBO(252, 245, 56, 1),
+  };
 
   @override
   _AtomicTrendsState createState() => _AtomicTrendsState();
 }
 
 class _AtomicTrendsState extends State<AtomicTrends> {
-  final ValueNotifier<ElementalAttributeDataWrapper> attribute;
+  late final ValueNotifier<ElementalAttributeDataWrapper> attribute;
+  late final ValueNotifier<bool> showAll;
 
-  _AtomicTrendsState() : this.attribute = ValueNotifier(ElementalAttributeDataWrapper("Density", (e) => e.density)) {
-    this.attribute.addListener(() {
-      setState(() {});
-    });
+  @override
+  void initState() {
+    this.attribute = ValueNotifier(ElementalAttributeDataWrapper("Density", (e) => e.density));
+    this.showAll = ValueNotifier(false);
+
+    print("STOPPPPP");
+
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     final elementsBloc = ElementsBloc.of(context, listen: true);
 
-    final dropdown = Positioned(
-      left: 60,
-      child: ElementAttributeSelector(
-        attribute: attribute,
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+    final dropdown = ElementAttributeSelector(
+      attribute: attribute,
+      selectables: ['Melting Point', 'Boiling Point', 'Density', 'Atomic Mass', 'Molar Heat', 'Electron Negativity'],
+      // backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+    );
+
+    final checkButton = Checkbox(
+        value: !showAll.value,
+        activeColor: Theme.of(context).scaffoldBackgroundColor,
+        onChanged: (val) => setState(() {
+              showAll.value = !val!;
+            }));
+
+    final controlStrip = SizedBox(
+      height: 55,
+      child: Row(
+        children: [
+          checkButton,
+          Text(
+            "Remove Unknown Values",
+            style: const TextStyle(fontWeight: FontWeight.w200, color: Colors.white54),
+          ),
+          Center(child: dropdown),
+          Spacer(),
+          Text("Unit: "),
+          ValueListenableBuilder(
+              valueListenable: attribute,
+              builder: (context, ElementalAttributeDataWrapper value, child) => Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 5, 0, 0),
+                  child: AtomicUnit(
+                    value.value!,
+                    fontSize: 14,
+                  )))
+        ],
       ),
     );
 
-    final layers = Stack(
-      children: [
-        ValueListenableBuilder(
+    final graph = ValueListenableBuilder(
+      valueListenable: showAll,
+      builder: (context, bool showAll, child) {
+        final shouldRemove = !showAll;
+        return ValueListenableBuilder(
             valueListenable: attribute,
             builder: (context, ElementalAttributeDataWrapper attribute, child) {
-              final yMax = elementsBloc.elements.map<double>((e) => double.tryParse(attribute.infoGetter!(e)) ?? 0).reduce((e1, e2) => max(e1, e2));
+              final elementsData = elementsBloc.getElements(ignoreThisValue: (e) => shouldRemove && (double.tryParse(attribute.infoGetter!(e)) == null));
+
+              final yMax = elementsData.map<double>((e) => double.tryParse(attribute.infoGetter!(e)) ?? 0).reduce((e1, e2) => max(e1, e2));
+
+              final annotationX = elementsData.indexOf(widget.element ?? elementsBloc.getElementByAtomicNumber(1)).toDouble();
 
               return LineChart(
                 LineChartData(
+                  rangeAnnotations: RangeAnnotations(verticalRangeAnnotations: [
+                    if (widget.element != null) VerticalRangeAnnotation(x1: annotationX, x2: annotationX + .3, color: AtomicTrends.colorMap[attribute.value]!.withRed(200)),
+                  ]),
                   lineTouchData: LineTouchData(
-                    enabled: true,
-                  ),
+                      enabled: true,
+                      getTouchedSpotIndicator: (LineChartBarData barData, List<int> indicators) {
+                        return indicators.map((int index) {
+                          /// Indicator Line
+                          var lineColor = barData.colors[0];
+                          if (barData.dotData.show) {
+                            lineColor = AtomicTrends.colorMap[attribute.value]!;
+                          }
+                          const lineStrokeWidth = 2.0;
+                          final flLine = FlLine(color: lineColor, strokeWidth: lineStrokeWidth);
+
+                          var dotSize = 10.0;
+                          if (barData.dotData.show) {
+                            dotSize = 4.0 * 1.8;
+                          }
+
+                          final dotData = FlDotData(
+                              getDotPainter: (spot, percent, bar, index) => FlDotCirclePainter(
+                                    color: AtomicTrends.colorMap[attribute.value]!,
+                                    strokeWidth: 0,
+                                  ));
+
+                          return TouchedSpotIndicatorData(flLine, dotData);
+                        }).toList();
+                      },
+                      touchTooltipData: LineTouchTooltipData(
+                        tooltipBgColor: Theme.of(context).scaffoldBackgroundColor,
+                        getTooltipItems: (touchedSpots) => touchedSpots.map((LineBarSpot touchedSpot) {
+                          final textStyle = TextStyle(
+                            color: touchedSpot.bar.colors[0],
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          );
+                          return LineTooltipItem(
+                            touchedSpot.y.toString() + " – " + elementsData[touchedSpot.x.toInt() - 1].name,
+                            textStyle,
+                          );
+                        }).toList(),
+                      )),
                   lineBarsData: [
                     LineChartBarData(
-                      spots: elementsBloc.getSpotData((e) {
-                        String val = e.density == "null" ? "0" : e.density;
-                        return double.tryParse(attribute.infoGetter!(e)) ?? 0;
-                      }),
+                      spots: elementsData.mapIndexed((e, i) => FlSpot(i.toDouble() + 1, double.tryParse(attribute.infoGetter!(e)) ?? 0)).toList(),
                       isCurved: false,
                       barWidth: 2,
-                      colors: [
-                        Colors.red,
-                      ],
+                      belowBarData: BarAreaData(show: true, colors: [AtomicTrends.colorMap[attribute.value]!.withOpacity(0.4)]),
+                      colors: [AtomicTrends.colorMap[attribute.value]!],
                       dotData: FlDotData(
                         show: false,
                       ),
                     ),
                   ],
                   minY: 0,
+                  minX: 1,
+                  maxX: elementsData.length.toDouble(),
                   maxY: yMax + yMax / 10,
                   titlesData: FlTitlesData(
                     bottomTitles: SideTitles(
                         showTitles: true,
-                        reservedSize: 5,
-                        rotateAngle: 60,
-                        getTextStyles: (i) => const TextStyle(fontSize: 6),
+                        reservedSize: 6,
+                        rotateAngle: 70,
+                        interval: 1,
+                        getTextStyles: (i) => TextStyle(fontSize: MediaQuery.of(context).size.width / 200),
                         getTitles: (value) {
-                          return elementsBloc.elements[value.toInt()].name;
+                          // print(value);
+                          String title;
+
+                          // print(elementsData);
+
+                          try {
+                            title = elementsData.elementAt(value.toInt() - 1).name;
+                          } catch (execption) {
+                            title = "Error";
+                          }
+                          return title;
                         }),
                     leftTitles: SideTitles(
-                      interval: (yMax / 8).floorToDouble(),
+                      interval: (yMax / 8).floorToDouble() <= 2 ? 1 : (yMax / 8).floorToDouble(),
                       showTitles: true,
                       getTextStyles: (i) => const TextStyle(fontSize: 8),
                       getTitles: (value) {
@@ -291,17 +398,24 @@ class _AtomicTrendsState extends State<AtomicTrends> {
                       titleText: attribute.value,
                       margin: 10,
                     ),
-                    bottomTitle: AxisTitle(showTitle: true, margin: 10, titleText: 'Element', textAlign: TextAlign.right),
+                    bottomTitle: AxisTitle(
+                      showTitle: true,
+                      margin: 30,
+                      titleText: 'Element',
+                      textStyle: const TextStyle(fontSize: 12),
+                      textAlign: TextAlign.center,
+                    ),
                   ),
                   gridData: FlGridData(
                     show: true,
-                    horizontalInterval: (yMax / 8).floorToDouble(),
+                    horizontalInterval: (yMax / 8).floorToDouble() <= 2 ? 1 : (yMax / 8).floorToDouble(),
                   ),
                 ),
+                // swapAnimationDuration: const Duration(milliseconds: 500),
+                // swapAnimationCurve: Curves.easeInExpo,
               );
-            }),
-        dropdown,
-      ],
+            });
+      },
     );
 
     return Padding(
@@ -309,11 +423,16 @@ class _AtomicTrendsState extends State<AtomicTrends> {
       child: Container(
         padding: const EdgeInsets.all(15),
         color: Colors.white.withOpacity(0.1),
-        child: layers,
+        child: Column(children: [
+          controlStrip,
+          Expanded(flex: 10, child: graph),
+        ]),
       ),
     );
   }
 }
+
+class AtomicUnitMap {}
 
 // class TrendSelector extends StatefulWidget {
 //   TrendSelector({Key? key}) : super(key: key);
