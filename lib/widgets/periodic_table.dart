@@ -142,46 +142,49 @@ class _PeriodicTableTileState extends State<PeriodicTableTile> {
 
   @override
   Widget build(BuildContext context) {
+    var content = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          flex: 3,
+          child: FittedBox(
+            fit: BoxFit.fitHeight,
+            child: _TileSub(widget.element.atomicNumber.toString()),
+          ),
+        ),
+        Expanded(
+          flex: 5,
+          child: Center(
+            child: FittedBox(
+              fit: BoxFit.fitHeight,
+              child: _TileSymbol(widget.element.symbol),
+            ),
+          ),
+        ),
+        Expanded(
+          flex: 3,
+          child: FittedBox(
+            fit: BoxFit.fitHeight,
+            child: _TileSub(widget.element.symbol),
+          ),
+        ),
+        // Expanded(child: Center(child: elementTitle)),
+      ],
+    );
+
     return MouseRegion(
       onHover: (value) => widget.onHover!(widget.element),
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
         onTap: () => Navigator.of(context).push(_createRoute()),
         onSecondaryTap: () => widget.addCalcElement!(widget.element),
-        child: Container(
+        child: Card(
           color: tileColor,
-          padding: const EdgeInsets.all(1),
+          elevation: 10,
+          margin: const EdgeInsets.all(1),
           child: DefaultTextStyle.merge(
             style: TextStyle(color: Colors.white60.withOpacity(0.8)),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  flex: 3,
-                  child: FittedBox(
-                    fit: BoxFit.fitHeight,
-                    child: _TileSub(widget.element.atomicNumber.toString()),
-                  ),
-                ),
-                Expanded(
-                  flex: 5,
-                  child: Center(
-                    child: FittedBox(
-                      fit: BoxFit.fitHeight,
-                      child: _TileSymbol(widget.element.symbol),
-                    ),
-                  ),
-                ),
-                Expanded(
-                  flex: 3,
-                  child: FittedBox(
-                    fit: BoxFit.fitHeight,
-                    child: _TileSub(widget.element.symbol),
-                  ),
-                ),
-                // Expanded(child: Center(child: elementTitle)),
-              ],
-            ),
+            child: content,
           ),
         ),
       ),

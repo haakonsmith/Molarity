@@ -106,70 +106,68 @@ class _AtomicInfoPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-        padding: const EdgeInsets.all(8),
-        child: Container(
-          width: 200,
-          color: Colors.white.withOpacity(0.1),
-          child: Column(mainAxisAlignment: MainAxisAlignment.start, children: [
-            Expanded(
-              flex: 6,
-              child: FittedBox(fit: BoxFit.contain, child: Container(width: 200, height: 300, child: AtomicBohrModel(element))),
+    return Card(
+      // width: 200,
+      margin: const EdgeInsets.all(15),
+      // color: Colors.white.withOpacity(0.1),
+      child: Column(mainAxisAlignment: MainAxisAlignment.start, children: [
+        Expanded(
+          flex: 6,
+          child: FittedBox(fit: BoxFit.contain, child: Container(width: 200, height: 300, child: AtomicBohrModel(element))),
+        ),
+        Flexible(
+          flex: 2,
+          fit: FlexFit.tight,
+          child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            FittedBox(
+              fit: BoxFit.fitWidth,
+              child: _buildAttribute(context, "Atomic Number", element.atomicNumber.toString()),
             ),
-            Flexible(
-              flex: 2,
-              fit: FlexFit.tight,
-              child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            FittedBox(
+              fit: BoxFit.fitWidth,
+              child: _buildAttribute(context, "Atomic Mass", element.atomicMass),
+            ),
+          ]),
+        ),
+        Flexible(
+            flex: 2,
+            fit: FlexFit.tight,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                FittedBox(
+                  fit: BoxFit.fitWidth,
+                  child: _buildAttribute(context, "Electron Configuration", element.semanticElectronConfiguration),
+                ),
                 FittedBox(
                   fit: BoxFit.fitWidth,
                   child: _buildAttribute(context, "Atomic Number", element.atomicNumber.toString()),
                 ),
-                FittedBox(
-                  fit: BoxFit.fitWidth,
-                  child: _buildAttribute(context, "Atomic Mass", element.atomicMass),
-                ),
-              ]),
-            ),
-            Flexible(
-                flex: 2,
-                fit: FlexFit.tight,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  mainAxisSize: MainAxisSize.max,
-                  children: [
-                    FittedBox(
-                      fit: BoxFit.fitWidth,
-                      child: _buildAttribute(context, "Electron Configuration", element.semanticElectronConfiguration),
-                    ),
-                    FittedBox(
-                      fit: BoxFit.fitWidth,
-                      child: _buildAttribute(context, "Atomic Number", element.atomicNumber.toString()),
-                    ),
-                  ],
-                )),
-          ]),
-        ));
+              ],
+            )),
+      ]),
+    );
   }
 
   Widget _buildAttribute(BuildContext context, String name, String value) {
     return Padding(
-      padding: const EdgeInsets.all(8),
-      child: Column(
-        children: [
-          FittedBox(
-            fit: BoxFit.contain,
-            child: Text(
-              value,
-              style: const TextStyle(fontWeight: FontWeight.w200, fontSize: 20),
+        padding: const EdgeInsets.all(8),
+        child: Column(
+          children: [
+            FittedBox(
+              fit: BoxFit.contain,
+              child: Text(
+                value,
+                style: const TextStyle(fontWeight: FontWeight.w200, fontSize: 20),
+              ),
             ),
-          ),
-          FittedBox(
-            fit: BoxFit.contain,
-            child: Text(name),
-          )
-        ],
-      ),
-    );
+            FittedBox(
+              fit: BoxFit.contain,
+              child: Text(name),
+            )
+          ],
+        ));
   }
 }
 
@@ -184,8 +182,7 @@ class _AtomicDetails extends StatelessWidget {
       padding: const EdgeInsets.all(8),
       child: Column(
         children: [
-          Container(
-            color: Colors.white.withOpacity(0.1),
+          Card(
             child: _buildGeneralDescription(context),
           ),
         ],
@@ -297,7 +294,7 @@ class _AtomicTrendsState extends State<AtomicTrends> {
 
               final yMax = elementsData.map<double>((e) => double.tryParse(attribute.infoGetter!(e)) ?? 0).reduce((e1, e2) => max(e1, e2));
 
-              final annotationX = elementsData.indexOf(widget.element ?? elementsBloc.getElementByAtomicNumber(1)).toDouble();
+              final annotationX = elementsData.indexOf(widget.element ?? elementsBloc.getElementByAtomicNumber(1)).toDouble() + 1;
 
               return LineChart(
                 LineChartData(
@@ -416,11 +413,11 @@ class _AtomicTrendsState extends State<AtomicTrends> {
       },
     );
 
-    return Padding(
-      padding: const EdgeInsets.all(8),
-      child: Container(
-        padding: const EdgeInsets.all(15),
-        color: Colors.white.withOpacity(0.1),
+    return Card(
+      margin: const EdgeInsets.all(15),
+      // color: Colors.white.withOpacity(0.1),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
         child: Column(children: [
           controlStrip,
           Expanded(flex: 10, child: graph),
