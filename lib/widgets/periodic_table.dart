@@ -180,11 +180,13 @@ class _PeriodicTableTileState extends State<PeriodicTableTile> {
         onSecondaryTap: () => widget.addCalcElement!(widget.element),
         child: Card(
           color: tileColor,
-          elevation: 10,
           margin: const EdgeInsets.all(1),
-          child: DefaultTextStyle.merge(
-            style: TextStyle(color: Colors.white60.withOpacity(0.8)),
-            child: content,
+          child: Padding(
+            padding: const EdgeInsets.all(2),
+            child: DefaultTextStyle.merge(
+              style: TextStyle(color: Colors.white60.withOpacity(0.8)),
+              child: content,
+            ),
           ),
         ),
       ),

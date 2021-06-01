@@ -6,6 +6,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_layout_grid/flutter_layout_grid.dart';
 import 'package:molarity/BLoC/elements_data_bloc.dart';
+import 'package:molarity/widgets/app_bar.dart';
 import 'package:molarity/widgets/atomic_bohr_model.dart';
 import 'package:molarity/widgets/info_box.dart';
 
@@ -20,34 +21,24 @@ class AtomicInfoScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var appBar = AppBar(
-      elevation: 0,
-      title: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          if (Platform.isMacOS) SizedBox(height: 10),
-          Text(
-            "${element.atomicNumber.toString()} – ${element.name}",
-            style: const TextStyle(fontSize: 25, fontWeight: FontWeight.w200),
-          ),
-          Text(
-            element.categoryValue.capitalizeFirstofEach,
-            textAlign: TextAlign.left,
-            style: TextStyle(color: categoryColorMapping[element.category], fontWeight: FontWeight.w200),
-          ),
-        ],
-      ),
+    final appBarTitle = Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        if (Platform.isMacOS) SizedBox(height: 10),
+        Text(
+          "${element.atomicNumber.toString()} – ${element.name}",
+          style: const TextStyle(fontSize: 25, fontWeight: FontWeight.w200),
+        ),
+        Text(
+          element.categoryValue.capitalizeFirstofEach,
+          textAlign: TextAlign.left,
+          style: TextStyle(color: categoryColorMapping[element.category], fontWeight: FontWeight.w200),
+        )
+      ],
     );
-    var preferredSize = PreferredSize(
-      preferredSize: Size.fromHeight(90.0),
-      child: Container(
-        color: Theme.of(context).bottomAppBarColor,
-        padding: const EdgeInsets.fromLTRB(0, 25, 0, 0),
-        child: SafeArea(child: appBar),
-      ),
-    );
+
     return Scaffold(
-      appBar: Platform.isMacOS ? preferredSize : appBar,
+      appBar: MolarityAppBar.buildTitle(context, appBarTitle),
       body: SingleChildScrollView(
         child: LayoutBuilder(builder: (context, constraints) {
           return Padding(padding: const EdgeInsets.all(8), child: constraints.maxWidth > 940 ? _buildLargeScreen(context) : _buildSmallScreen(context));

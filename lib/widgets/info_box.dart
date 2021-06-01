@@ -77,30 +77,39 @@ class _InfoBoxState extends State<InfoBox> {
 
   Widget _buildElementInfo(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Container(
-        // color: Colors.white,
-        width: double.infinity,
-        height: double.infinity,
+      padding: const EdgeInsets.fromLTRB(8.0, 8, 8, 0),
+      child: Card(
         child: Padding(
           padding: const EdgeInsets.all(8.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                flex: 2,
-                child: FittedBox(
-                  fit: BoxFit.fitHeight,
-                  child: _InfoTitle(
-                    element: widget.element!,
+          child: Row(children: [
+            Expanded(
+              flex: 2,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    flex: 2,
+                    child: FittedBox(
+                      fit: BoxFit.fitHeight,
+                      child: _InfoTitle(
+                        element: widget.element!,
+                      ),
+                    ),
                   ),
-                ),
+                  _InfoDataRow(
+                    element: widget.element!,
+                    key: ValueKey(widget.element!.symbol + "row"),
+                  ),
+                ],
               ),
-              _InfoDataRow(
-                element: widget.element!,
+            ),
+            Expanded(
+              child: AtomicBohrModel(
+                widget.element,
+                key: ValueKey(widget.element!.symbol + "atomic"),
               ),
-            ],
-          ),
+            ),
+          ]),
         ),
       ),
     );
@@ -109,24 +118,65 @@ class _InfoBoxState extends State<InfoBox> {
   Widget _buildNullElement(BuildContext context) {
     final double iconSize = MediaQuery.of(context).size.width * 0.05;
 
+    // return Padding(
+    //     padding: const EdgeInsets.all(8.0),
+    //     child: Container(
+    //       // constraints: BoxConstraints.expand(height: 100),
+    //       child: Padding(
+    //         padding: const EdgeInsets.all(8.0),
+    //         child: Row(children: [
+    //           Expanded(
+    //             child: IconWithText(Icons.library_add, size: iconSize, header: "Right Click", text: "to mass compounds"),
+    //           ),
+    //           Expanded(
+    //             child: IconWithText(Icons.poll, size: iconSize, header: "Switch Views", text: "to explore the rest of the app"),
+    //           ),
+    //           Expanded(child: IconWithText(Icons.assignment, size: iconSize, header: "Click Element", text: "to naviage to a detailed description")),
+    //           Expanded(child: AtomicBohrModel(ElementsBloc.of(context).getElementBySymbol('pt'))),
+    //         ]),
+    //       ),
+    //     ));
+
     return Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Container(
-          // constraints: BoxConstraints.expand(height: 100),
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(children: [
-              Expanded(
-                child: IconWithText(Icons.library_add, size: iconSize, header: "Right Click", text: "to mass compounds"),
+      padding: const EdgeInsets.fromLTRB(8.0, 8, 8, 0),
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(children: [
+            Expanded(
+              flex: 2,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Expanded(
+                  //   flex: 2,
+                  //   child: FittedBox(
+                  //     fit: BoxFit.fitHeight,
+                  //     child: _InfoTitle(
+                  //       element: widget.element!,
+                  //     ),
+                  //   ),
+                  // ),
+
+                  Row(children: [
+                    Expanded(
+                      child: IconWithText(Icons.library_add, size: iconSize, header: "Right Click", text: "to mass compounds"),
+                    ),
+                    Expanded(
+                      child: IconWithText(Icons.poll, size: iconSize, header: "Switch Views", text: "to explore the rest of the app"),
+                    ),
+                    Expanded(child: IconWithText(Icons.assignment, size: iconSize, header: "Click Element", text: "to naviage to a detailed description")),
+                  ])
+                ],
               ),
-              Expanded(
-                child: IconWithText(Icons.poll, size: iconSize, header: "Switch Views", text: "to explore the rest of the app"),
-              ),
-              Expanded(child: IconWithText(Icons.assignment, size: iconSize, header: "Click Element", text: "to naviage to a detailed description")),
-              Expanded(child: AtomicBohrModel(ElementsBloc.of(context).getElementBySymbol('pt'))),
-            ]),
-          ),
-        ));
+            ),
+            Expanded(
+              child: AtomicBohrModel(ElementsBloc.of(context).getElementBySymbol('pt')),
+            ),
+          ]),
+        ),
+      ),
+    );
   }
 }
 
@@ -207,15 +257,6 @@ class _InfoDataRowState extends State<_InfoDataRow> {
                 widget.element,
                 intialValue: "Phase",
                 intialGetter: (element) => element.phase,
-              ),
-            ),
-          ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(8),
-              child: AtomicBohrModel(
-                widget.element,
-                key: ValueKey(widget.element.symbol + "atomic"),
               ),
             ),
           ),
@@ -399,14 +440,24 @@ class IconWithText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+
     return Container(
       height: 100,
       child: DefaultTextStyle.merge(
-        style: TextStyle(color: Colors.white54, fontWeight: FontWeight.w300, fontSize: 10),
+        style: TextStyle(color: Colors.white54, fontWeight: FontWeight.w300, fontSize: screenSize.width / 100),
         child: Column(
           children: [
-            Icon(icon, size: size, color: Colors.white70),
-            Flexible(child: Text(header, textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold))),
+            Flexible(
+              flex: 2,
+              child: Icon(icon, size: screenSize.width / 20, color: Colors.white70),
+            ),
+            Flexible(
+                child: Text(
+              header,
+              textAlign: TextAlign.center,
+              style: TextStyle(fontWeight: FontWeight.bold),
+            )),
             Flexible(
               child: Text(
                 text,
