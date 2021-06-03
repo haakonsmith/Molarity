@@ -1,67 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_math_fork/flutter_math.dart';
 import 'package:molarity/BLoC/elements_data_bloc.dart';
 
 import '../theme.dart';
-import 'atomic_bohr_model.dart';
-
-class AtomicUnit extends StatelessWidget {
-  final double fontSize;
-
-  const AtomicUnit(this.value, {Key? key, this.fontSize = 24}) : super(key: key);
-
-  final String value;
-
-  // final Map<String, Widget> atomicUnitMap = {
-  //   "Melting Point": Math.tex(r'K', textStyle: const TextStyle(fontSize: 24, fontWeight: FontWeight.w200)),
-  //   "Boiling Point": Math.tex(r'K', textStyle: const TextStyle(fontSize: 24, fontWeight: FontWeight.w200)),
-  //   "Density": Math.tex(r'gL^{-1}', textStyle: const TextStyle(fontWeight: FontWeight.w200)),
-  //   "Phase": const SizedBox(width: 10, height: 10),
-  //   "Atomic Mass": Math.tex(r'u', textStyle: const TextStyle(fontSize: 24, fontWeight: FontWeight.w200)),
-  //   "Molar Heat": Math.tex(r'Jmol^{-1}', textStyle: const TextStyle(fontSize: 24, fontWeight: FontWeight.w200)),
-  //   "Electron Negativity": Math.tex(r'\text{Pauling scale}', textStyle: const TextStyle(fontSize: 24, fontWeight: FontWeight.w200)),
-  //   "Electron Configuration": const SizedBox(width: 10, height: 10),
-  // };
-
-  @override
-  Widget build(BuildContext context) {
-    return _unitSwitch();
-  }
-
-  Widget _unitSwitch() {
-    switch (value) {
-      case "Melting Point":
-        return Math.tex(r'K', textStyle: TextStyle(fontSize: fontSize, fontWeight: FontWeight.w200));
-
-      case "Boiling Point":
-        return Math.tex(r'K', textStyle: TextStyle(fontSize: fontSize, fontWeight: FontWeight.w200));
-
-      case "Density":
-        return Math.tex(r'gL^{-1}', textStyle: const TextStyle(fontWeight: FontWeight.w200));
-
-      case "Phase":
-        return const SizedBox(width: 10, height: 10);
-
-      case "Atomic Mass":
-        return Math.tex(r'u', textStyle: TextStyle(fontSize: fontSize, fontWeight: FontWeight.w200));
-
-      case "Molar Heat":
-        return Math.tex(r'Jmol^{-1}', textStyle: TextStyle(fontSize: fontSize, fontWeight: FontWeight.w200));
-
-      case "Electron Negativity":
-        return Math.tex(r'\text{Pauling scale}', textStyle: TextStyle(fontSize: fontSize, fontWeight: FontWeight.w200));
-
-      case "Electron Configuration":
-        return const SizedBox(width: 10, height: 10);
-
-      default:
-        return const SizedBox(width: 10, height: 10);
-    }
-  }
-}
+import 'chemoinfomatics/widgets/atomic_bohr_model.dart';
+import 'chemoinfomatics/data.dart';
+import 'chemoinfomatics/util.dart';
+import '../util.dart';
 
 class InfoBox extends StatefulWidget {
-  final ElementData? element;
+  final AtomicData? element;
 
   InfoBox({this.element, Key? key}) : super(key: key);
 
@@ -80,7 +27,7 @@ class _InfoBoxState extends State<InfoBox> {
       padding: const EdgeInsets.fromLTRB(8.0, 8, 8, 0),
       child: Card(
         child: Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.all(12.0),
           child: Row(children: [
             Expanded(
               flex: 2,
@@ -96,9 +43,9 @@ class _InfoBoxState extends State<InfoBox> {
                       ),
                     ),
                   ),
+                  // Definitely don't add a key to this
                   _InfoDataRow(
                     element: widget.element!,
-                    key: ValueKey(widget.element!.symbol + "row"),
                   ),
                 ],
               ),
@@ -116,56 +63,25 @@ class _InfoBoxState extends State<InfoBox> {
   }
 
   Widget _buildNullElement(BuildContext context) {
-    final double iconSize = MediaQuery.of(context).size.width * 0.05;
-
-    // return Padding(
-    //     padding: const EdgeInsets.all(8.0),
-    //     child: Container(
-    //       // constraints: BoxConstraints.expand(height: 100),
-    //       child: Padding(
-    //         padding: const EdgeInsets.all(8.0),
-    //         child: Row(children: [
-    //           Expanded(
-    //             child: IconWithText(Icons.library_add, size: iconSize, header: "Right Click", text: "to mass compounds"),
-    //           ),
-    //           Expanded(
-    //             child: IconWithText(Icons.poll, size: iconSize, header: "Switch Views", text: "to explore the rest of the app"),
-    //           ),
-    //           Expanded(child: IconWithText(Icons.assignment, size: iconSize, header: "Click Element", text: "to naviage to a detailed description")),
-    //           Expanded(child: AtomicBohrModel(ElementsBloc.of(context).getElementBySymbol('pt'))),
-    //         ]),
-    //       ),
-    //     ));
-
     return Padding(
       padding: const EdgeInsets.fromLTRB(8.0, 8, 8, 0),
       child: Card(
         child: Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.all(12.0),
           child: Row(children: [
             Expanded(
               flex: 2,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Expanded(
-                  //   flex: 2,
-                  //   child: FittedBox(
-                  //     fit: BoxFit.fitHeight,
-                  //     child: _InfoTitle(
-                  //       element: widget.element!,
-                  //     ),
-                  //   ),
-                  // ),
-
                   Row(children: [
                     Expanded(
-                      child: IconWithText(Icons.library_add, size: iconSize, header: "Right Click", text: "to mass compounds"),
+                      child: IconWithText(Icons.library_add, header: "Right Click", text: "to mass compounds"),
                     ),
                     Expanded(
-                      child: IconWithText(Icons.poll, size: iconSize, header: "Switch Views", text: "to explore the rest of the app"),
+                      child: IconWithText(Icons.poll, header: "Switch Views", text: "to explore the rest of the app"),
                     ),
-                    Expanded(child: IconWithText(Icons.assignment, size: iconSize, header: "Click Element", text: "to naviage to a detailed description")),
+                    Expanded(child: IconWithText(Icons.assignment, header: "Click Element", text: "to naviage to a detailed description")),
                   ])
                 ],
               ),
@@ -186,7 +102,7 @@ class _InfoTitle extends StatelessWidget {
     required this.element,
   }) : super(key: key);
 
-  final ElementData element;
+  final AtomicData element;
 
   @override
   Widget build(BuildContext context) {
@@ -216,7 +132,7 @@ class _InfoDataRow extends StatefulWidget {
     required this.element,
   }) : super(key: key);
 
-  final ElementData element;
+  final AtomicData element;
 
   @override
   State<StatefulWidget> createState() => _InfoDataRowState();
@@ -266,16 +182,9 @@ class _InfoDataRowState extends State<_InfoDataRow> {
   }
 }
 
-class ElementalAttributeDataWrapper {
-  final String Function(ElementData)? infoGetter;
-  final String? value;
-
-  ElementalAttributeDataWrapper(this.value, this.infoGetter);
-}
-
 class ElementalInfo extends StatefulWidget {
-  final ElementData elementData;
-  final String Function(ElementData)? intialGetter;
+  final AtomicData elementData;
+  final String Function(AtomicData)? intialGetter;
   final String? intialValue;
 
   ElementalInfo(this.elementData, {this.intialGetter, this.intialValue, Key? key}) : super(key: key);
@@ -285,9 +194,9 @@ class ElementalInfo extends StatefulWidget {
 }
 
 class _ElementalInfoState extends State<ElementalInfo> {
-  final ValueNotifier<ElementalAttributeDataWrapper> attribute;
+  final ValueNotifier<AtomicAttributeDataWrapper> attribute;
 
-  _ElementalInfoState({infoGetter, displayedValue}) : this.attribute = ValueNotifier(ElementalAttributeDataWrapper(displayedValue, infoGetter)) {
+  _ElementalInfoState({infoGetter, displayedValue}) : this.attribute = ValueNotifier(AtomicAttributeDataWrapper(displayedValue, infoGetter)) {
     this.attribute.addListener(() {
       setState(() {});
     });
@@ -340,7 +249,7 @@ class ElementAttributeSelector extends StatefulWidget {
     this.backgroundColor = Colors.transparent,
   }) : super(key: key);
 
-  final ValueNotifier<ElementalAttributeDataWrapper> attribute;
+  final ValueNotifier<AtomicAttributeDataWrapper> attribute;
   final List<String> selectables;
 
   static const defualtSelectables = const <String>[
@@ -380,10 +289,10 @@ class _ElementAttributeSelectorState extends State<ElementAttributeSelector> {
           );
         }).toList(),
         onChanged: (value) {
-          String Function(ElementData) infoGetter = (_) => "Oh no";
+          String Function(AtomicData) infoGetter = (_) => "Oh no";
           switch (value) {
             case "Melting Point":
-              infoGetter = (ElementData element) => element.meltingPointValue;
+              infoGetter = (AtomicData element) => element.meltingPointValue;
               break;
             case "Boiling Point":
               infoGetter = (element) => element.boilingPointValue;
@@ -421,7 +330,7 @@ class _ElementAttributeSelectorState extends State<ElementAttributeSelector> {
               break;
           }
 
-          widget.attribute.value = ElementalAttributeDataWrapper(value, infoGetter);
+          widget.attribute.value = AtomicAttributeDataWrapper(value, infoGetter);
 
           setState(() {});
         },
@@ -431,12 +340,11 @@ class _ElementAttributeSelectorState extends State<ElementAttributeSelector> {
 }
 
 class IconWithText extends StatelessWidget {
-  final double size;
   final IconData icon;
   final String text;
   final String header;
 
-  IconWithText(this.icon, {this.size = 8, this.text = "", this.header = ""});
+  const IconWithText(this.icon, {this.text = "", this.header = "", Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

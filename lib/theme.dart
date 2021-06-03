@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-
-import 'BLoC/elements_data_bloc.dart';
+import 'package:molarity/widgets/chemoinfomatics/data.dart';
 
 final Map<AtomicElementCategory, Color> categoryColorMapping = {
   AtomicElementCategory.actinide: HSLColor.fromAHSL(0.8, 279, 32 / 100, 25 / 100).toColor(),
@@ -35,10 +34,5 @@ const MaterialColor mcgpalette0Accent = MaterialColor(_mcgpalette0AccentValue, <
   400: Color(0xFF00ACF1),
   700: Color(0xFF009AD8),
 });
-const int _mcgpalette0AccentValue = 0xFF25C1FF;
 
-extension CapExtension on String {
-  String get inCaps => this.length > 0 ? '${this[0].toUpperCase()}${this.substring(1)}' : '';
-  String get allInCaps => this.toUpperCase();
-  String get capitalizeFirstofEach => this.replaceAll(RegExp(' +'), ' ').split(" ").map((str) => str.inCaps).join(" ");
-}
+const int _mcgpalette0AccentValue = 0xFF25C1FF;

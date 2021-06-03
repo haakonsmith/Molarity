@@ -8,6 +8,7 @@ import 'package:molarity/widgets/calculation_box.dart';
 import 'package:molarity/widgets/info_box.dart';
 
 import '../theme.dart';
+import 'chemoinfomatics/data.dart';
 
 enum _PeriodicTableStates { noElement, calculationBox, element }
 
@@ -24,8 +25,8 @@ class _PeriodicTableState extends State<PeriodicTable> {
     return elementsBloc.loading ? Center(child: CircularProgressIndicator()) : _buildGrid(context);
   }
 
-  final ValueNotifier<ElementData?> trackedElement = ValueNotifier(null);
-  final ValueNotifier<Compound?> trackedCompound = ValueNotifier(null);
+  final ValueNotifier<AtomicData?> trackedElement = ValueNotifier(null);
+  final ValueNotifier<CompoundData?> trackedCompound = ValueNotifier(null);
   final ValueNotifier<_PeriodicTableStates> state = ValueNotifier(_PeriodicTableStates.noElement);
 
   @override
@@ -54,9 +55,9 @@ class _PeriodicTableState extends State<PeriodicTable> {
 
               switch (_state) {
                 case _PeriodicTableStates.element:
-                  infoBoxFiller = ValueListenableBuilder<ElementData?>(
+                  infoBoxFiller = ValueListenableBuilder<AtomicData?>(
                       valueListenable: trackedElement,
-                      builder: (BuildContext context, ElementData? element, Widget? child) {
+                      builder: (BuildContext context, AtomicData? element, Widget? child) {
                         return InfoBox(
                           element: element,
                         );
@@ -68,9 +69,9 @@ class _PeriodicTableState extends State<PeriodicTable> {
                   );
                   break;
                 case _PeriodicTableStates.calculationBox:
-                  infoBoxFiller = ValueListenableBuilder<Compound?>(
+                  infoBoxFiller = ValueListenableBuilder<CompoundData?>(
                       valueListenable: trackedCompound,
-                      builder: (BuildContext context, Compound? compound, Widget? child) {
+                      builder: (BuildContext context, CompoundData? compound, Widget? child) {
                         return MolarMassBox(
                           compound: compound!,
                           onClear: () {
@@ -94,9 +95,10 @@ class _PeriodicTableState extends State<PeriodicTable> {
               e,
               addCalcElement: (element) {
                 if (trackedCompound.value == null)
-                  trackedCompound.value = Compound.fromList([element]);
+                  trackedCompound.value = CompoundData.fromList([element]);
                 else {
                   trackedCompound.value!.addElement(element);
+                  // Look I know this sucks, but I'm lazy
                   trackedCompound.notifyListeners();
                 }
 
@@ -115,9 +117,9 @@ class _PeriodicTableState extends State<PeriodicTable> {
 }
 
 class PeriodicTableTile extends StatefulWidget {
-  final ElementData element;
-  final Function(ElementData)? onHover;
-  final Function(ElementData)? addCalcElement;
+  final AtomicData element;
+  final Function(AtomicData)? onHover;
+  final Function(AtomicData)? addCalcElement;
 
   const PeriodicTableTile(
     this.element, {
@@ -181,6 +183,9 @@ class _PeriodicTableTileState extends State<PeriodicTableTile> {
         child: Card(
           color: tileColor,
           margin: const EdgeInsets.all(1),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(4.0),
+          ),
           child: Padding(
             padding: const EdgeInsets.all(2),
             child: DefaultTextStyle.merge(

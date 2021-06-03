@@ -1,55 +1,11 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_math_fork/flutter_math.dart';
 import 'package:molarity/BLoC/elements_data_bloc.dart';
 
-class Compound {
-  final Map<ElementData, int> rawCompound;
-
-  Compound(this.rawCompound);
-
-  factory Compound.fromList(List<ElementData> elements) {
-    Map<ElementData, int> compoundMap = {};
-
-    elements.forEach((element) {
-      compoundMap.update(element, (value) => value + 1, ifAbsent: () => 1);
-    });
-
-    return Compound(compoundMap);
-  }
-
-  double get molarMass {
-    double molarMass = 0;
-
-    rawCompound.forEach((key, value) {
-      molarMass += double.parse(key.atomicMass) * value;
-    });
-
-    return molarMass;
-  }
-
-  Compound addElement(ElementData element) {
-    rawCompound.update(element, (value) => value + 1, ifAbsent: () => 1);
-    return this;
-  }
-
-  String toTex() {
-    String tex = "";
-
-    rawCompound.forEach((key, value) {
-      if (value == 1)
-        tex += "${key.symbol}";
-      else
-        tex += "${key.symbol}_$value";
-    });
-
-    return tex;
-  }
-}
+import 'chemoinfomatics/data.dart';
 
 class MolarMassBox extends StatefulWidget {
-  final Compound compound;
+  final CompoundData compound;
   final VoidCallback? onClear;
 
   MolarMassBox({required this.compound, this.onClear, Key? key}) : super(key: key);

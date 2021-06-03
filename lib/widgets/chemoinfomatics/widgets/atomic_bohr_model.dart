@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:molarity/BLoC/elements_data_bloc.dart';
 import 'dart:math' as math;
 
-import '../theme.dart';
+import '../../../theme.dart';
+import '../data.dart';
 
+/// This is the atomic bohr model spinning thing
 class AtomicBohrModel extends StatefulWidget {
-  final ElementData element;
+  final AtomicData element;
   final double width, height;
 
   AtomicBohrModel(_element, {this.width = 100, this.height = 100, Key? key})
@@ -42,12 +43,12 @@ class _AtomicBohrModelState extends State<AtomicBohrModel> with TickerProviderSt
       fit: BoxFit.fitWidth,
       child: Container(
         margin: const EdgeInsets.all(20),
-        width: 100,
-        height: 100,
+        width: widget.width,
+        height: widget.height,
         child: RepaintBoundary(
           child: CustomPaint(
             size: Size(100, 100),
-            painter: AtomicModelPainter(
+            painter: AtomicBohrModelPainter(
               element: widget.element,
               listenable: _animation,
             ),
@@ -64,10 +65,12 @@ class _AtomicBohrModelState extends State<AtomicBohrModel> with TickerProviderSt
   }
 }
 
-class AtomicModelPainter extends CustomPainter {
+/// This is the painter for the
+// TODO, make sure all the electrons are being coloured correctly
+class AtomicBohrModelPainter extends CustomPainter {
   final Animation listenable;
   final List electronConfiguration = [];
-  final ElementData element;
+  final AtomicData element;
 
   double size = 100;
   double rotationOffset = 0;
@@ -80,7 +83,7 @@ class AtomicModelPainter extends CustomPainter {
     "f": Paint()..color = Color(0xFFe91e63),
   };
 
-  AtomicModelPainter({required this.listenable, this.rotationOffset = 0, required this.element}) : super(repaint: listenable) {
+  AtomicBohrModelPainter({required this.listenable, this.rotationOffset = 0, required this.element}) : super(repaint: listenable) {
     final configKeys = element.electronConfiguration.split(" ");
 
     for (var i = 0; i < element.shells.length; i++) {
@@ -105,8 +108,6 @@ class AtomicModelPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size canvasSize) {
     rotationOffset = listenable.value;
-    // size = canvasSize.width;
-
     Paint paint = Paint()..color = categoryColorMapping[element.category]!;
 
     TextPainter textPainter = TextPainter(
@@ -126,7 +127,7 @@ class AtomicModelPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant AtomicModelPainter oldDelegate) {
+  bool shouldRepaint(covariant AtomicBohrModelPainter oldDelegate) {
     return rotationOffset != oldDelegate.rotationOffset;
   }
 
@@ -208,21 +209,4 @@ class AtomicModelPainter extends CustomPainter {
       return 0.3;
     }
   }
-}
-
-extension HexColor on Color {
-  /// String is in the format "aabbcc" or "ffaabbcc" with an optional leading "#".
-  static Color fromHex(String hexString) {
-    final buffer = StringBuffer();
-    if (hexString.length == 6 || hexString.length == 7) buffer.write('ff');
-    buffer.write(hexString.replaceFirst('#', ''));
-    return Color(int.parse(buffer.toString(), radix: 16));
-  }
-
-  /// Prefixes a hash sign if [leadingHashSign] is set to `true` (default is `true`).
-  String toHex({bool leadingHashSign = true}) => '${leadingHashSign ? '#' : ''}'
-      '${alpha.toRadixString(16).padLeft(2, '0')}'
-      '${red.toRadixString(16).padLeft(2, '0')}'
-      '${green.toRadixString(16).padLeft(2, '0')}'
-      '${blue.toRadixString(16).padLeft(2, '0')}';
 }
