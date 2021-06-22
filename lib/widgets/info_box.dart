@@ -37,7 +37,7 @@ class _InfoBoxState extends State<InfoBox> {
                   Expanded(
                     flex: 2,
                     child: FittedBox(
-                      fit: BoxFit.fitHeight,
+                      fit: BoxFit.contain,
                       child: _InfoTitle(
                         element: widget.element!,
                       ),
@@ -75,14 +75,13 @@ class _InfoBoxState extends State<InfoBox> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(children: [
-                    Expanded(
-                      child: IconWithText(Icons.library_add, header: "Right Click", text: "to mass compounds"),
-                    ),
-                    Expanded(
-                      child: IconWithText(Icons.poll, header: "Switch Views", text: "to explore the rest of the app"),
-                    ),
-                    Expanded(child: IconWithText(Icons.assignment, header: "Click Element", text: "to naviage to a detailed description")),
-                  ])
+                    IconWithText(Icons.library_add, header: "Right Click", text: "to mass compounds").expanded(),
+                    IconWithText(Icons.poll, header: "Switch Views", text: "to explore the\n rest of the app").expanded(),
+                    IconWithText(Icons.assignment, header: "Click Element", text: "to naviage\n to a detailed description").expanded(),
+                    // Column(
+                    //   children: [FlutterLogo().expanded()],
+                    // )
+                  ]).expanded()
                 ],
               ),
             ),
@@ -106,23 +105,21 @@ class _InfoTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text(
-        "${element.atomicNumber.toString()} – ${element.name}",
-        style: TextStyle(
-          fontSize: 10,
-          fontWeight: FontWeight.w200,
-        ),
-      ),
-      Text(
-        element.categoryValue.capitalizeFirstofEach,
-        textAlign: TextAlign.left,
+    return Text.rich(TextSpan(children: [
+      TextSpan(
+          text: "${element.atomicNumber.toString()} – ${element.name}\n",
+          style: TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.w200,
+          )),
+      TextSpan(
+        text: element.categoryValue.capitalizeFirstofEach,
         style: TextStyle(
           color: categoryColorMapping[element.category],
           fontSize: 7,
         ),
-      ),
-    ]);
+      )
+    ]));
   }
 }
 
@@ -146,36 +143,21 @@ class _InfoDataRowState extends State<_InfoDataRow> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            child: FittedBox(
-              fit: BoxFit.fitHeight,
-              child: ElementalInfo(
-                widget.element,
-                intialValue: "Boiling Point",
-                intialGetter: (element) => element.boilingPointValue,
-              ),
-            ),
-          ),
-          Expanded(
-            child: FittedBox(
-              fit: BoxFit.fitWidth,
-              child: ElementalInfo(
-                widget.element,
-                intialValue: "Melting Point",
-                intialGetter: (element) => element.meltingPointValue,
-              ),
-            ),
-          ),
-          Expanded(
-            child: FittedBox(
-              fit: BoxFit.fitWidth,
-              child: ElementalInfo(
-                widget.element,
-                intialValue: "Phase",
-                intialGetter: (element) => element.phase,
-              ),
-            ),
-          ),
+          ElementalInfo(
+            widget.element,
+            intialValue: "Boiling Point",
+            intialGetter: (element) => element.boilingPointValue,
+          ).expanded(),
+          ElementalInfo(
+            widget.element,
+            intialValue: "Melting Point",
+            intialGetter: (element) => element.meltingPointValue,
+          ).expanded(),
+          ElementalInfo(
+            widget.element,
+            intialValue: "Phase",
+            intialGetter: (element) => element.phase,
+          ).expanded(),
         ],
       ),
     );
@@ -187,7 +169,7 @@ class ElementalInfo extends StatefulWidget {
   final String Function(AtomicData)? intialGetter;
   final String? intialValue;
 
-  ElementalInfo(this.elementData, {this.intialGetter, this.intialValue, Key? key}) : super(key: key);
+  const ElementalInfo(this.elementData, {this.intialGetter, this.intialValue, Key? key}) : super(key: key);
 
   @override
   _ElementalInfoState createState() => _ElementalInfoState(infoGetter: intialGetter, displayedValue: intialValue);
@@ -211,6 +193,8 @@ class _ElementalInfoState extends State<ElementalInfo> {
 
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+
     var dropDown = ElementAttributeSelector(
       attribute: attribute,
     );
@@ -220,7 +204,7 @@ class _ElementalInfoState extends State<ElementalInfo> {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.max,
       children: [
-        dropDown,
+        dropDown.fittedBox().expanded(flex: 2),
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 0, 0, 0),
           child: Row(
@@ -230,12 +214,12 @@ class _ElementalInfoState extends State<ElementalInfo> {
             children: [
               SelectableText(
                 attribute.value.infoGetter!(widget.elementData) == "null" ? "Unknown" : attribute.value.infoGetter!(widget.elementData),
-                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w200),
+                style: TextStyle(fontSize: screenSize.width / 80, fontWeight: FontWeight.w200),
               ),
-              AtomicUnit(attribute.value.value!)
+              AtomicUnit(attribute.value.value!, fontSize: screenSize.width / 80)
             ],
           ),
-        ),
+        ).fittedBox(fit: BoxFit.fitWidth).flexible(),
       ],
     );
   }
@@ -350,32 +334,26 @@ class IconWithText extends StatelessWidget {
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
 
-    return Container(
-      height: 100,
-      child: DefaultTextStyle.merge(
-        style: TextStyle(color: Colors.white54, fontWeight: FontWeight.w300, fontSize: screenSize.width / 100),
-        child: Column(
-          children: [
-            Flexible(
-              flex: 2,
-              child: Icon(icon, size: screenSize.width / 20, color: Colors.white70),
-            ),
-            Flexible(
-                child: Text(
-              header,
-              textAlign: TextAlign.center,
-              style: TextStyle(fontWeight: FontWeight.bold),
-            )),
-            Flexible(
-              child: Text(
-                text,
-                textAlign: TextAlign.center,
-                maxLines: 2,
-              ),
-            )
-          ],
+    return Column(
+      children: [
+        Expanded(
+          flex: 2,
+          child: Icon(icon, size: screenSize.width / 20, color: Colors.white70),
         ),
-      ),
+        Expanded(
+            child: Text(
+          header,
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: screenSize.width / 100, fontWeight: FontWeight.bold),
+        )),
+        Expanded(
+          child: Text(
+            text,
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: screenSize.width / 100),
+          ),
+        )
+      ],
     );
   }
 }

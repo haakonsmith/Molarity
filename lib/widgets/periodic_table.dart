@@ -8,6 +8,7 @@ import 'package:molarity/widgets/calculation_box.dart';
 import 'package:molarity/widgets/info_box.dart';
 
 import '../theme.dart';
+import '../util.dart';
 import 'chemoinfomatics/data.dart';
 
 enum _PeriodicTableStates { noElement, calculationBox, element }
@@ -142,6 +143,11 @@ class _PeriodicTableTileState extends State<PeriodicTableTile> {
     tileColor = categoryColorMapping[widget.element.category]!;
   }
 
+  double elevation = 8;
+
+  /// Dim the tile when hovered
+  bool isDimmed = false;
+
   @override
   Widget build(BuildContext context) {
     var content = Column(
@@ -175,13 +181,25 @@ class _PeriodicTableTileState extends State<PeriodicTableTile> {
     );
 
     return MouseRegion(
-      onHover: (value) => widget.onHover!(widget.element),
+      onHover: (value) {
+        widget.onHover!(widget.element);
+
+        setState(() {
+          elevation = 16;
+          isDimmed = true;
+        });
+      },
+      onExit: (value) => setState(() {
+        elevation = 8;
+        isDimmed = false;
+      }),
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
         onTap: () => Navigator.of(context).push(_createRoute()),
         onSecondaryTap: () => widget.addCalcElement!(widget.element),
         child: Card(
-          color: tileColor,
+          elevation: elevation,
+          color: tileColor.darken(isDimmed ? .1 : 0),
           margin: const EdgeInsets.all(1),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(4.0),
