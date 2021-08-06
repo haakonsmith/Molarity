@@ -26,7 +26,7 @@ class AtomicInfoScreen extends StatelessWidget {
     );
 
     return Scaffold(
-      appBar: MolarityAppBar.buildTitle(context, appBarTitle),
+      appBar: MolarityAppBar.buildTitle(context, appBarTitle, height: MediaQuery.of(context).size.width / 15),
       body: SingleChildScrollView(
         child: LayoutBuilder(builder: (context, constraints) {
           return Padding(padding: const EdgeInsets.all(8), child: constraints.maxWidth > 940 ? _buildLargeScreen(context) : _buildSmallScreen(context));

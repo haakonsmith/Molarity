@@ -12,8 +12,9 @@ class PeriodicTableScreen extends StatelessWidget {
           Text(
             "Periodic Table",
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.w200),
+            textScaleFactor: 1.5,
           ),
-          height: MediaQuery.of(context).size.width / 12),
+          height: MediaQuery.of(context).size.width / 15),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(30.0, 10.0, 30.0, 0),
