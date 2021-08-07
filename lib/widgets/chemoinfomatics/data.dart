@@ -100,6 +100,63 @@ class AtomicData {
         this.y = (json['ypos'] as int) - 1;
 
   String toString() => "Z: $atomicNumber";
+
+  List<String> get associatedProperties => [
+        'Melting Point',
+        'Boiling Point',
+        'Density',
+        'Atomic Mass',
+        'Molar Heat',
+        'Electron Negativity',
+        'Electron Configuration',
+      ];
+
+  String getAssociatedStringValue(String value) {
+    String returnValue;
+
+    switch (value) {
+      case "Melting Point":
+        returnValue = meltingPointValue;
+        break;
+      case "Boiling Point":
+        returnValue = boilingPointValue;
+        break;
+      case "Phase":
+        returnValue = phase;
+        break;
+      case "Density":
+        returnValue = density;
+        break;
+      case "Atomic Mass":
+        returnValue = atomicMass;
+        break;
+      case "Molar Heat":
+        returnValue = molarHeat;
+        break;
+      case "Electron Negativity":
+        returnValue = electronNegativity;
+        break;
+      case "Electron Configuration":
+        String electronConfig = '';
+        final electrons = semanticElectronConfiguration.split(' ');
+        for (var i = 0; i < electrons.length; i++) {
+          final electron = electrons[i];
+
+          if (i == 3)
+            electronConfig += '\n' + electron;
+          else
+            electronConfig += ' ' + electron;
+        }
+
+        returnValue = electronConfig.trim();
+
+        break;
+      default:
+        returnValue = "Invalid Info Getter Value";
+    }
+
+    return returnValue;
+  }
 }
 
 enum AtomicElementCategory {
@@ -157,12 +214,4 @@ class CompoundData {
 
     return tex;
   }
-}
-
-/// This is how I deal with having different attributes of a element.
-class AtomicAttributeDataWrapper {
-  final String Function(AtomicData)? infoGetter;
-  final String? value;
-
-  AtomicAttributeDataWrapper(this.value, this.infoGetter);
 }

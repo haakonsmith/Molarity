@@ -176,9 +176,9 @@ class ElementalInfo extends StatefulWidget {
 }
 
 class _ElementalInfoState extends State<ElementalInfo> {
-  final ValueNotifier<AtomicAttributeDataWrapper> attribute;
+  final ValueNotifier<String> attribute;
 
-  _ElementalInfoState({infoGetter, displayedValue}) : this.attribute = ValueNotifier(AtomicAttributeDataWrapper(displayedValue, infoGetter)) {
+  _ElementalInfoState({infoGetter, displayedValue}) : this.attribute = ValueNotifier(displayedValue) {
     this.attribute.addListener(() {
       setState(() {});
     });
@@ -213,10 +213,10 @@ class _ElementalInfoState extends State<ElementalInfo> {
             mainAxisSize: MainAxisSize.min,
             children: [
               SelectableText(
-                attribute.value.infoGetter!(widget.elementData) == "null" ? "Unknown" : attribute.value.infoGetter!(widget.elementData),
+                widget.elementData.getAssociatedStringValue(attribute.value) == "null" ? "Unknown" : widget.elementData.getAssociatedStringValue(attribute.value),
                 style: TextStyle(fontSize: screenSize.width / 80, fontWeight: FontWeight.w200),
               ),
-              AtomicUnit(attribute.value.value!, fontSize: screenSize.width / 80)
+              AtomicUnit(attribute.value, fontSize: screenSize.width / 80)
             ],
           ),
         ).fittedBox(fit: BoxFit.fitWidth).flexible(),
@@ -229,14 +229,14 @@ class ElementAttributeSelector extends StatefulWidget {
   const ElementAttributeSelector({
     required this.attribute,
     Key? key,
-    this.selectables = defualtSelectables,
+    this.selectables = kSelectables,
     this.backgroundColor = Colors.transparent,
   }) : super(key: key);
 
-  final ValueNotifier<AtomicAttributeDataWrapper> attribute;
+  final ValueNotifier<String> attribute;
   final List<String> selectables;
 
-  static const defualtSelectables = const <String>[
+  static const kSelectables = const <String>[
     'Melting Point',
     'Boiling Point',
     'Phase',
@@ -262,7 +262,7 @@ class _ElementAttributeSelectorState extends State<ElementAttributeSelector> {
       color: widget.backgroundColor,
       child: DropdownButton<String>(
         // underline: Container(),
-        value: widget.attribute.value.value,
+        value: widget.attribute.value,
         items: widget.selectables.map((String value) {
           return DropdownMenuItem<String>(
             value: value,
@@ -273,48 +273,7 @@ class _ElementAttributeSelectorState extends State<ElementAttributeSelector> {
           );
         }).toList(),
         onChanged: (value) {
-          String Function(AtomicData) infoGetter = (_) => "Oh no";
-          switch (value) {
-            case "Melting Point":
-              infoGetter = (AtomicData element) => element.meltingPointValue;
-              break;
-            case "Boiling Point":
-              infoGetter = (element) => element.boilingPointValue;
-              break;
-            case "Phase":
-              infoGetter = (element) => element.phase;
-              break;
-            case "Density":
-              infoGetter = (element) => element.density;
-              break;
-            case "Atomic Mass":
-              infoGetter = (element) => element.atomicMass;
-              break;
-            case "Molar Heat":
-              infoGetter = (element) => element.molarHeat;
-              break;
-            case "Electron Negativity":
-              infoGetter = (element) => element.electronNegativity;
-              break;
-            // case "First Ionisation Energy":
-            //   infoGetter = (element) => element.ionisationEnergies.isEmpty ? "Uknown" : widget.element.ionisationEnergies[0].toString();
-            //   break;
-            case "Electron Configuration":
-              infoGetter = (element) {
-                String electronConfig = '';
-                element.semanticElectronConfiguration.split(' ').forEachIndexed((element, i) {
-                  if (i == 3)
-                    electronConfig += '\n' + element;
-                  else
-                    electronConfig += ' ' + element;
-                });
-
-                return electronConfig.trim();
-              };
-              break;
-          }
-
-          widget.attribute.value = AtomicAttributeDataWrapper(value, infoGetter);
+          widget.attribute.value = value!;
 
           setState(() {});
         },

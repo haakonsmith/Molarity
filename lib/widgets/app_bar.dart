@@ -34,6 +34,8 @@ class _PreferredAppBarSize extends Size {
 
 /// This is an [Appbar] replacement that displays the an extra tab and creates
 /// a gap between the large appbar and the tab displayed.
+///
+/// Half of the options don't work...
 class AppbarWithTab extends StatefulWidget implements PreferredSizeWidget {
   final bool tabVisible;
 
@@ -190,7 +192,7 @@ class _AppbarWithTabState extends State<AppbarWithTab> {
         child: Container(
           padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
           height: double.infinity,
-          child: leading,
+          child: leading?.fittedBox(fit: BoxFit.fitHeight),
         ),
       ),
     );
@@ -213,7 +215,7 @@ class _AppbarWithTabState extends State<AppbarWithTab> {
           // This is a row because sometimes it has the leading widget
           child: Row(
             children: [
-              if (canPop) leading!,
+              if (canPop) leading!.fittedBox(),
               widget.title.fittedBox(),
             ],
           ),
@@ -222,8 +224,6 @@ class _AppbarWithTabState extends State<AppbarWithTab> {
     );
   }
 }
-
-/// Based off my boy at: https://github.com/ketanchoyal/custom_top_bar
 
 ShapeBorder kBackButtonShape = RoundedRectangleBorder(
   borderRadius: BorderRadius.only(

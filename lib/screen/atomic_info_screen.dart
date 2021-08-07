@@ -26,7 +26,7 @@ class AtomicInfoScreen extends StatelessWidget {
     );
 
     return Scaffold(
-      appBar: MolarityAppBar.buildTitle(context, appBarTitle, height: MediaQuery.of(context).size.width / 15),
+      appBar: MolarityAppBar.buildTitle(context, appBarTitle, height: MediaQuery.of(context).size.width / 15 >= 60 ? MediaQuery.of(context).size.width / 15 : 60),
       body: SingleChildScrollView(
         child: LayoutBuilder(builder: (context, constraints) {
           return Padding(padding: const EdgeInsets.all(8), child: constraints.maxWidth > 940 ? _buildLargeScreen(context) : _buildSmallScreen(context));
@@ -40,10 +40,11 @@ class AtomicInfoScreen extends StatelessWidget {
         child: LayoutGrid(
       gridFit: GridFit.loose,
       columnSizes: repeat(1, [1.fr]),
-      rowSizes: repeat(3, [auto]),
+      rowSizes: repeat(4, [auto]),
       areas: '''
       preview
       info
+      prop
       trend
       ''',
       columnGap: 1,
@@ -51,6 +52,7 @@ class AtomicInfoScreen extends StatelessWidget {
       children: [
         AspectRatio(aspectRatio: 2 / 1.5, child: _AtomicInfoPreview(element)).inGridArea('preview'),
         _AtomicDetails(element).inGridArea('info'),
+        _AtomicProperties(element).inGridArea('prop'),
         AspectRatio(aspectRatio: 2 / 1.5, child: AtomicTrends(element: element, key: _trendKey)).inGridArea('trend'),
       ],
     ));
@@ -61,10 +63,11 @@ class AtomicInfoScreen extends StatelessWidget {
         child: LayoutGrid(
       gridFit: GridFit.loose,
       columnSizes: repeat(3, [1.fr]),
-      rowSizes: repeat(2, [auto]),
+      rowSizes: repeat(3, [auto]),
       areas: '''
       preview trend trend
       info info info
+      prop prop prop
       ''',
       columnGap: 1,
       rowGap: 1,
@@ -73,6 +76,7 @@ class AtomicInfoScreen extends StatelessWidget {
         // _AtomicInfoPreview(element).inGridArea('trend'),
         _AtomicDetails(element).inGridArea('info'),
         AtomicTrends(element: element, key: _trendKey).inGridArea('trend'),
+        _AtomicProperties(element).inGridArea("prop"),
       ],
     ));
   }
@@ -100,11 +104,11 @@ class _AtomicInfoPreview extends StatelessWidget {
           child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
             FittedBox(
               fit: BoxFit.fitWidth,
-              child: _buildAttribute(context, "Atomic Number", element.atomicNumber.toString()),
+              child: _AtomicAttribute("Atomic Number", element.atomicNumber.toString()),
             ),
             FittedBox(
               fit: BoxFit.fitWidth,
-              child: _buildAttribute(context, "Atomic Mass", element.atomicMass),
+              child: _AtomicAttribute("Atomic Mass", element.atomicMass),
             ),
           ]),
         ),
@@ -117,33 +121,41 @@ class _AtomicInfoPreview extends StatelessWidget {
               children: [
                 FittedBox(
                   fit: BoxFit.fitWidth,
-                  child: _buildAttribute(context, "Electron Configuration", element.semanticElectronConfiguration),
+                  child: _AtomicAttribute("Electron Configuration", element.semanticElectronConfiguration),
                 ),
                 FittedBox(
                   fit: BoxFit.fitWidth,
-                  child: _buildAttribute(context, "Atomic Number", element.atomicNumber.toString()),
+                  child: _AtomicAttribute("Atomic Number", element.atomicNumber.toString()),
                 ),
               ],
             )),
       ]),
     );
   }
+}
 
-  Widget _buildAttribute(BuildContext context, String name, String value) {
+class _AtomicAttribute extends StatelessWidget {
+  const _AtomicAttribute(this.name, this.value, {Key? key}) : super(key: key);
+
+  final String value;
+  final String name;
+
+  @override
+  Widget build(BuildContext context) {
     return Padding(
         padding: const EdgeInsets.all(8),
         child: Column(
           children: [
             FittedBox(
               fit: BoxFit.contain,
-              child: Text(
+              child: SelectableText(
                 value,
                 style: const TextStyle(fontWeight: FontWeight.w200, fontSize: 20),
               ),
             ),
             FittedBox(
               fit: BoxFit.contain,
-              child: Text(name),
+              child: SelectableText(name),
             )
           ],
         ));
@@ -159,13 +171,7 @@ class _AtomicDetails extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(8),
-      child: Column(
-        children: [
-          Card(
-            child: _buildGeneralDescription(context),
-          ),
-        ],
-      ),
+      child: Card(child: _buildGeneralDescription(context)),
     );
   }
 
@@ -177,13 +183,49 @@ class _AtomicDetails extends StatelessWidget {
           Container(
               padding: const EdgeInsets.fromLTRB(0, 0, 0, 15),
               width: double.infinity,
-              child: Text(
+              child: SelectableText(
                 "General",
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
               )),
           SelectableText(element.summary),
         ],
+      ),
+    );
+  }
+}
+
+// TODO populate with more properties, this means defining them in the relevant functions defined in the [AtomicData] class
+class _AtomicProperties extends StatelessWidget {
+  const _AtomicProperties(this.element, {Key? key}) : super(key: key);
+
+  final AtomicData element;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(8),
+      child: Card(
+        child: Container(
+          padding: const EdgeInsets.all(15),
+          width: double.infinity,
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(bottom: 15),
+                child: Text(
+                  "Properties",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                ),
+              ),
+              Wrap(
+                spacing: 20,
+                children: element.associatedProperties.map((value) => _AtomicAttribute(value, element.getAssociatedStringValue(value))).toList(),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

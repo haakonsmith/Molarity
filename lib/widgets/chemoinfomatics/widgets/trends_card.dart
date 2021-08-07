@@ -9,6 +9,7 @@ import 'package:molarity/widgets/info_box.dart';
 import '../data.dart';
 import '../../../util.dart';
 
+// TODO fix weird scaling with the control strip. Possibly using a [Wrap]
 class AtomicTrends extends StatefulWidget {
   final AtomicData? element;
 
@@ -28,12 +29,12 @@ class AtomicTrends extends StatefulWidget {
 }
 
 class _AtomicTrendsState extends State<AtomicTrends> {
-  late final ValueNotifier<AtomicAttributeDataWrapper> attribute;
+  late final ValueNotifier<String> attribute;
   late final ValueNotifier<bool> showAll;
 
   @override
   void initState() {
-    this.attribute = ValueNotifier(AtomicAttributeDataWrapper("Density", (e) => e.density));
+    this.attribute = ValueNotifier("Density");
     this.showAll = ValueNotifier(false);
 
     super.initState();
@@ -63,26 +64,26 @@ class _AtomicTrendsState extends State<AtomicTrends> {
         final shouldRemove = !showAll;
         return ValueListenableBuilder(
           valueListenable: attribute,
-          builder: (context, AtomicAttributeDataWrapper attribute, child) {
-            final elementsData = elementsBloc.getElements(ignoreThisValue: (e) => shouldRemove && (double.tryParse(attribute.infoGetter!(e)) == null));
+          builder: (context, String attribute, child) {
+            final elementsData = elementsBloc.getElements(ignoreThisValue: (e) => shouldRemove && (double.tryParse(e.getAssociatedStringValue(attribute)) == null));
 
-            final yMax = elementsData.map<double>((e) => double.tryParse(attribute.infoGetter!(e)) ?? 0).reduce((e1, e2) => max(e1, e2));
+            final yMax = elementsData.map<double>((e) => double.tryParse(e.getAssociatedStringValue(attribute)) ?? 0).reduce((e1, e2) => max(e1, e2));
 
             final annotationX = elementsData.indexOf(widget.element ?? elementsBloc.getElementByAtomicNumber(1)).toDouble() + 1;
 
             return LineChart(
               LineChartData(
                 rangeAnnotations: RangeAnnotations(verticalRangeAnnotations: [
-                  if (widget.element != null) VerticalRangeAnnotation(x1: annotationX, x2: annotationX + .3, color: AtomicTrends.colorMap[attribute.value]!.withRed(200)),
+                  if (widget.element != null) VerticalRangeAnnotation(x1: annotationX, x2: annotationX + .3, color: AtomicTrends.colorMap[attribute]!.withRed(200)),
                 ]),
                 lineTouchData: _constructLineTouchData(attribute, context, elementsData),
                 lineBarsData: [
                   LineChartBarData(
-                    spots: elementsData.mapIndexed((e, i) => FlSpot(i.toDouble() + 1, double.tryParse(attribute.infoGetter!(e)) ?? 0)).toList(),
+                    spots: elementsData.mapIndexed((e, i) => FlSpot(i.toDouble() + 1, double.tryParse(e.getAssociatedStringValue(attribute)) ?? 0)).toList(),
                     isCurved: false,
                     barWidth: 2,
-                    belowBarData: BarAreaData(show: true, colors: [AtomicTrends.colorMap[attribute.value]!.withOpacity(0.4)]),
-                    colors: [AtomicTrends.colorMap[attribute.value]!],
+                    belowBarData: BarAreaData(show: true, colors: [AtomicTrends.colorMap[attribute]!.withOpacity(0.4)]),
+                    colors: [AtomicTrends.colorMap[attribute]!],
                     dotData: FlDotData(
                       show: false,
                     ),
@@ -122,7 +123,7 @@ class _AtomicTrendsState extends State<AtomicTrends> {
                   leftTitle: AxisTitle(
                     showTitle: true,
                     textStyle: const TextStyle(fontSize: 12),
-                    titleText: attribute.value,
+                    titleText: attribute,
                     margin: 10,
                   ),
                   bottomTitle: AxisTitle(
@@ -171,10 +172,10 @@ class _AtomicTrendsState extends State<AtomicTrends> {
           Text("Unit: "),
           ValueListenableBuilder(
             valueListenable: attribute,
-            builder: (context, AtomicAttributeDataWrapper value, child) => Padding(
+            builder: (context, String value, child) => Padding(
               padding: const EdgeInsets.fromLTRB(0, 5, 0, 0),
               child: AtomicUnit(
-                value.value!,
+                value,
                 fontSize: 14,
               ),
             ),
@@ -184,7 +185,7 @@ class _AtomicTrendsState extends State<AtomicTrends> {
     );
   }
 
-  LineTouchData _constructLineTouchData(AtomicAttributeDataWrapper attribute, BuildContext context, List<AtomicData> elementsData) {
+  LineTouchData _constructLineTouchData(String attribute, BuildContext context, List<AtomicData> elementsData) {
     return LineTouchData(
         enabled: true,
         getTouchedSpotIndicator: (LineChartBarData barData, List<int> indicators) {
@@ -192,14 +193,14 @@ class _AtomicTrendsState extends State<AtomicTrends> {
             /// Indicator Line
             var lineColor = barData.colors[0];
             if (barData.dotData.show) {
-              lineColor = AtomicTrends.colorMap[attribute.value]!;
+              lineColor = AtomicTrends.colorMap[attribute]!;
             }
             const lineStrokeWidth = 2.0;
             final flLine = FlLine(color: lineColor, strokeWidth: lineStrokeWidth);
 
             final dotData = FlDotData(
                 getDotPainter: (spot, percent, bar, index) => FlDotCirclePainter(
-                      color: AtomicTrends.colorMap[attribute.value]!,
+                      color: AtomicTrends.colorMap[attribute]!,
                       strokeWidth: 0,
                     ));
 
