@@ -10,6 +10,10 @@ void main() {
   ], child: Molarity()));
 }
 
+// TODO add molar search screen
+// TODO add trends screen
+// TODO add temperature experimentation screen
+// TODO profile memory usage
 class Molarity extends StatelessWidget {
   // This widget is the root of your application.
   @override
@@ -22,6 +26,7 @@ class Molarity extends StatelessWidget {
         primarySwatch: mcgpalette0,
         toggleableActiveColor: mcgpalette0.shade500,
         cardColor: Colors.white.withOpacity(0.05),
+
         cardTheme: CardTheme(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15.0),

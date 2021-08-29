@@ -67,7 +67,7 @@ class _MolarMassBoxState extends State<MolarMassBox> {
                         textScaleFactor: screenSize.width / 1000,
                       ),
                       Math.tex(
-                        r"molg^{-1}",
+                        r"gmol^{-1}",
                         textScaleFactor: screenSize.width / 1000,
                       ),
                     ],

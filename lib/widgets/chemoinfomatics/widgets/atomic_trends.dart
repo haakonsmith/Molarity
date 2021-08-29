@@ -12,8 +12,11 @@ import '../../../util.dart';
 // TODO fix weird scaling with the control strip. Possibly using a [Wrap]
 class AtomicTrends extends StatefulWidget {
   final AtomicData? element;
+  final int intervalCount;
+  final bool displayLabels;
+  final ValueNotifier<String>? attribute;
 
-  const AtomicTrends({this.element, Key? key}) : super(key: key);
+  const AtomicTrends({this.attribute, this.element, this.displayLabels = true, this.intervalCount = 8, Key? key}) : super(key: key);
 
   static const colorMap = {
     "Boiling Point": Color.fromRGBO(252, 69, 56, 1),
@@ -34,7 +37,7 @@ class _AtomicTrendsState extends State<AtomicTrends> {
 
   @override
   void initState() {
-    this.attribute = ValueNotifier("Density");
+    this.attribute = widget.attribute ?? ValueNotifier("Density");
     this.showAll = ValueNotifier(false);
 
     super.initState();
@@ -74,7 +77,7 @@ class _AtomicTrendsState extends State<AtomicTrends> {
             return LineChart(
               LineChartData(
                 rangeAnnotations: RangeAnnotations(verticalRangeAnnotations: [
-                  if (widget.element != null) VerticalRangeAnnotation(x1: annotationX, x2: annotationX + .3, color: AtomicTrends.colorMap[attribute]!.withRed(200)),
+                  if (widget.element != null) VerticalRangeAnnotation(x1: annotationX, x2: annotationX + .3, color: AtomicTrends.colorMap[attribute]!.withRed(200).desaturate(.05)),
                 ]),
                 lineTouchData: _constructLineTouchData(attribute, context, elementsData),
                 lineBarsData: [
@@ -82,8 +85,8 @@ class _AtomicTrendsState extends State<AtomicTrends> {
                     spots: elementsData.mapIndexed((e, i) => FlSpot(i.toDouble() + 1, double.tryParse(e.getAssociatedStringValue(attribute)) ?? 0)).toList(),
                     isCurved: false,
                     barWidth: 2,
-                    belowBarData: BarAreaData(show: true, colors: [AtomicTrends.colorMap[attribute]!.withOpacity(0.4)]),
-                    colors: [AtomicTrends.colorMap[attribute]!],
+                    belowBarData: BarAreaData(show: true, colors: [AtomicTrends.colorMap[attribute]!.withOpacity(0.4).desaturate(.01)]),
+                    colors: [AtomicTrends.colorMap[attribute]!.desaturate(.01)],
                     dotData: FlDotData(
                       show: false,
                     ),
@@ -95,7 +98,7 @@ class _AtomicTrendsState extends State<AtomicTrends> {
                 maxY: yMax + yMax / 10,
                 titlesData: FlTitlesData(
                   bottomTitles: SideTitles(
-                      showTitles: true,
+                      showTitles: widget.displayLabels,
                       reservedSize: 6,
                       rotateAngle: 70,
                       interval: 1,
@@ -111,8 +114,8 @@ class _AtomicTrendsState extends State<AtomicTrends> {
                         return title;
                       }),
                   leftTitles: SideTitles(
-                    interval: (yMax / 8).floorToDouble() <= 2 ? 1 : (yMax / 8).floorToDouble(),
-                    showTitles: true,
+                    interval: (yMax / widget.intervalCount).floorToDouble() <= 2 ? 1 : (yMax / widget.intervalCount).floorToDouble(),
+                    showTitles: widget.displayLabels,
                     getTextStyles: (i) => const TextStyle(fontSize: 8),
                     getTitles: (value) {
                       return value.toString();
@@ -121,22 +124,22 @@ class _AtomicTrendsState extends State<AtomicTrends> {
                 ),
                 axisTitleData: FlAxisTitleData(
                   leftTitle: AxisTitle(
-                    showTitle: true,
+                    showTitle: widget.displayLabels,
                     textStyle: const TextStyle(fontSize: 12),
                     titleText: attribute,
-                    margin: 10,
+                    margin: 5,
                   ),
-                  bottomTitle: AxisTitle(
-                    showTitle: true,
-                    margin: 30,
-                    titleText: 'Element',
-                    textStyle: const TextStyle(fontSize: 12),
-                    textAlign: TextAlign.center,
-                  ),
+                  // bottomTitle: AxisTitle(
+                  //   showTitle: true,
+                  //   margin: 30,
+                  //   titleText: 'Element',
+                  //   textStyle: const TextStyle(fontSize: 12),
+                  //   textAlign: TextAlign.center,
+                  // ),
                 ),
                 gridData: FlGridData(
                   show: true,
-                  horizontalInterval: (yMax / 8) <= 1 ? 1 : (yMax / 8),
+                  horizontalInterval: (yMax / widget.intervalCount) <= 1 ? 1 : (yMax / widget.intervalCount),
                 ),
               ),
             );
@@ -145,49 +148,46 @@ class _AtomicTrendsState extends State<AtomicTrends> {
       },
     );
 
-    return Card(
-      margin: const EdgeInsets.all(15),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(children: [
-          controlStrip,
-          Expanded(flex: 10, child: graph),
-        ]),
-      ),
+    return Column(
+      children: [
+        Flexible(child: controlStrip),
+        Expanded(flex: 5, child: graph),
+      ],
     );
   }
 
-  SizedBox _generateControlStrip(Checkbox checkButton, ElementAttributeSelector dropdown) {
-    return SizedBox(
-      height: 55,
-      child: Row(
-        children: [
-          checkButton,
-          Text(
-            "Remove Unknown Values",
-            style: const TextStyle(fontWeight: FontWeight.w200, color: Colors.white54),
-          ),
-          Center(child: dropdown),
-          Spacer(),
-          Text("Unit: "),
-          ValueListenableBuilder(
-            valueListenable: attribute,
-            builder: (context, String value, child) => Padding(
-              padding: const EdgeInsets.fromLTRB(0, 5, 0, 0),
-              child: AtomicUnit(
-                value,
-                fontSize: 14,
-              ),
+  Widget _generateControlStrip(Checkbox checkButton, ElementAttributeSelector dropdown) {
+    return Row(
+      children: [
+        SizedBox(width: 15),
+        checkButton.fittedBox(),
+        Text(
+          "Remove Unknown Values",
+          style: const TextStyle(fontWeight: FontWeight.w200, color: Colors.white54),
+        ).fittedBox(fit: BoxFit.fitHeight).expanded(),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: Center(child: dropdown).fittedBox(fit: BoxFit.fitHeight).expanded(),
+        ),
+        Spacer(),
+        Text("Unit: ").fittedBox(),
+        ValueListenableBuilder(
+          valueListenable: attribute,
+          builder: (context, String value, child) => Padding(
+            padding: const EdgeInsets.fromLTRB(0, 5, 0, 0),
+            child: AtomicUnit(
+              value,
+              fontSize: 14,
             ),
-          )
-        ],
-      ),
+          ),
+        ).fittedBox()
+      ],
     );
   }
 
   LineTouchData _constructLineTouchData(String attribute, BuildContext context, List<AtomicData> elementsData) {
     return LineTouchData(
-        enabled: true,
+        enabled: widget.displayLabels,
         getTouchedSpotIndicator: (LineChartBarData barData, List<int> indicators) {
           return indicators.map((int index) {
             /// Indicator Line

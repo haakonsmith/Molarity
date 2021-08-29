@@ -4,7 +4,7 @@ import 'package:flutter_layout_grid/flutter_layout_grid.dart';
 import 'package:molarity/widgets/app_bar.dart';
 import 'package:molarity/widgets/chemoinfomatics/widgets/atomic_bohr_model.dart';
 import 'package:molarity/widgets/chemoinfomatics/data.dart';
-import 'package:molarity/widgets/chemoinfomatics/widgets/trends_card.dart';
+import 'package:molarity/widgets/chemoinfomatics/widgets/atomic_trends.dart';
 
 import '../theme.dart';
 import '../util.dart';
@@ -53,7 +53,7 @@ class AtomicInfoScreen extends StatelessWidget {
         AspectRatio(aspectRatio: 2 / 1.5, child: _AtomicInfoPreview(element)).inGridArea('preview'),
         _AtomicDetails(element).inGridArea('info'),
         _AtomicProperties(element).inGridArea('prop'),
-        AspectRatio(aspectRatio: 2 / 1.5, child: AtomicTrends(element: element, key: _trendKey)).inGridArea('trend'),
+        AspectRatio(aspectRatio: 2 / 1.5, child: _TrendsCard(element: element, key: _trendKey)).inGridArea('trend'),
       ],
     ));
   }
@@ -75,10 +75,27 @@ class AtomicInfoScreen extends StatelessWidget {
         AspectRatio(aspectRatio: 1 / 1.5, child: _AtomicInfoPreview(element)).inGridArea('preview'),
         // _AtomicInfoPreview(element).inGridArea('trend'),
         _AtomicDetails(element).inGridArea('info'),
-        AtomicTrends(element: element, key: _trendKey).inGridArea('trend'),
+        _TrendsCard(element: element, key: _trendKey).inGridArea('trend'),
         _AtomicProperties(element).inGridArea("prop"),
       ],
     ));
+  }
+}
+
+class _TrendsCard extends StatelessWidget {
+  const _TrendsCard({Key? key, required this.element}) : super(key: key);
+
+  final AtomicData element;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.all(25),
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 24, right: 10),
+        child: AtomicTrends(element: element),
+      ),
+    );
   }
 }
 
@@ -98,9 +115,9 @@ class _AtomicInfoPreview extends StatelessWidget {
           flex: 6,
           child: FittedBox(fit: BoxFit.contain, child: Container(width: 200, height: 300, child: AtomicBohrModel(element))),
         ),
-        Flexible(
+        Expanded(
           flex: 2,
-          fit: FlexFit.tight,
+          // fit: FlexFit.tight,
           child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
             FittedBox(
               fit: BoxFit.fitWidth,
@@ -108,27 +125,28 @@ class _AtomicInfoPreview extends StatelessWidget {
             ),
             FittedBox(
               fit: BoxFit.fitWidth,
-              child: _AtomicAttribute("Atomic Mass", element.atomicMass),
+              child: _AtomicAttribute("Atomic Mass", element.getAssociatedStringValue('Atomic Mass')),
             ),
-          ]),
+          ]).fittedBox(),
         ),
-        Flexible(
-            flex: 2,
-            fit: FlexFit.tight,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              mainAxisSize: MainAxisSize.max,
-              children: [
-                FittedBox(
-                  fit: BoxFit.fitWidth,
-                  child: _AtomicAttribute("Electron Configuration", element.semanticElectronConfiguration),
-                ),
-                FittedBox(
-                  fit: BoxFit.fitWidth,
-                  child: _AtomicAttribute("Atomic Number", element.atomicNumber.toString()),
-                ),
-              ],
-            )),
+        Expanded(
+          flex: 2,
+          // fit: FlexFit.tight,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisSize: MainAxisSize.max,
+            children: [
+              FittedBox(
+                fit: BoxFit.fitWidth,
+                child: _AtomicAttribute("Electron Configuration", element.semanticElectronConfiguration),
+              ),
+              FittedBox(
+                fit: BoxFit.fitWidth,
+                child: _AtomicAttribute("Atomic Number", element.atomicNumber.toString()),
+              ),
+            ],
+          ).fittedBox(),
+        ),
       ]),
     );
   }
@@ -162,6 +180,7 @@ class _AtomicAttribute extends StatelessWidget {
   }
 }
 
+// TODO rename to atomic summary
 class _AtomicDetails extends StatelessWidget {
   final AtomicData element;
 
@@ -196,6 +215,7 @@ class _AtomicDetails extends StatelessWidget {
 }
 
 // TODO populate with more properties, this means defining them in the relevant functions defined in the [AtomicData] class
+// TODO combine [_AtomicProperties] and [_AtomicDetails] into a tabbed view.
 class _AtomicProperties extends StatelessWidget {
   const _AtomicProperties(this.element, {Key? key}) : super(key: key);
 

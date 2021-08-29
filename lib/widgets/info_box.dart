@@ -146,17 +146,17 @@ class _InfoDataRowState extends State<_InfoDataRow> {
           ElementalInfo(
             widget.element,
             intialValue: "Boiling Point",
-            intialGetter: (element) => element.boilingPointValue,
+            intialGetter: (element) => element.getAssociatedStringValue("Boiling Point"),
           ).expanded(),
           ElementalInfo(
             widget.element,
             intialValue: "Melting Point",
-            intialGetter: (element) => element.meltingPointValue,
+            intialGetter: (element) => element.getAssociatedStringValue("Melting Point"),
           ).expanded(),
           ElementalInfo(
             widget.element,
             intialValue: "Phase",
-            intialGetter: (element) => element.phase,
+            intialGetter: (element) => element.getAssociatedStringValue("Phase"),
           ).expanded(),
         ],
       ),
@@ -195,8 +195,11 @@ class _ElementalInfoState extends State<ElementalInfo> {
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
 
-    var dropDown = ElementAttributeSelector(
-      attribute: attribute,
+    var dropDown = Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: ElementAttributeSelector(
+        attribute: attribute,
+      ),
     );
 
     return Column(
@@ -225,6 +228,8 @@ class _ElementalInfoState extends State<ElementalInfo> {
   }
 }
 
+// TODO seperate into own file
+// TODO round the corners...
 class ElementAttributeSelector extends StatefulWidget {
   const ElementAttributeSelector({
     required this.attribute,
@@ -258,7 +263,6 @@ class _ElementAttributeSelectorState extends State<ElementAttributeSelector> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(8),
       color: widget.backgroundColor,
       child: DropdownButton<String>(
         // underline: Container(),

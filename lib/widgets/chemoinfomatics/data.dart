@@ -1,3 +1,17 @@
+// This is a way of accessing and discussing atomic properties without the amount of strings as before.
+enum AtomicProperty {
+  meltingPoint,
+  boilingPoint,
+  density,
+  atomicMass,
+  molarHeat,
+  electronNegativity,
+  phase,
+
+  // This is the simplifed electron configuration
+  simplifedElectronConfiguration
+}
+
 class AtomicData {
   int atomicNumber;
   String symbol;
@@ -7,27 +21,25 @@ class AtomicData {
   String electronConfiguration;
   String name;
   int x, y;
-  String meltingPointValue;
-  String boilingPointValue;
+  double? meltingPoint;
+  double? boilingPoint;
   String phase;
   String summary;
-  String density;
-  String atomicMass;
+  double? density;
+  double? atomicMass;
   String color;
   String molarHeat;
   String discoveredBy;
   String electronAffinity;
-  String electronNegativity;
+  double? electronNegativity;
   String semanticElectronConfiguration;
   List<String> ionisationEnergies;
-
-  double? get meltingPoint => double.tryParse(meltingPointValue);
 
   AtomicData(
       {required this.name,
       required this.categoryValue,
-      required this.meltingPointValue,
-      required this.boilingPointValue,
+      required this.meltingPoint,
+      required this.boilingPoint,
       required this.electronConfiguration,
       required this.shells,
       required this.phase,
@@ -82,24 +94,31 @@ class AtomicData {
         this.shells = (json["shells"] as List).cast<int>(),
         this.category = atomicElementCategoryFromString(json['category'] as String),
         this.categoryValue = json["category"] as String,
-        this.meltingPointValue = (json["melt"]).toString(),
-        this.boilingPointValue = (json["boil"]).toString(),
+        this.meltingPoint = parseJsonDouble(json["melt"]),
+        this.boilingPoint = parseJsonDouble(json["boil"]),
         this.phase = json["phase"] as String,
-        this.electronNegativity = (json["electronegativity_pauling"]).toString(),
+        this.electronNegativity = parseJsonDouble(json["electronegativity_pauling"]),
         this.semanticElectronConfiguration = json["electron_configuration_semantic"] as String,
         this.ionisationEnergies = (json["ionization_energies"] as List).cast<String>(),
         this.summary = json["summary"] as String,
         this.electronAffinity = (json["electron_affinity"]).toString(),
         this.discoveredBy = (json["discovered_by"] ?? "Unknown") as String,
         this.molarHeat = json["molar_heat"].toString(),
-        this.color = (json["color"] ?? "Uknown") as String,
-        this.density = json["density"].toString(),
-        this.atomicMass = json["atomic_mass"].toStringAsPrecision(3) as String,
+        this.color = (json["color"] ?? "Unknown") as String,
+        this.density = parseJsonDouble(json["density"]),
+        this.atomicMass = parseJsonDouble(json["atomic_mass"]),
         this.name = json["name"] as String,
         this.x = (json['xpos'] as int) - 1,
         this.y = (json['ypos'] as int) - 1;
 
   String toString() => "Z: $atomicNumber";
+
+  static double? parseJsonDouble(dynamic json) {
+    if (json == "null" || json == null)
+      return null;
+    else
+      return (json as num).toDouble();
+  }
 
   List<String> get associatedProperties => [
         'Melting Point',
@@ -111,30 +130,65 @@ class AtomicData {
         'Electron Configuration',
       ];
 
-  String getAssociatedStringValue(String value) {
+  String getPropertyStringName(AtomicProperty property) {
+    String name;
+
+    switch (property) {
+      case AtomicProperty.meltingPoint:
+        name = "Melting Point";
+        break;
+      case AtomicProperty.boilingPoint:
+        name = "Boiling Point";
+        break;
+      case AtomicProperty.phase:
+        name = "Phase";
+        break;
+      case AtomicProperty.density:
+        name = "Density";
+        break;
+      case AtomicProperty.atomicMass:
+        name = "Atomic Mass";
+        break;
+      case AtomicProperty.molarHeat:
+        name = "Molar Heat";
+        break;
+      case AtomicProperty.electronNegativity:
+        name = "Electron Negativity";
+        break;
+      case AtomicProperty.simplifedElectronConfiguration:
+        name = "Electron Configuration";
+        break;
+      default:
+        name = "Invalid Property";
+    }
+
+    return name;
+  }
+
+  String getAssociatedStringValue(String property) {
     String returnValue;
 
-    switch (value) {
+    switch (property) {
       case "Melting Point":
-        returnValue = meltingPointValue;
+        returnValue = meltingPoint.toString();
         break;
       case "Boiling Point":
-        returnValue = boilingPointValue;
+        returnValue = boilingPoint.toString();
         break;
       case "Phase":
         returnValue = phase;
         break;
       case "Density":
-        returnValue = density;
+        returnValue = density.toString();
         break;
       case "Atomic Mass":
-        returnValue = atomicMass;
+        returnValue = atomicMass?.toStringAsFixed(3) ?? "Unknown";
         break;
       case "Molar Heat":
         returnValue = molarHeat;
         break;
       case "Electron Negativity":
-        returnValue = electronNegativity;
+        returnValue = electronNegativity.toString();
         break;
       case "Electron Configuration":
         String electronConfig = '';
@@ -191,7 +245,7 @@ class CompoundData {
     double molarMass = 0;
 
     rawCompound.forEach((key, value) {
-      molarMass += double.parse(key.atomicMass) * value;
+      molarMass += double.parse(key.getAssociatedStringValue("Atomic Mass")) * value;
     });
 
     return molarMass;

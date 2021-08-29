@@ -10,12 +10,12 @@ class MolarityAppBar {
     var appBar = AppbarWithTab(
       title: title!,
       // backgroundColor: Colors.black54,
-      backgroundColor: Colors.white.withOpacity(0.05),
+      // backgroundColor: Colors.white.withOpacity(0.05),
     );
     var preferredSize = PreferredSize(
       preferredSize: Size.fromHeight(height ?? 90.0),
       child: Container(
-        // color: Theme.of(context).appBarTheme.backgroundColor,
+        color: Colors.transparent,
         padding: const EdgeInsets.fromLTRB(0, 25, 0, 0),
         child: appBar,
       ),
