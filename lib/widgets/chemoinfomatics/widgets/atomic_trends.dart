@@ -170,11 +170,14 @@ class _AtomicTrendsState extends State<AtomicTrends> {
           child: Center(child: dropdown).fittedBox(fit: BoxFit.fitHeight).expanded(),
         ),
         Spacer(),
-        Text("Unit: ").fittedBox(),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 5),
+          child: Text("Unit: ").fittedBox(),
+        ),
         ValueListenableBuilder(
           valueListenable: attribute,
           builder: (context, String value, child) => Padding(
-            padding: const EdgeInsets.fromLTRB(0, 5, 0, 0),
+            padding: const EdgeInsets.only(left: 5, bottom: 5),
             child: AtomicUnit(
               value,
               fontSize: 14,

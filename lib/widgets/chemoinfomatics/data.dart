@@ -31,6 +31,7 @@ class AtomicData {
   String molarHeat;
   String discoveredBy;
   String electronAffinity;
+  bool hasSpectralImage;
   double? electronNegativity;
   String semanticElectronConfiguration;
   List<String> ionisationEnergies;
@@ -38,6 +39,7 @@ class AtomicData {
   AtomicData(
       {required this.name,
       required this.categoryValue,
+      required this.hasSpectralImage,
       required this.meltingPoint,
       required this.boilingPoint,
       required this.electronConfiguration,
@@ -104,6 +106,7 @@ class AtomicData {
         this.electronAffinity = (json["electron_affinity"]).toString(),
         this.discoveredBy = (json["discovered_by"] ?? "Unknown") as String,
         this.molarHeat = json["molar_heat"].toString(),
+        this.hasSpectralImage = json["spectral_img"] != null,
         this.color = (json["color"] ?? "Unknown") as String,
         this.density = parseJsonDouble(json["density"]),
         this.atomicMass = parseJsonDouble(json["atomic_mass"]),

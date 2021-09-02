@@ -1,6 +1,9 @@
+import 'dart:ui';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_layout_grid/flutter_layout_grid.dart';
+import 'package:molarity/BLoC/elements_data_bloc.dart';
 import 'package:molarity/widgets/app_bar.dart';
 import 'package:molarity/widgets/chemoinfomatics/widgets/atomic_bohr_model.dart';
 import 'package:molarity/widgets/chemoinfomatics/data.dart';
@@ -40,12 +43,13 @@ class AtomicInfoScreen extends StatelessWidget {
         child: LayoutGrid(
       gridFit: GridFit.loose,
       columnSizes: repeat(1, [1.fr]),
-      rowSizes: repeat(4, [auto]),
+      rowSizes: repeat(5, [auto]),
       areas: '''
       preview
       info
       prop
       trend
+      spectra
       ''',
       columnGap: 1,
       rowGap: 1,
@@ -54,6 +58,7 @@ class AtomicInfoScreen extends StatelessWidget {
         _AtomicDetails(element).inGridArea('info'),
         _AtomicProperties(element).inGridArea('prop'),
         AspectRatio(aspectRatio: 2 / 1.5, child: _TrendsCard(element: element, key: _trendKey)).inGridArea('trend'),
+        _AtomicEmissionSpectra(element).inGridArea("spectra"),
       ],
     ));
   }
@@ -63,11 +68,12 @@ class AtomicInfoScreen extends StatelessWidget {
         child: LayoutGrid(
       gridFit: GridFit.loose,
       columnSizes: repeat(3, [1.fr]),
-      rowSizes: repeat(3, [auto]),
+      rowSizes: repeat(4, [auto]),
       areas: '''
       preview trend trend
       info info info
       prop prop prop
+      spectra spectra spectra
       ''',
       columnGap: 1,
       rowGap: 1,
@@ -77,6 +83,7 @@ class AtomicInfoScreen extends StatelessWidget {
         _AtomicDetails(element).inGridArea('info'),
         _TrendsCard(element: element, key: _trendKey).inGridArea('trend'),
         _AtomicProperties(element).inGridArea("prop"),
+        _AtomicEmissionSpectra(element).inGridArea("spectra"),
       ],
     ));
   }
@@ -92,8 +99,20 @@ class _TrendsCard extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.all(25),
       child: Padding(
-        padding: const EdgeInsets.only(bottom: 24, right: 10),
-        child: AtomicTrends(element: element),
+        padding: const EdgeInsets.only(bottom: 14, right: 12),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(bottom: 5.0, top: 15),
+              child: Text(
+                "Atomic Property Trend",
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+              ),
+            ),
+            AtomicTrends(element: element).expanded(),
+          ],
+        ),
       ),
     );
   }
@@ -118,16 +137,19 @@ class _AtomicInfoPreview extends StatelessWidget {
         Expanded(
           flex: 2,
           // fit: FlexFit.tight,
-          child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            FittedBox(
-              fit: BoxFit.fitWidth,
-              child: _AtomicAttribute("Atomic Number", element.atomicNumber.toString()),
-            ),
-            FittedBox(
-              fit: BoxFit.fitWidth,
-              child: _AtomicAttribute("Atomic Mass", element.getAssociatedStringValue('Atomic Mass')),
-            ),
-          ]).fittedBox(),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              FittedBox(
+                fit: BoxFit.fitWidth,
+                child: _AtomicAttribute("Atomic Number", element.atomicNumber.toString()),
+              ),
+              FittedBox(
+                fit: BoxFit.fitWidth,
+                child: _AtomicAttribute("Atomic Mass", element.getAssociatedStringValue('Atomic Mass')),
+              ),
+            ],
+          ).fittedBox(),
         ),
         Expanded(
           flex: 2,
@@ -149,6 +171,44 @@ class _AtomicInfoPreview extends StatelessWidget {
         ),
       ]),
     );
+  }
+}
+
+class _AtomicEmissionSpectra extends StatelessWidget {
+  const _AtomicEmissionSpectra(this.element, {Key? key}) : super(key: key);
+
+  final AtomicData element;
+
+  @override
+  Widget build(BuildContext context) {
+    final content = Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(bottom: 15.0, top: 5),
+          child: Text(
+            "Emission Spectrum",
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+          ),
+        ),
+        Expanded(
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(10.0),
+            child: (ElementsBloc.of(context).getSpectralImage(element.name) ?? Container()).fittedBox(),
+          ),
+        ),
+      ],
+    );
+
+    return element.hasSpectralImage
+        ? Card(
+            margin: const EdgeInsets.all(15),
+            child: Padding(
+              padding: const EdgeInsets.all(8),
+              child: content,
+            ),
+          )
+        : Container();
   }
 }
 

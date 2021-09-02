@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter/widgets.dart';
 import 'package:molarity/widgets/chemoinfomatics/data.dart';
@@ -10,47 +11,58 @@ import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 
 class ElementsBloc extends ChangeNotifier {
-  static Future<String> getElementsJsonString() async {
+  static Future<String> getStringFromPath(String path) async {
     return await rootBundle.loadString(path);
   }
 
   /// This must reflect the asset path in pubspec.yaml
-  static const String path = "assets/periodic_table.json";
+  static const String periodicTablePath = "assets/periodic_table.json";
+  static const String atomicSpectraRootPath = "assets/atomic_images";
 
   bool _loading = true;
   bool get loading => _loading;
 
   late List<AtomicData> _elements;
+  late Map<String, Image> _spectraImages;
 
   static Future<List<AtomicData>> _loadElements() async {
-    String jsonString = await getElementsJsonString();
-    var json = jsonDecode(jsonString);
+    String jsonString = await getStringFromPath(periodicTablePath);
+    final json = jsonDecode(jsonString);
 
     assert(json is List);
 
-    List<AtomicData> elements = [];
-
-    elements.addAll(json.map((d) => AtomicData.fromJson(d)).toList().cast<AtomicData>());
-
-    return elements;
+    return json.map((d) => AtomicData.fromJson(d)).toList().cast<AtomicData>();
   }
 
-  Future<void> _init() async {
-    _loading = true;
+  Future<Map<String, Image>> _loadSpectraImages() async {
+    final result = Map<String, Image>();
 
-    // set defaults
-    _elements = await _loadElements();
+    _elements.forEach((element) {
+      if (element.hasSpectralImage) {
+        result[element.name] = Image.asset(
+          atomicSpectraRootPath + "/" + element.name + ".jpg",
+          fit: BoxFit.fill,
+        );
+      }
 
-    _loading = false;
+      return null;
+    });
 
-    notifyListeners();
+    return result;
   }
 
   ElementsBloc() {
-    _init();
+    _asyncDataUpdate(() async {
+      _elements = await _loadElements();
+      _spectraImages = await _loadSpectraImages();
+    });
 
-    print(_loading);
+    // This is done as a seperate step to reduce ui hang while it's loading, as spectral images are likely not used immediately.
+    // _asyncDataUpdate(() async {
+    // });
   }
+
+  Widget? getSpectralImage(String elementName) => !_loading ? _spectraImages[elementName] : CircularProgressIndicator();
 
   List<AtomicData> get elements {
     return !_loading ? _elements : [];
@@ -91,5 +103,15 @@ class ElementsBloc extends ChangeNotifier {
 
   static ElementsBloc of(BuildContext context, {listen: false}) {
     return Provider.of<ElementsBloc>(context, listen: listen);
+  }
+
+  Future<void> _asyncDataUpdate(Future<void> Function() update) async {
+    _loading = true;
+
+    await update();
+
+    _loading = false;
+
+    notifyListeners();
   }
 }
