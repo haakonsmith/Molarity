@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_layout_grid/flutter_layout_grid.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:molarity/BLoC/elements_data_bloc.dart';
 import 'package:molarity/widgets/app_bar.dart';
 import 'package:molarity/widgets/chemoinfomatics/widgets/atomic_bohr_model.dart';
@@ -57,7 +58,7 @@ class AtomicInfoScreen extends StatelessWidget {
         AspectRatio(aspectRatio: 2 / 1.5, child: _AtomicInfoPreview(element)).inGridArea('preview'),
         _AtomicDetails(element).inGridArea('info'),
         _AtomicProperties(element).inGridArea('prop'),
-        AspectRatio(aspectRatio: 2 / 1.5, child: _TrendsCard(element: element, key: _trendKey)).inGridArea('trend'),
+        AspectRatio(aspectRatio: 2 / 1.5, child: _TrendsCard(element: element, key: ValueKey("Trends Area"))).inGridArea('trend'),
         _AtomicEmissionSpectra(element).inGridArea("spectra"),
       ],
     ));
@@ -79,8 +80,11 @@ class AtomicInfoScreen extends StatelessWidget {
       rowGap: 1,
       children: [
         AspectRatio(aspectRatio: 1 / 1.5, child: _AtomicInfoPreview(element)).inGridArea('preview'),
-        // _AtomicInfoPreview(element).inGridArea('trend'),
-        _AtomicDetails(element).inGridArea('info'),
+        // AspectRatio(aspectRatio: 2 / 1.5, child: _AtomicInfoPreview(element)).inGridArea('trend'),
+        _AtomicDetails(
+          element,
+          key: ValueKey("Atomic Details"),
+        ).inGridArea('info'),
         _TrendsCard(element: element, key: _trendKey).inGridArea('trend'),
         _AtomicProperties(element).inGridArea("prop"),
         _AtomicEmissionSpectra(element).inGridArea("spectra"),
@@ -96,23 +100,15 @@ class _TrendsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.all(25),
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: 14, right: 12),
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(bottom: 5.0, top: 15),
-              child: Text(
-                "Atomic Property Trend",
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
-              ),
-            ),
-            AtomicTrends(element: element).expanded(),
-          ],
+    // print("build");
+    return Padding(
+      padding: const EdgeInsets.all(8),
+      child: TitledCard(
+        title: Text(
+          "Atomic Property Trend",
+          // textAlign: TextAlign.center,
         ),
+        child: AtomicTrends(element: element),
       ),
     );
   }
@@ -127,13 +123,14 @@ class _AtomicInfoPreview extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       // width: 200,
-      margin: const EdgeInsets.all(15),
+      margin: const EdgeInsets.all(12),
       // color: Colors.white.withOpacity(0.1),
       child: Column(mainAxisAlignment: MainAxisAlignment.start, children: [
         Expanded(
           flex: 6,
           child: FittedBox(fit: BoxFit.contain, child: Container(width: 200, height: 300, child: AtomicBohrModel(element))),
         ),
+        // _AtomicAttribute("Atomic Number", element.atomicNumber.toString()).expanded(),
         Expanded(
           flex: 2,
           // fit: FlexFit.tight,
@@ -174,38 +171,23 @@ class _AtomicInfoPreview extends StatelessWidget {
   }
 }
 
-class _AtomicEmissionSpectra extends StatelessWidget {
+class _AtomicEmissionSpectra extends HookConsumerWidget {
   const _AtomicEmissionSpectra(this.element, {Key? key}) : super(key: key);
 
   final AtomicData element;
 
   @override
-  Widget build(BuildContext context) {
-    final content = Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(bottom: 15.0, top: 5),
-          child: Text(
-            "Emission Spectrum",
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
-          ),
-        ),
-        Expanded(
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(10.0),
-            child: (ElementsBloc.of(context).getSpectralImage(element.name) ?? Container()).fittedBox(),
-          ),
-        ),
-      ],
-    );
+  Widget build(BuildContext context, WidgetRef ref) {
+    final elementsBloc = ref.watch(elementsBlocProvider);
 
     return element.hasSpectralImage
-        ? Card(
-            margin: const EdgeInsets.all(15),
-            child: Padding(
-              padding: const EdgeInsets.all(8),
-              child: content,
+        ? TitledCard(
+            title: Text("Emission Spectrum", textAlign: TextAlign.center),
+            child: Expanded(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(10.0),
+                child: (elementsBloc.getSpectralImage(element.name) ?? Container()).fittedBox(),
+              ),
             ),
           )
         : Container();
@@ -221,22 +203,23 @@ class _AtomicAttribute extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-        padding: const EdgeInsets.all(8),
-        child: Column(
-          children: [
-            FittedBox(
-              fit: BoxFit.contain,
-              child: SelectableText(
-                value,
-                style: const TextStyle(fontWeight: FontWeight.w200, fontSize: 20),
-              ),
+      padding: const EdgeInsets.all(8),
+      child: Column(
+        children: [
+          FittedBox(
+            fit: BoxFit.contain,
+            child: SelectableText(
+              value,
+              style: const TextStyle(fontWeight: FontWeight.w200, fontSize: 20),
             ),
-            FittedBox(
-              fit: BoxFit.contain,
-              child: SelectableText(name),
-            )
-          ],
-        ));
+          ),
+          FittedBox(
+            fit: BoxFit.contain,
+            child: SelectableText(name),
+          )
+        ],
+      ),
+    );
   }
 }
 
@@ -250,25 +233,12 @@ class _AtomicDetails extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(8),
-      child: Card(child: _buildGeneralDescription(context)),
-    );
-  }
-
-  Widget _buildGeneralDescription(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(15),
-      child: Column(
-        children: [
-          Container(
-              padding: const EdgeInsets.fromLTRB(0, 0, 0, 15),
-              width: double.infinity,
-              child: SelectableText(
-                "General",
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
-              )),
-          SelectableText(element.summary),
-        ],
+      child: TitledCard(
+        title: SelectableText(
+          "General",
+          textAlign: TextAlign.center,
+        ),
+        child: SelectableText(element.summary),
       ),
     );
   }
@@ -285,26 +255,41 @@ class _AtomicProperties extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(8),
-      child: Card(
-        child: Container(
-          padding: const EdgeInsets.all(15),
-          width: double.infinity,
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(bottom: 15),
-                child: Text(
-                  "Properties",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
-                ),
+      child: TitledCard(
+        title: Text("Properties", textAlign: TextAlign.center),
+        child: Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 20,
+          children: element.associatedProperties.map((value) => _AtomicAttribute(value, element.getAssociatedStringValue(value))).toList(),
+        ),
+      ),
+    );
+  }
+}
+
+class TitledCard extends StatelessWidget {
+  const TitledCard({Key? key, required this.title, required this.child}) : super(key: key);
+
+  final Widget title;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Container(
+        padding: const EdgeInsets.all(15),
+        width: double.infinity,
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(bottom: 15),
+              child: DefaultTextStyle(
+                style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                child: title,
               ),
-              Wrap(
-                spacing: 20,
-                children: element.associatedProperties.map((value) => _AtomicAttribute(value, element.getAssociatedStringValue(value))).toList(),
-              ),
-            ],
-          ),
+            ),
+            child.expanded()
+          ],
         ),
       ),
     );

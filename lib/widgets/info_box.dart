@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:molarity/BLoC/elements_data_bloc.dart';
 
 import '../theme.dart';
@@ -7,19 +8,18 @@ import 'chemoinfomatics/data.dart';
 import 'chemoinfomatics/util.dart';
 import '../util.dart';
 
-class InfoBox extends StatefulWidget {
+class InfoBox extends HookConsumerWidget {
   final AtomicData? element;
 
   InfoBox({this.element, Key? key}) : super(key: key);
 
-  @override
-  _InfoBoxState createState() => _InfoBoxState();
-}
+  late ElementsBloc elementsBloc;
 
-class _InfoBoxState extends State<InfoBox> {
   @override
-  Widget build(BuildContext context) {
-    return widget.element == null ? _buildNullElement(context) : _buildElementInfo(context);
+  Widget build(BuildContext context, WidgetRef ref) {
+    elementsBloc = ref.watch(elementsBlocProvider);
+
+    return element == null ? _buildNullElement(context) : _buildElementInfo(context);
   }
 
   Widget _buildElementInfo(BuildContext context) {
@@ -39,21 +39,21 @@ class _InfoBoxState extends State<InfoBox> {
                     child: FittedBox(
                       fit: BoxFit.contain,
                       child: _InfoTitle(
-                        element: widget.element!,
+                        element: element!,
                       ),
                     ),
                   ),
                   // Definitely don't add a key to this
                   _InfoDataRow(
-                    element: widget.element!,
+                    element: element!,
                   ),
                 ],
               ),
             ),
             Expanded(
               child: AtomicBohrModel(
-                widget.element,
-                key: ValueKey(widget.element!.symbol + "atomic"),
+                element,
+                key: ValueKey(element!.symbol + "atomic"),
               ),
             ),
           ]),
@@ -86,7 +86,7 @@ class _InfoBoxState extends State<InfoBox> {
               ),
             ),
             Expanded(
-              child: AtomicBohrModel(ElementsBloc.of(context).getElementBySymbol('pt')),
+              child: AtomicBohrModel(elementsBloc.getElementBySymbol('pt')),
             ),
           ]),
         ),

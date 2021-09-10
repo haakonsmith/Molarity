@@ -244,6 +244,10 @@ class CompoundData {
     return CompoundData(compoundMap);
   }
 
+  factory CompoundData.fromAtomicData(element) => CompoundData.fromList([element]);
+
+  CompoundData.empty() : this.rawCompound = {};
+
   double get molarMass {
     double molarMass = 0;
 
@@ -271,4 +275,6 @@ class CompoundData {
 
     return tex;
   }
+
+  operator +(AtomicData other) => addElement(other);
 }

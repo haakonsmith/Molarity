@@ -50,8 +50,11 @@ class _ListDrawerState extends State<ListDrawer> with TickerProviderStateMixin {
 
   Route _createRoutePeriodicTrendsTable() {
     return MaterialPageRoute(
-      builder: (context) => PeriodicTrendsTableScreen(),
+      builder: (context) => PeriodicTableScreen(),
     );
+    // return MaterialPageRoute(
+    //   builder: (context) => PeriodicTrendsTableScreen(),
+    // );
   }
 
   @override

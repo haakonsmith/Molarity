@@ -2,15 +2,18 @@ import 'dart:math';
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:molarity/BLoC/elements_data_bloc.dart';
 import 'package:molarity/widgets/chemoinfomatics/util.dart';
 import 'package:molarity/widgets/info_box.dart';
 
 import '../data.dart';
 import '../../../util.dart';
+import 'element_property_selector.dart';
 
 // TODO fix weird scaling with the control strip. Possibly using a [Wrap]
-class AtomicTrends extends StatefulWidget {
+class AtomicTrends extends ConsumerStatefulWidget {
   final AtomicData? element;
   final int intervalCount;
   final bool displayLabels;
@@ -28,56 +31,36 @@ class AtomicTrends extends StatefulWidget {
   };
 
   @override
-  _AtomicTrendsState createState() => _AtomicTrendsState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final elementsBloc = ref.watch(elementsBlocProvider);
 
-class _AtomicTrendsState extends State<AtomicTrends> {
-  late final ValueNotifier<String> attribute;
-  late final ValueNotifier<bool> showAll;
+    final atomicProperty = attribute ?? useValueNotifier("Density");
+    final showAll = useValueNotifier(false);
 
-  @override
-  void initState() {
-    this.attribute = widget.attribute ?? ValueNotifier("Density");
-    this.showAll = ValueNotifier(false);
-
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final elementsBloc = ElementsBloc.of(context, listen: true);
-
-    final dropdown = ElementAttributeSelector(
-      attribute: attribute,
-      selectables: ['Melting Point', 'Boiling Point', 'Density', 'Atomic Mass', 'Molar Heat', 'Electron Negativity'],
+    final controlStrip = _ControlPanel(
+      onCheckBoxChanged: (value) => showAll.value = value,
+      onDropDownChanged: (value) => atomicProperty.value = value,
     );
-
-    final checkButton = Checkbox(
-        value: !showAll.value,
-        activeColor: Theme.of(context).scaffoldBackgroundColor,
-        onChanged: (val) => setState(() {
-              showAll.value = !val!;
-            }));
-
-    final controlStrip = _generateControlStrip(checkButton, dropdown);
 
     final graph = ValueListenableBuilder(
       valueListenable: showAll,
       builder: (context, bool showAll, child) {
         final shouldRemove = !showAll;
         return ValueListenableBuilder(
-          valueListenable: attribute,
+          valueListenable: atomicProperty,
           builder: (context, String attribute, child) {
             final elementsData = elementsBloc.getElements(ignoreThisValue: (e) => shouldRemove && (double.tryParse(e.getAssociatedStringValue(attribute)) == null));
 
+            // print(attribute);
+
             final yMax = elementsData.map<double>((e) => double.tryParse(e.getAssociatedStringValue(attribute)) ?? 0).reduce((e1, e2) => max(e1, e2));
 
-            final annotationX = elementsData.indexOf(widget.element ?? elementsBloc.getElementByAtomicNumber(1)).toDouble() + 1;
+            final annotationX = elementsData.indexOf(element ?? elementsBloc.getElementByAtomicNumber(1)).toDouble() + 1;
 
             return LineChart(
               LineChartData(
                 rangeAnnotations: RangeAnnotations(verticalRangeAnnotations: [
-                  if (widget.element != null) VerticalRangeAnnotation(x1: annotationX, x2: annotationX + .3, color: AtomicTrends.colorMap[attribute]!.withRed(200).desaturate(.05)),
+                  if (element != null) VerticalRangeAnnotation(x1: annotationX, x2: annotationX + .3, color: AtomicTrends.colorMap[attribute]!.withRed(200).desaturate(.05)),
                 ]),
                 lineTouchData: _constructLineTouchData(attribute, context, elementsData),
                 lineBarsData: [
@@ -98,7 +81,7 @@ class _AtomicTrendsState extends State<AtomicTrends> {
                 maxY: yMax + yMax / 10,
                 titlesData: FlTitlesData(
                   bottomTitles: SideTitles(
-                      showTitles: widget.displayLabels,
+                      showTitles: displayLabels,
                       reservedSize: 6,
                       rotateAngle: 70,
                       interval: 1,
@@ -114,32 +97,18 @@ class _AtomicTrendsState extends State<AtomicTrends> {
                         return title;
                       }),
                   leftTitles: SideTitles(
-                    interval: (yMax / widget.intervalCount).floorToDouble() <= 2 ? 1 : (yMax / widget.intervalCount).floorToDouble(),
-                    showTitles: widget.displayLabels,
+                    interval: (yMax / intervalCount).floorToDouble() <= 2 ? 1 : (yMax / intervalCount).floorToDouble(),
+                    showTitles: displayLabels,
                     getTextStyles: (i) => const TextStyle(fontSize: 8),
                     getTitles: (value) {
                       return value.toString();
                     },
                   ),
                 ),
-                axisTitleData: FlAxisTitleData(
-                  leftTitle: AxisTitle(
-                    showTitle: widget.displayLabels,
-                    textStyle: const TextStyle(fontSize: 12),
-                    titleText: attribute,
-                    margin: 5,
-                  ),
-                  // bottomTitle: AxisTitle(
-                  //   showTitle: true,
-                  //   margin: 30,
-                  //   titleText: 'Element',
-                  //   textStyle: const TextStyle(fontSize: 12),
-                  //   textAlign: TextAlign.center,
-                  // ),
-                ),
+                axisTitleData: _generateAxisTitleData(),
                 gridData: FlGridData(
                   show: true,
-                  horizontalInterval: (yMax / widget.intervalCount) <= 1 ? 1 : (yMax / widget.intervalCount),
+                  horizontalInterval: (yMax / intervalCount) <= 1 ? 1 : (yMax / intervalCount),
                 ),
               ),
             );
@@ -156,41 +125,25 @@ class _AtomicTrendsState extends State<AtomicTrends> {
     );
   }
 
-  Widget _generateControlStrip(Checkbox checkButton, ElementAttributeSelector dropdown) {
-    return Row(
-      children: [
-        SizedBox(width: 15),
-        checkButton.fittedBox(),
-        Text(
-          "Remove Unknown Values",
-          style: const TextStyle(fontWeight: FontWeight.w200, color: Colors.white54),
-        ).fittedBox(fit: BoxFit.fitHeight).expanded(),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          child: Center(child: dropdown).fittedBox(fit: BoxFit.fitHeight).expanded(),
+  FlAxisTitleData _generateAxisTitleData() => FlAxisTitleData(
+        leftTitle: AxisTitle(
+          showTitle: displayLabels,
+          textStyle: const TextStyle(fontSize: 12),
+          titleText: attribute?.value,
+          margin: 5,
         ),
-        Spacer(),
-        Padding(
-          padding: const EdgeInsets.only(bottom: 5),
-          child: Text("Unit: ").fittedBox(),
-        ),
-        ValueListenableBuilder(
-          valueListenable: attribute,
-          builder: (context, String value, child) => Padding(
-            padding: const EdgeInsets.only(left: 5, bottom: 5),
-            child: AtomicUnit(
-              value,
-              fontSize: 14,
-            ),
-          ),
-        ).fittedBox()
-      ],
-    );
-  }
+        // bottomTitle: AxisTitle(
+        //   showTitle: true,
+        //   margin: 30,
+        //   titleText: 'Element',
+        //   textStyle: const TextStyle(fontSize: 12),
+        //   textAlign: TextAlign.center,
+        // ),
+      );
 
   LineTouchData _constructLineTouchData(String attribute, BuildContext context, List<AtomicData> elementsData) {
     return LineTouchData(
-        enabled: widget.displayLabels,
+        enabled: displayLabels,
         getTouchedSpotIndicator: (LineChartBarData barData, List<int> indicators) {
           return indicators.map((int index) {
             /// Indicator Line
@@ -224,5 +177,63 @@ class _AtomicTrendsState extends State<AtomicTrends> {
             );
           }).toList(),
         ));
+  }
+}
+
+class _ControlPanel extends HookWidget {
+  const _ControlPanel({Key? key, this.onCheckBoxChanged, this.onDropDownChanged}) : super(key: key);
+
+  final ValueChanged<bool>? onCheckBoxChanged;
+  final ValueChanged<String>? onDropDownChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    var atomicAttribute = useState("Melting Point");
+    var showAll = useState(false);
+
+    final dropdown = AtomicAttributeSelector(
+      selectables: ['Melting Point', 'Boiling Point', 'Density', 'Atomic Mass', 'Molar Heat', 'Electron Negativity'],
+      onChanged: (val) {
+        atomicAttribute.value = val!;
+
+        print(val);
+
+        if (onDropDownChanged != null) onDropDownChanged!(val);
+      },
+    );
+
+    final checkButton = Checkbox(
+      value: !showAll.value,
+      activeColor: Theme.of(context).scaffoldBackgroundColor,
+      onChanged: (val) {
+        showAll.value = !val!;
+
+        if (onCheckBoxChanged != null) onCheckBoxChanged!(val);
+      },
+    );
+
+    return Row(
+      children: [
+        SizedBox(width: 15),
+        checkButton.fittedBox(),
+        Text(
+          "Remove Unknown Values",
+          style: const TextStyle(fontWeight: FontWeight.w200, color: Colors.white54),
+        ).fittedBox(fit: BoxFit.fitHeight).expanded(),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: Center(child: dropdown).fittedBox(fit: BoxFit.fitHeight),
+        ),
+        Spacer(),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 5),
+          child: Text("Unit: ").fittedBox(),
+        ),
+        AtomicUnit(
+          atomicAttribute.value,
+          fontSize: 14,
+        ).fittedBox()
+      ],
+    );
   }
 }

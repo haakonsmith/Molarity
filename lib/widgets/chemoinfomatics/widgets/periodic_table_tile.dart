@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:molarity/screen/atomic_info_screen.dart';
 import 'package:molarity/util.dart';
+import 'package:molarity/widgets/chemoinfomatics/widgets/periodic_table.dart';
 
 import '../../../theme.dart';
 import '../data.dart';
@@ -8,13 +9,13 @@ import '../data.dart';
 class PeriodicTableTile extends StatefulWidget {
   final AtomicData element;
   final Function(AtomicData)? onHover;
-  final Function(AtomicData)? addCalcElement;
+  final Function(AtomicData)? onSecondaryTap;
   final Color Function(AtomicData)? tileColorGetter;
 
   const PeriodicTableTile(
     this.element, {
     this.onHover,
-    this.addCalcElement,
+    this.onSecondaryTap,
     this.tileColorGetter,
     Key? key,
   }) : super(key: key);
@@ -86,7 +87,7 @@ class _PeriodicTableTileState extends State<PeriodicTableTile> {
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
         onTap: () => Navigator.of(context).push(_createRoute(_key)),
-        onSecondaryTap: () => widget.addCalcElement!(widget.element),
+        onSecondaryTap: () => widget.onSecondaryTap!(widget.element),
         child: Card(
           elevation: elevation,
           color: tileColor.darken(isDimmed ? .1 : 0),
@@ -142,9 +143,14 @@ class _PeriodicTableTileState extends State<PeriodicTableTile> {
       );
     } else {
       return MaterialPageRoute(
-        builder: (context) => AtomicInfoScreen(widget.element),
+        // builder: (context) => AtomicInfoScreen(widget.element),
+        builder: (context) => PeriodicTable(),
       );
     }
+    // return MaterialPageRoute(
+    //   // builder: (context) => AtomicInfoScreen(widget.element),
+    //   builder: (context) => PeriodicTable(),
+    // );
   }
 }
 

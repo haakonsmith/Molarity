@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:molarity/BLoC/elements_data_bloc.dart';
 import 'package:molarity/screen/periodic_table_screen.dart';
 import 'package:molarity/theme.dart';
-import 'package:provider/provider.dart';
 
 void main() {
-  runApp(MultiProvider(providers: [
-    ChangeNotifierProvider<ElementsBloc>(create: (_) => ElementsBloc()),
-  ], child: Molarity()));
+  runApp(
+    ProviderScope(
+      child: Molarity(),
+    ),
+  );
 }
 
 // TODO add molar search screen

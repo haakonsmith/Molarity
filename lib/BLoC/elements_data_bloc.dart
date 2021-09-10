@@ -3,10 +3,10 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter/widgets.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:molarity/widgets/chemoinfomatics/data.dart';
 import 'package:molarity/widgets/chemoinfomatics/widgets/periodic_table_tile.dart';
 import 'package:molarity/widgets/chemoinfomatics/widgets/periodic_table.dart';
-import 'package:provider/provider.dart';
 
 import 'package:fl_chart/fl_chart.dart';
 
@@ -101,9 +101,9 @@ class ElementsBloc extends ChangeNotifier {
   AtomicData getElementBySymbol(String symbol) => _elements.firstWhere((element) => element.symbol.toLowerCase() == symbol.toLowerCase());
   AtomicData getElementByAtomicNumber(int atomicNumber) => _elements.firstWhere((element) => element.atomicNumber == atomicNumber);
 
-  static ElementsBloc of(BuildContext context, {listen: false}) {
-    return Provider.of<ElementsBloc>(context, listen: listen);
-  }
+  // static ElementsBloc of(BuildContext context, {listen: false}) {
+  //   return Provider.of<ElementsBloc>(context, listen: listen);
+  // }
 
   Future<void> _asyncDataUpdate(Future<void> Function() update) async {
     _loading = true;
@@ -115,3 +115,5 @@ class ElementsBloc extends ChangeNotifier {
     notifyListeners();
   }
 }
+
+final elementsBlocProvider = ChangeNotifierProvider((_) => ElementsBloc());
