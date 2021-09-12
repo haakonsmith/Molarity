@@ -22,6 +22,7 @@ class AtomicInfoScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // print("\nbuild22");
     final appBarTitle = Text.rich(
       TextSpan(children: [
         TextSpan(text: "${element.atomicNumber.toString()} – ${element.name} ", style: const TextStyle(fontSize: 25, fontWeight: FontWeight.w200, color: Colors.white)),
@@ -40,6 +41,7 @@ class AtomicInfoScreen extends StatelessWidget {
   }
 
   Widget _buildSmallScreen(BuildContext context) {
+    // print("Build 33");
     return Container(
         child: LayoutGrid(
       gridFit: GridFit.loose,
@@ -59,12 +61,13 @@ class AtomicInfoScreen extends StatelessWidget {
         _AtomicDetails(element).inGridArea('info'),
         _AtomicProperties(element).inGridArea('prop'),
         AspectRatio(aspectRatio: 2 / 1.5, child: _TrendsCard(element: element, key: ValueKey("Trends Area"))).inGridArea('trend'),
-        _AtomicEmissionSpectra(element).inGridArea("spectra"),
+        // _AtomicEmissionSpectra(element).inGridArea("spectra"),
       ],
     ));
   }
 
   Widget _buildLargeScreen(BuildContext context) {
+    // print("Build 44");
     return Container(
         child: LayoutGrid(
       gridFit: GridFit.loose,
@@ -80,12 +83,9 @@ class AtomicInfoScreen extends StatelessWidget {
       rowGap: 1,
       children: [
         AspectRatio(aspectRatio: 1 / 1.5, child: _AtomicInfoPreview(element)).inGridArea('preview'),
-        // AspectRatio(aspectRatio: 2 / 1.5, child: _AtomicInfoPreview(element)).inGridArea('trend'),
-        _AtomicDetails(
-          element,
-          key: ValueKey("Atomic Details"),
-        ).inGridArea('info'),
-        _TrendsCard(element: element, key: _trendKey).inGridArea('trend'),
+        AspectRatio(aspectRatio: 2 / 1.5, child: _TrendsCard(element: element, key: _trendKey)).inGridArea('trend'),
+        _AtomicDetails(element, key: ValueKey("Atomic Details")).inGridArea('info'),
+        // _TrendsCard(element: element, key: _trendKey).inGridArea('trend'),
         _AtomicProperties(element).inGridArea("prop"),
         _AtomicEmissionSpectra(element).inGridArea("spectra"),
       ],
@@ -109,7 +109,25 @@ class _TrendsCard extends StatelessWidget {
           // textAlign: TextAlign.center,
         ),
         child: AtomicTrends(element: element),
+        // child: TestState(),
       ),
+    );
+  }
+}
+
+class TestState extends StatefulWidget {
+  TestState({Key? key}) : super(key: key);
+
+  @override
+  _TestStateState createState() => _TestStateState();
+}
+
+class _TestStateState extends State<TestState> {
+  @override
+  Widget build(BuildContext context) {
+    print("build parent");
+    return Container(
+      child: null,
     );
   }
 }
@@ -183,12 +201,10 @@ class _AtomicEmissionSpectra extends HookConsumerWidget {
     return element.hasSpectralImage
         ? TitledCard(
             title: Text("Emission Spectrum", textAlign: TextAlign.center),
-            child: Expanded(
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(10.0),
-                child: (elementsBloc.getSpectralImage(element.name) ?? Container()).fittedBox(),
-              ),
-            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(10.0),
+              child: (elementsBloc.getSpectralImage(element.name) ?? Container()),
+            ).expanded(),
           )
         : Container();
   }
