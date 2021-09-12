@@ -4,7 +4,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 class AtomicAttributeSelector extends HookWidget {
   const AtomicAttributeSelector({
     this.onChanged,
-    this.intialValue = "Melting Point",
+    this.intialValue = "Density",
     Key? key,
     this.selectables = kSelectables,
     this.backgroundColor = Colors.transparent,
