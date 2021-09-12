@@ -60,8 +60,8 @@ class AtomicInfoScreen extends StatelessWidget {
         AspectRatio(aspectRatio: 2 / 1.5, child: _AtomicInfoPreview(element)).inGridArea('preview'),
         _AtomicDetails(element).inGridArea('info'),
         _AtomicProperties(element).inGridArea('prop'),
-        AspectRatio(aspectRatio: 2 / 1.5, child: _TrendsCard(element: element, key: ValueKey("Trends Area"))).inGridArea('trend'),
-        // _AtomicEmissionSpectra(element).inGridArea("spectra"),
+        AspectRatio(aspectRatio: 2 / 1.5, child: _TrendsCard(element: element, key: _trendKey)).inGridArea('trend'),
+        _AtomicEmissionSpectra(element).inGridArea("spectra"),
       ],
     ));
   }
@@ -111,23 +111,6 @@ class _TrendsCard extends StatelessWidget {
         child: AtomicTrends(element: element),
         // child: TestState(),
       ),
-    );
-  }
-}
-
-class TestState extends StatefulWidget {
-  TestState({Key? key}) : super(key: key);
-
-  @override
-  _TestStateState createState() => _TestStateState();
-}
-
-class _TestStateState extends State<TestState> {
-  @override
-  Widget build(BuildContext context) {
-    print("build parent");
-    return Container(
-      child: null,
     );
   }
 }
@@ -189,7 +172,7 @@ class _AtomicInfoPreview extends StatelessWidget {
   }
 }
 
-class _AtomicEmissionSpectra extends HookConsumerWidget {
+class _AtomicEmissionSpectra extends ConsumerWidget {
   const _AtomicEmissionSpectra(this.element, {Key? key}) : super(key: key);
 
   final AtomicData element;
@@ -204,7 +187,7 @@ class _AtomicEmissionSpectra extends HookConsumerWidget {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(10.0),
               child: (elementsBloc.getSpectralImage(element.name) ?? Container()),
-            ).expanded(),
+            ),
           )
         : Container();
   }

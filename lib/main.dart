@@ -36,7 +36,7 @@ class Molarity extends StatelessWidget {
         ),
 
         // primaryColor: mcgpalette0.shade500
-        scaffoldBackgroundColor: Color.fromRGBO(26, 31, 44, 1),
+        scaffoldBackgroundColor: const Color.fromRGBO(26, 31, 44, 1),
       ),
       home: PeriodicTableScreen(),
     );

@@ -11,9 +11,13 @@ class PeriodicTableTile extends StatefulWidget {
   final Function(AtomicData)? onHover;
   final Function(AtomicData)? onSecondaryTap;
   final Color Function(AtomicData)? tileColorGetter;
+  final String? subText;
+  final String? superText;
 
   const PeriodicTableTile(
     this.element, {
+    this.subText,
+    this.superText,
     this.onHover,
     this.onSecondaryTap,
     this.tileColorGetter,
@@ -47,7 +51,7 @@ class _PeriodicTableTileState extends State<PeriodicTableTile> {
           flex: 3,
           child: FittedBox(
             fit: BoxFit.fitHeight,
-            child: _TileSub(widget.element.atomicNumber.toString()),
+            child: _TileSub(widget.superText ?? widget.element.atomicNumber.toString()),
           ),
         ),
         Expanded(
@@ -63,7 +67,7 @@ class _PeriodicTableTileState extends State<PeriodicTableTile> {
           flex: 3,
           child: FittedBox(
             fit: BoxFit.fitHeight,
-            child: _TileSub(widget.element.symbol),
+            child: _TileSub(widget.subText ?? widget.element.symbol),
           ),
         ),
         // Expanded(child: Center(child: elementTitle)),

@@ -23,19 +23,6 @@ class PeriodicTable extends HookConsumerWidget {
     return elementsBloc!.loading ? Center(child: CircularProgressIndicator()) : _buildGrid(context);
   }
 
-  // final ValueNotifier<AtomicData?> trackedElement = ValueNotifier(null);
-  // final ValueNotifier<CompoundData?> trackedCompound = ValueNotifier(null);
-  // final ValueNotifier<_PeriodicTableStates> state = ValueNotifier(_PeriodicTableStates.noElement);
-
-  // @override
-  // void dispose() {
-  //   trackedElement.dispose();
-  //   state.dispose();
-  //   trackedCompound.dispose();
-
-  //   super.dispose();
-  // }
-
   Widget _buildGrid(BuildContext context) {
     final state = useValueNotifier(_PeriodicTableStates.noElement);
     final trackedElement = useValueNotifier<AtomicData?>(null);
@@ -49,16 +36,18 @@ class PeriodicTable extends HookConsumerWidget {
       rowGap: 1.5,
       children: [
         ValueListenableBuilder<_PeriodicTableStates>(
-            valueListenable: state,
-            builder: (BuildContext context, _PeriodicTableStates _state, Widget? child) {
-              return AspectRatio(
-                  aspectRatio: 401 / 122.2,
-                  child: _InteractiveBox(
-                    state,
-                    trackedElement,
-                    trackedCompound,
-                  )).withGridPlacement(columnSpan: 10, rowStart: 0, columnStart: 2, rowSpan: 3);
-            }),
+          valueListenable: state,
+          builder: (BuildContext context, _PeriodicTableStates _state, Widget? child) {
+            return AspectRatio(
+              aspectRatio: 401 / 122.2,
+              child: _InteractiveBox(
+                state,
+                trackedElement,
+                trackedCompound,
+              ),
+            ).withGridPlacement(columnSpan: 10, rowStart: 0, columnStart: 2, rowSpan: 3);
+          },
+        ),
         for (final e in elementsBloc!.elements)
           AspectRatio(
             aspectRatio: 40.1 / 42.4,
@@ -66,6 +55,7 @@ class PeriodicTable extends HookConsumerWidget {
               e,
               onSecondaryTap: (element) {
                 trackedCompound.value += element;
+                trackedCompound.notifyListeners();
 
                 state.value = _PeriodicTableStates.calculationBox;
               },
@@ -79,17 +69,6 @@ class PeriodicTable extends HookConsumerWidget {
       ],
     );
   }
-
-  // void _addElementToCompound(AtomicData element) {
-  //   if (trackedCompound.value == null)
-  //     trackedCompound.value = CompoundData.fromAtomicData(element);
-  //   else {
-  //     trackedCompound.value!.addElement(element);
-  //     // Look I know this sucks, but I'm lazy
-  //     trackedCompound.notifyListeners();
-  //   }
-
-  // }
 }
 
 class _InteractiveBox extends StatelessWidget {
@@ -108,14 +87,15 @@ class _InteractiveBox extends StatelessWidget {
         return InfoBox(element: null);
       case _PeriodicTableStates.calculationBox:
         return ValueListenableBuilder<CompoundData?>(
-            valueListenable: trackedCompound,
-            builder: (BuildContext context, CompoundData? compound, Widget? child) => MolarMassBox(
-                  compound: compound!,
-                  onClear: () {
-                    state.value = _PeriodicTableStates.noElement;
-                    trackedCompound.value = null;
-                  },
-                ));
+          valueListenable: trackedCompound,
+          builder: (BuildContext context, CompoundData? compound, Widget? child) => MolarMassBox(
+            compound: compound!,
+            onClear: () {
+              state.value = _PeriodicTableStates.noElement;
+              trackedCompound.value = null;
+            },
+          ),
+        );
       default:
         return InfoBox(element: null);
     }
