@@ -5,8 +5,6 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:molarity/widgets/chemoinfomatics/data.dart';
-import 'package:molarity/widgets/chemoinfomatics/widgets/periodic_table_tile.dart';
-import 'package:molarity/widgets/chemoinfomatics/widgets/periodic_table.dart';
 
 import 'package:fl_chart/fl_chart.dart';
 

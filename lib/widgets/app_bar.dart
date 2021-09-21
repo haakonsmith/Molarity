@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -7,13 +8,10 @@ import '../util.dart';
 
 class MolarityAppBar {
   static PreferredSizeWidget buildTitle(BuildContext context, Widget? title, {double? height}) {
-    var appBar = AppbarWithTab(
-      title: title!,
-      // backgroundColor: Colors.black54,
-      // backgroundColor: Colors.white.withOpacity(0.05),
-    );
-    var preferredSize = PreferredSize(
-      preferredSize: Size.fromHeight(height ?? 90.0),
+    var appBar = AppbarWithTab(title: title!);
+
+    final preferredSize = PreferredSize(
+      preferredSize: Size.fromHeight(height ?? computePrefferedSize(context)),
       child: Container(
         color: Colors.transparent,
         padding: const EdgeInsets.fromLTRB(0, 25, 0, 0),
@@ -22,6 +20,14 @@ class MolarityAppBar {
     );
 
     return Platform.isMacOS ? preferredSize : appBar;
+  }
+
+  static double computePrefferedSize(BuildContext context) {
+    // final double height = (MediaQuery.of(context).size.width / 25) >= 60 ? MediaQuery.of(context).size.width / 25 : 60;
+    final double height = (MediaQuery.of(context).size.width / 20);
+
+    return max(55, height);
+    // return (MediaQuery.of(context).size.width / 25).clamp(50, 70);
   }
 }
 
@@ -51,7 +57,7 @@ class AppbarWithTab extends StatefulWidget implements PreferredSizeWidget {
   final double elevation;
   final bool automaticallyImplyLeading;
   final Color? backgroundColor;
-  final TextStyle titleTextStyle = TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Colors.white);
+  final TextStyle titleTextStyle = const TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Colors.white);
 
   /// {@template flutter.material.appbar.bottom}
   /// This widget appears across the bottom of the app bar.
@@ -74,7 +80,7 @@ class AppbarWithTab extends StatefulWidget implements PreferredSizeWidget {
 
   final ShapeBorder kTabShape;
   final ShapeBorder kAppbarShape;
-  final Widget kBackBtn = Icon(
+  final Widget kBackBtn = const Icon(
     Icons.arrow_back_ios,
     // color: Colors.black54,
   );
@@ -135,7 +141,7 @@ class _AppbarWithTabState extends State<AppbarWithTab> {
       if (Scaffold.of(context).hasDrawer) {
         leading = IconButton(
           splashRadius: 20,
-          icon: Icon(Icons.menu),
+          icon: const Icon(Icons.menu),
           onPressed: Scaffold.of(context).openDrawer,
           tooltip: MaterialLocalizations.of(context).openAppDrawerTooltip,
         );
@@ -143,7 +149,7 @@ class _AppbarWithTabState extends State<AppbarWithTab> {
         if (canPop) {
           leading = _BackButton(onPressed: widget.onBackButtonPressed);
         } else {
-          leading = Container();
+          leading = null;
         }
       }
     }
@@ -188,9 +194,9 @@ class _AppbarWithTabState extends State<AppbarWithTab> {
         color: backgroundColor,
         elevation: widget.elevation,
         shape: widget.tabShape ?? widget.kTabShape,
-        margin: EdgeInsets.all(0),
+        margin: const EdgeInsets.all(0),
         child: Container(
-          padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+          padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
           height: double.infinity,
           child: leading?.fittedBox(fit: BoxFit.fitHeight),
         ),
@@ -205,7 +211,7 @@ class _AppbarWithTabState extends State<AppbarWithTab> {
       color: Colors.transparent,
       child: Card(
         color: backgroundColor,
-        margin: EdgeInsets.all(0),
+        margin: const EdgeInsets.all(0),
         elevation: 0,
         shape: widget.kAppbarShape,
         child: Container(
@@ -216,7 +222,7 @@ class _AppbarWithTabState extends State<AppbarWithTab> {
           child: Row(
             children: [
               if (canPop) leading!.fittedBox(),
-              widget.title.fittedBox(),
+              widget.title.fittedBox().withTextStyle(style: const TextStyle(fontSize: 24)).withPaddingOnly(left: 10),
             ],
           ),
         ),
@@ -225,14 +231,14 @@ class _AppbarWithTabState extends State<AppbarWithTab> {
   }
 }
 
-ShapeBorder kBackButtonShape = RoundedRectangleBorder(
-  borderRadius: BorderRadius.only(
+ShapeBorder kBackButtonShape = const RoundedRectangleBorder(
+  borderRadius: const BorderRadius.only(
     topRight: Radius.circular(20),
     bottomRight: Radius.circular(20),
   ),
 );
 
-Widget kBackBtn = Icon(
+Widget kBackBtn = const Icon(
   Icons.arrow_back_ios,
   // color: Colors.black54,
 );

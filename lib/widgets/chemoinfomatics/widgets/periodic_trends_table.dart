@@ -3,28 +3,11 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_layout_grid/flutter_layout_grid.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:molarity/BLoC/elements_data_bloc.dart';
+import 'package:molarity/data/elements_data_bloc.dart';
 import 'package:molarity/util.dart';
 import 'package:molarity/widgets/chemoinfomatics/data.dart';
 import 'package:molarity/widgets/chemoinfomatics/widgets/periodic_table_tile.dart';
 import 'package:molarity/widgets/chemoinfomatics/widgets/atomic_trends.dart';
-
-class PeriodicTableDataTween extends Tween<List<double>> {
-  PeriodicTableDataTween({List<double>? begin, List<double>? end}) : super(begin: begin, end: end);
-
-  @override
-  List<double> lerp(double t) {
-    print("lerp");
-    return begin!.mapIndexed((e, i) => e + (end![i] - e) * t).toList();
-  }
-}
-
-// extension IndexedIterable<E> on Iterable<E> {
-//   Iterable<T> mapIndexed<T>(T Function(E e, int i) f) {
-//     var i = 0;
-//     return map((e) => f(e, i++));
-//   }
-// }
 
 enum _PeriodicTableStates { noElement, calculationBox, element }
 
@@ -43,13 +26,11 @@ class _PeriodicTrendsTableState extends ConsumerState<PeriodicTrendsTable> {
   final ValueNotifier<_PeriodicTableStates> state = ValueNotifier(_PeriodicTableStates.noElement);
 
   late List<double> elementsData = [];
-  PeriodicTableDataTween? tween;
   bool _dataRequiresUpdate = true;
 
   @override
   void initState() {
     trackedAttribute.addListener(() => setState(() {
-          // print(trackedAttribute.value);
           _dataRequiresUpdate = true;
         }));
 

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 
 import 'package:flutter/rendering.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'dart:core';
 
@@ -16,14 +17,14 @@ extension IndexedIterable<E> on Iterable<E> {
   }
 }
 
-class ListDrawer extends StatefulWidget {
+class ListDrawer extends ConsumerStatefulWidget {
   ListDrawer({Key? key}) : super(key: key);
 
   @override
   _ListDrawerState createState() => _ListDrawerState();
 }
 
-class _ListDrawerState extends State<ListDrawer> with TickerProviderStateMixin {
+class _ListDrawerState extends ConsumerState<ListDrawer> with TickerProviderStateMixin {
   late AnimationController _controller;
   late Animation _animation;
 

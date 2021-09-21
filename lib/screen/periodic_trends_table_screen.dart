@@ -5,17 +5,12 @@ import 'package:molarity/widgets/list_drawer.dart';
 
 /// This is the first landing page and screen which shows the basic periodic table
 class PeriodicTrendsTableScreen extends StatelessWidget {
+  PeriodicTrendsTableScreen({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: MolarityAppBar.buildTitle(
-          context,
-          Text(
-            "Periodic Trends",
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w200),
-            textScaleFactor: 1.5,
-          ),
-          height: MediaQuery.of(context).size.width / 15 >= 50 ? MediaQuery.of(context).size.width / 15 : 50),
+      appBar: MolarityAppBar.buildTitle(context, const Text("Periodic Trends")),
       drawer: ListDrawer(),
       body: SingleChildScrollView(
         child: Padding(

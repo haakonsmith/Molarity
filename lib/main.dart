@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:molarity/BLoC/elements_data_bloc.dart';
 import 'package:molarity/screen/periodic_table_screen.dart';
 import 'package:molarity/theme.dart';
 
@@ -16,7 +15,10 @@ void main() {
 // TODO add trends screen
 // TODO add temperature experimentation screen
 // TODO profile memory usage
+
 class Molarity extends StatelessWidget {
+  Molarity({Key? key}) : super(key: key);
+
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {

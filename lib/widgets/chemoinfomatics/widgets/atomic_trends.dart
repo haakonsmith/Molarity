@@ -1,5 +1,3 @@
-import 'dart:collection';
-import 'dart:ffi';
 import 'dart:math';
 
 import 'package:fl_chart/fl_chart.dart';
@@ -7,24 +5,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:molarity/BLoC/elements_data_bloc.dart';
+import 'package:molarity/data/elements_data_bloc.dart';
 import 'package:molarity/widgets/chemoinfomatics/util.dart';
-import 'package:molarity/widgets/info_box.dart';
 
 import '../data.dart';
 import '../../../util.dart';
 import 'element_property_selector.dart';
-
-import 'dart:math';
-
-import 'package:fl_chart/fl_chart.dart';
-import 'package:flutter/material.dart';
-import 'package:molarity/BLoC/elements_data_bloc.dart';
-import 'package:molarity/widgets/chemoinfomatics/util.dart';
-import 'package:molarity/widgets/info_box.dart';
-
-import '../data.dart';
-import '../../../util.dart';
 
 class _AtomicGraphModel {
   final double maxY;
@@ -232,7 +218,7 @@ class _AtomicPropertyGraphState extends ConsumerState<AtomicPropertyGraph> {
 
     final rangeAnnotations = data.annotationX != null
         ? RangeAnnotations(verticalRangeAnnotations: [
-            if (widget.element != null) VerticalRangeAnnotation(x1: annotationX!, x2: annotationX + .3, color: baseColor.withRed(200).desaturate(.05)),
+            if (widget.element != null) VerticalRangeAnnotation(x1: annotationX! - .15, x2: annotationX + .15, color: baseColor.withRed(200).desaturate(.05)),
           ])
         : null;
 
@@ -298,8 +284,13 @@ class _ControlPanel extends HookWidget {
     final atomicAttribute = useValueNotifier("Melting Point");
     final shouldRemove = useValueNotifier(true);
 
+    final windowSize = MediaQuery.of(context).size;
+    final shouldDisplayUnit = windowSize.width <= 530;
+
+    print(windowSize.width);
+
     final dropdown = AtomicAttributeSelector(
-      selectables: ['Melting Point', 'Boiling Point', 'Density', 'Atomic Mass', 'Molar Heat', 'Electron Negativity'],
+      selectables: const ['Melting Point', 'Boiling Point', 'Density', 'Atomic Mass', 'Molar Heat', 'Electron Negativity'],
       onChanged: (val) {
         atomicAttribute.value = val!;
 
@@ -308,8 +299,9 @@ class _ControlPanel extends HookWidget {
     );
 
     return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        SizedBox(width: 15),
+        if (!shouldDisplayUnit) const SizedBox(width: 15),
         ValueListenableBuilder(
           valueListenable: shouldRemove,
           builder: (BuildContext context, dynamic value, Widget? child) {
@@ -319,34 +311,33 @@ class _ControlPanel extends HookWidget {
               onChanged: (val) {
                 shouldRemove.value = val!;
 
-                if (onCheckBoxChanged != null) onCheckBoxChanged!(!val);
+                onCheckBoxChanged?.call(!val);
               },
             ).fittedBox();
           },
         ),
-        Text(
+        const Text(
           "Remove Unknown Values",
           style: const TextStyle(fontWeight: FontWeight.w200, color: Colors.white54),
-        ).fittedBox(fit: BoxFit.fitHeight),
+        ).fittedBox(fit: BoxFit.fitWidth),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
           child: Center(child: dropdown).fittedBox(fit: BoxFit.fitHeight),
         ),
         Spacer(),
-        Padding(
-          padding: const EdgeInsets.only(bottom: 5),
-          child: Text("Unit: ").fittedBox(),
-        ),
-        ValueListenableBuilder(
-          valueListenable: atomicAttribute,
-          builder: (context, String value, child) => Padding(
-            padding: const EdgeInsets.only(left: 5, bottom: 5),
-            child: AtomicUnit(
-              value,
-              fontSize: 14,
-            ),
+        if (!shouldDisplayUnit)
+          const Padding(
+            padding: const EdgeInsets.only(bottom: 5),
+            child: const FittedBox(child: const Text("Unit: ")),
           ),
-        ).fittedBox()
+        if (!shouldDisplayUnit)
+          ValueListenableBuilder(
+            valueListenable: atomicAttribute,
+            builder: (context, String value, child) => Padding(
+              padding: const EdgeInsets.only(left: 5, bottom: 5),
+              child: AtomicUnit(value, fontSize: 14),
+            ),
+          ).fittedBox()
       ],
     );
   }

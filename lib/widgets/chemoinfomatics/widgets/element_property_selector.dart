@@ -27,7 +27,7 @@ class AtomicAttributeSelector extends HookWidget {
     'Electron Configuration',
   ];
 
-  final backgroundColor;
+  final Color backgroundColor;
 
   @override
   Widget build(BuildContext context) {
@@ -38,6 +38,8 @@ class AtomicAttributeSelector extends HookWidget {
     return Container(
       color: backgroundColor,
       child: DropdownButton<String>(
+        borderRadius: BorderRadius.circular(15),
+        dropdownColor: Theme.of(context).scaffoldBackgroundColor,
         // underline: Container(),
         value: dropdownValue.value,
         items: selectables
@@ -52,7 +54,7 @@ class AtomicAttributeSelector extends HookWidget {
             )
             .toList(),
         onChanged: (val) {
-          if (onChanged != null) onChanged!(val);
+          onChanged?.call(val);
 
           dropdownValue.value = val!;
         },

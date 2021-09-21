@@ -23,7 +23,6 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  provider:
   flutter_layout_grid: ^1.0.1
   msix: ^2.1.0
   flutter_math_fork: ^0.4.0+1

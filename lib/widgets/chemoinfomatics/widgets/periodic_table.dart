@@ -4,8 +4,8 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_layout_grid/flutter_layout_grid.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:molarity/BLoC/elements_data_bloc.dart';
-import 'package:molarity/widgets/calculation_box.dart';
+import 'package:molarity/data/elements_data_bloc.dart';
+import 'package:molarity/widgets/molar_mass_box.dart';
 import 'package:molarity/widgets/info_box.dart';
 
 import '../data.dart';
@@ -14,6 +14,10 @@ import 'periodic_table_tile.dart';
 enum _PeriodicTableStates { noElement, calculationBox, element }
 
 class PeriodicTable extends HookConsumerWidget {
+  PeriodicTable({this.onCompoundSaved, Key? key}) : super(key: key);
+
+  final CompoundDataCallback? onCompoundSaved;
+
   ElementsBloc? elementsBloc;
 
   @override
@@ -28,12 +32,14 @@ class PeriodicTable extends HookConsumerWidget {
     final trackedElement = useValueNotifier<AtomicData?>(null);
     final trackedCompound = useValueNotifier(CompoundData.empty());
 
+    final windowSize = MediaQuery.of(context).size;
+
     return LayoutGrid(
       gridFit: GridFit.loose,
       columnSizes: repeat(18, [1.fr]),
       rowSizes: repeat(10, [auto]),
-      columnGap: 1.5,
-      rowGap: 1.5,
+      columnGap: windowSize.width / 600,
+      rowGap: windowSize.width / 600,
       children: [
         ValueListenableBuilder<_PeriodicTableStates>(
           valueListenable: state,
@@ -44,6 +50,7 @@ class PeriodicTable extends HookConsumerWidget {
                 state,
                 trackedElement,
                 trackedCompound,
+                onCompoundSaved: onCompoundSaved,
               ),
             ).withGridPlacement(columnSpan: 10, rowStart: 0, columnStart: 2, rowSpan: 3);
           },
@@ -72,11 +79,13 @@ class PeriodicTable extends HookConsumerWidget {
 }
 
 class _InteractiveBox extends StatelessWidget {
-  const _InteractiveBox(this.state, this.trackedElement, this.trackedCompound, {Key? key}) : super(key: key);
+  const _InteractiveBox(this.state, this.trackedElement, this.trackedCompound, {Key? key, this.onCompoundSaved}) : super(key: key);
 
   final ValueNotifier<_PeriodicTableStates> state;
   final ValueNotifier<AtomicData?> trackedElement;
   final ValueNotifier<CompoundData?> trackedCompound;
+
+  final CompoundDataCallback? onCompoundSaved;
 
   @override
   Widget build(BuildContext context) {
@@ -90,9 +99,13 @@ class _InteractiveBox extends StatelessWidget {
           valueListenable: trackedCompound,
           builder: (BuildContext context, CompoundData? compound, Widget? child) => MolarMassBox(
             compound: compound!,
+            onSave: onCompoundSaved,
             onClear: () {
+              trackedCompound.value = CompoundData.empty();
               state.value = _PeriodicTableStates.noElement;
-              trackedCompound.value = null;
+            },
+            onClose: () {
+              state.value = _PeriodicTableStates.noElement;
             },
           ),
         );

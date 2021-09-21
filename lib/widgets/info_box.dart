@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:molarity/BLoC/elements_data_bloc.dart';
+import 'package:molarity/data/elements_data_bloc.dart';
 
 import '../theme.dart';
 import 'chemoinfomatics/widgets/atomic_bohr_model.dart';
 import 'chemoinfomatics/data.dart';
 import 'chemoinfomatics/util.dart';
 import '../util.dart';
+import 'chemoinfomatics/widgets/element_property_selector.dart';
 
 class InfoBox extends HookConsumerWidget {
   final AtomicData? element;
@@ -197,9 +198,9 @@ class _ElementalInfoState extends State<ElementalInfo> {
 
     var dropDown = Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: ElementAttributeSelector(
-        attribute: attribute,
-      ),
+      child: AtomicAttributeSelector(onChanged: (val) {
+        attribute.value = val!;
+      }),
     );
 
     return Column(

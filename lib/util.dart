@@ -2,7 +2,7 @@
 
 import 'dart:ui';
 
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/widgets.dart';
 
 extension HexColor on Color {
   /// String is in the format "aabbcc" or "ffaabbcc" with an optional leading "#".
@@ -98,5 +98,22 @@ extension StyledWidget on Widget {
       child: this,
       flex: flex,
     );
+  }
+
+  SizedBox fixedSize({double? width, double? height}) {
+    return SizedBox(child: this, width: width, height: height);
+  }
+
+  Widget withTextStyle({TextStyle? style}) {
+    return DefaultTextStyle.merge(style: style, child: this);
+  }
+
+  Widget withPaddingOnly({
+    double left = 0,
+    double bottom = 0,
+    double top = 0,
+    double right = 0,
+  }) {
+    return Padding(padding: EdgeInsets.only(left: left, right: right, top: top, bottom: bottom), child: this);
   }
 }

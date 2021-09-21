@@ -12,6 +12,9 @@ enum AtomicProperty {
   simplifedElectronConfiguration
 }
 
+typedef void AtomicDataCallback(AtomicData atomicData);
+typedef void CompoundDataCallback(CompoundData compoundData);
+
 class AtomicData {
   int atomicNumber;
   String symbol;
@@ -256,6 +259,10 @@ class CompoundData {
     });
 
     return molarMass;
+  }
+
+  CompoundData copy() {
+    return CompoundData(Map.from(rawCompound));
   }
 
   CompoundData addElement(AtomicData element) {

@@ -4,7 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_layout_grid/flutter_layout_grid.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:molarity/BLoC/elements_data_bloc.dart';
+import 'package:molarity/data/elements_data_bloc.dart';
 import 'package:molarity/widgets/app_bar.dart';
 import 'package:molarity/widgets/chemoinfomatics/widgets/atomic_bohr_model.dart';
 import 'package:molarity/widgets/chemoinfomatics/data.dart';
@@ -31,7 +31,7 @@ class AtomicInfoScreen extends StatelessWidget {
     );
 
     return Scaffold(
-      appBar: MolarityAppBar.buildTitle(context, appBarTitle, height: MediaQuery.of(context).size.width / 15 >= 60 ? MediaQuery.of(context).size.width / 15 : 60),
+      appBar: MolarityAppBar.buildTitle(context, appBarTitle),
       body: SingleChildScrollView(
         child: LayoutBuilder(builder: (context, constraints) {
           return Padding(padding: const EdgeInsets.all(8), child: constraints.maxWidth > 940 ? _buildLargeScreen(context) : _buildSmallScreen(context));
@@ -104,11 +104,11 @@ class _TrendsCard extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(8),
       child: TitledCard(
-        title: Text(
-          "Atomic Property Trend",
-          // textAlign: TextAlign.center,
+        title: const Text("Atomic Property Trend"),
+        child: AtomicTrends(
+          element: element,
+          displayLabels: MediaQuery.of(context).size.width >= 530,
         ),
-        child: AtomicTrends(element: element),
         // child: TestState(),
       ),
     );
@@ -209,13 +209,10 @@ class _AtomicAttribute extends StatelessWidget {
             fit: BoxFit.contain,
             child: SelectableText(
               value,
-              style: const TextStyle(fontWeight: FontWeight.w200, fontSize: 20),
+              style: const TextStyle(fontWeight: FontWeight.w200, fontSize: 14),
             ),
           ),
-          FittedBox(
-            fit: BoxFit.contain,
-            child: SelectableText(name),
-          )
+          SelectableText(name),
         ],
       ),
     );
