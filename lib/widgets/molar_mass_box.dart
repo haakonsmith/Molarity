@@ -23,8 +23,6 @@ class _MolarMassBoxState extends ConsumerState<MolarMassBox> {
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
 
-    print(screenSize.width / 80);
-
     final clearButton = _ControlButton(
       icon: Icon(Icons.delete_forever),
       onTap: widget.onClear,

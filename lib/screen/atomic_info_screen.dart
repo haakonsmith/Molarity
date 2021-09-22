@@ -22,7 +22,6 @@ class AtomicInfoScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // print("\nbuild22");
     final appBarTitle = Text.rich(
       TextSpan(children: [
         TextSpan(text: "${element.atomicNumber.toString()} – ${element.name} ", style: const TextStyle(fontSize: 25, fontWeight: FontWeight.w200, color: Colors.white)),
@@ -41,7 +40,6 @@ class AtomicInfoScreen extends StatelessWidget {
   }
 
   Widget _buildSmallScreen(BuildContext context) {
-    // print("Build 33");
     return Container(
         child: LayoutGrid(
       gridFit: GridFit.loose,
@@ -67,7 +65,6 @@ class AtomicInfoScreen extends StatelessWidget {
   }
 
   Widget _buildLargeScreen(BuildContext context) {
-    // print("Build 44");
     return Container(
         child: LayoutGrid(
       gridFit: GridFit.loose,
@@ -100,16 +97,11 @@ class _TrendsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // print("build");
     return Padding(
       padding: const EdgeInsets.all(8),
       child: TitledCard(
         title: const Text("Atomic Property Trend"),
-        child: AtomicTrends(
-          element: element,
-          displayLabels: MediaQuery.of(context).size.width >= 530,
-        ),
-        // child: TestState(),
+        child: AtomicTrends(element: element, displayLabels: MediaQuery.of(context).size.width >= 530),
       ),
     );
   }
@@ -123,18 +115,14 @@ class _AtomicInfoPreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      // width: 200,
       margin: const EdgeInsets.all(12),
-      // color: Colors.white.withOpacity(0.1),
       child: Column(mainAxisAlignment: MainAxisAlignment.start, children: [
         Expanded(
           flex: 6,
           child: FittedBox(fit: BoxFit.contain, child: Container(width: 200, height: 300, child: AtomicBohrModel(element))),
         ),
-        // _AtomicAttribute("Atomic Number", element.atomicNumber.toString()).expanded(),
         Expanded(
           flex: 2,
-          // fit: FlexFit.tight,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -151,7 +139,6 @@ class _AtomicInfoPreview extends StatelessWidget {
         ),
         Expanded(
           flex: 2,
-          // fit: FlexFit.tight,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             mainAxisSize: MainAxisSize.max,

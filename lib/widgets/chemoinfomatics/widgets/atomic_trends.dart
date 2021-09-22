@@ -287,8 +287,6 @@ class _ControlPanel extends HookWidget {
     final windowSize = MediaQuery.of(context).size;
     final shouldDisplayUnit = windowSize.width <= 530;
 
-    print(windowSize.width);
-
     final dropdown = AtomicAttributeSelector(
       selectables: const ['Melting Point', 'Boiling Point', 'Density', 'Atomic Mass', 'Molar Heat', 'Electron Negativity'],
       onChanged: (val) {

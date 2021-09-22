@@ -47,7 +47,6 @@ class _SavedCompoundDataListviewState extends ConsumerState<SavedCompoundDataLis
       molecularFormula: Math.tex(data[index - 1].toTex()),
       molarMass: Math.tex(data[index - 1].molarMass.toStringAsFixed(2)),
       onDelete: () {
-        print(index - 1);
         ref.read(preferencedCompoundsProvider).removeSavedCompountAt(index - 1);
 
         widget.onDelete?.call(index - 1);
