@@ -43,7 +43,7 @@ class _PeriodicTableTileState extends State<PeriodicTableTile> {
       tileColor = categoryColorMapping[widget.element.category]!;
     else
       tileColor = widget.tileColorGetter!(widget.element);
-    final content = Column(
+    Widget content = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
@@ -76,7 +76,7 @@ class _PeriodicTableTileState extends State<PeriodicTableTile> {
     return MouseRegion(
       key: _key,
       onHover: (value) {
-        widget.onHover!(widget.element);
+        widget.onHover?.call(widget.element);
 
         setState(() {
           elevation = 16;
@@ -92,7 +92,7 @@ class _PeriodicTableTileState extends State<PeriodicTableTile> {
         onTap: () => Navigator.of(context).push(_createRoute(_key)),
         onSecondaryTap: () => widget.onSecondaryTap!(widget.element),
         child: Card(
-          elevation: elevation,
+          // elevation: elevation,
           color: tileColor.darken(isDimmed ? .1 : 0),
           margin: const EdgeInsets.all(1),
           shape: RoundedRectangleBorder(

@@ -2,11 +2,11 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:molarity/data/elements_data_bloc.dart';
+import 'package:molarity/widgets/chemoinfomatics/widgets/periodic_table_tile.dart';
 
 import '../../../util.dart';
-
-int numItems = 40;
-var onSelectCard = ValueNotifier<int>(0);
 
 // Normalizes any number to an arbitrary range
 // by assuming the range wraps around when going below min or above max
@@ -47,11 +47,12 @@ class _HelixPeriodicTableState extends State<HelixPeriodicTable> with TickerProv
   double radio = 200.0;
   double radioStep = 0;
   bool isMousePressed = false;
-  double _dragX = 0;
+
   double angle = 0;
   int selectedCard = 0;
+  static int numItems = 118;
 
-  final totalAngle = pi * 8;
+  final totalAngle = pi * (numItems / 10 * 2);
 
   @override
   void initState() {
@@ -61,18 +62,10 @@ class _HelixPeriodicTableState extends State<HelixPeriodicTable> with TickerProv
     _scaleController = AnimationController(duration: const Duration(milliseconds: 500), vsync: this);
     _scaleController.addListener(() => setState(() {}));
 
-    onSelectCard.addListener(() {
-      final idx = onSelectCard.value;
-      _dragX = 0;
-      angle = -idx * radioStep;
-      setState(() {});
-    });
-
     _rotationController = AnimationController(value: 0, upperBound: 2000, lowerBound: -2000, duration: const Duration(milliseconds: 500), vsync: this);
     _rotationController.addListener(() {
       if (!isMousePressed)
         setState(() {
-          // print(_panController.value);
           angle = _rotationController.value;
         });
     });
@@ -85,6 +78,7 @@ class _HelixPeriodicTableState extends State<HelixPeriodicTable> with TickerProv
   double convertDragToAngleOffset(double panX) => (-panX * .006);
 
   double normalise(double angle) => angle - (angle / (totalAngle)).floorToDouble() * totalAngle;
+  double selectCardAngle(int index) => -(index - 2) * radioStep + ((totalAngle / 2) / (tileData.length / 2)) / 2;
   // double normalise(double angle) => normaliseRange(angle, -pi, pi);
 
   // Normalizes any number to an arbitrary range
@@ -97,24 +91,8 @@ class _HelixPeriodicTableState extends State<HelixPeriodicTable> with TickerProv
     // + start to reset back to start of original range
   }
 
-  // double normalise(double angle) {
-  //   final itemIndex = (convertDragToAngleOffset(angle) / (2 * pi / tileData.length)).floorToDouble();
-  //   print(itemIndex);
-  //   // print(convertDragToAngleOffset(angle));
-
-  //   // final _dragX = 0;
-  //   final selectedAngle = -itemIndex * radioStep;
-
-  //   return selectedAngle;
-
-  //   // return initAngleOffset + itemIndex * radioStep;
-  // }
-
   @override
   Widget build(BuildContext context) {
-    // var initAngleOffset = convertDragToAngleOffset(_dragX);
-    // initAngleOffset += selectedAngle;
-
     // process positions.
     for (var i = 0; i < tileData.length; ++i) {
       final c = tileData[i];
@@ -125,46 +103,49 @@ class _HelixPeriodicTableState extends State<HelixPeriodicTable> with TickerProv
       c.z = sin(ang) * radio;
     }
 
-    // final indices = List.generate(tileData.length, (i) => i);
-
     // sort in Z axis.
     tileData.sort((a, b) => a.z.compareTo(b.z));
-    // final sortedTiles = List.from(tileData);
-    // sortedTiles.sort((a, b) => a.z.compareTo(b.z));
 
-    var list = tileData.mapIndexed((vo, index) {
-      var c = addCard(vo);
-      var mt2 = Matrix4.identity();
+    final List<Widget> cardsToRender = [];
+
+    // var list = tileData.mapIndexed((vo, index) {
+    //   Widget child = addCard(vo);
+    //   final mt2 = Matrix4.identity();
+
+    //   mt2.setEntry(3, 2, 0.001);
+    //   mt2.translate(vo.x, vo.idx * 15.0 + angle * 25 - 100, -vo.z);
+    //   mt2.rotateY(vo.angle + pi);
+
+    //   child = Transform(
+    //     alignment: Alignment.center,
+    //     origin: Offset(0.0, -100 - _scaleController.value * 200.0),
+    //     transform: mt2,
+    //     child: child,
+    //   );
+
+    //   return child;
+    // }).toList();
+
+    for (final vo in tileData) {
+      Widget child = addCard(vo);
+      final mt2 = Matrix4.identity();
+
+      final y = vo.idx * 15.0 + angle * 25 - 100;
+      // print(y);
 
       mt2.setEntry(3, 2, 0.001);
-      mt2.translate(vo.x, vo.idx * 10.0 + angle * 20 - 100, -vo.z);
+      mt2.translate(vo.x, y, -vo.z);
       mt2.rotateY(vo.angle + pi);
-      c = Transform(
+
+      child = Transform(
         alignment: Alignment.center,
         origin: Offset(0.0, -100 - _scaleController.value * 200.0),
         transform: mt2,
-        child: c,
+        child: child,
       );
 
-      // depth of field... doesnt work on web.
-//      var blur = .4 + ((1 - vo.z / radio) / 2) * 2;
-//      c = BackdropFilter(
-//        filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
-//        child: c,
-//      );
-
-      return c;
-    }).toList();
-
-    // return Container(
-    //   alignment: Alignment.center,
-    //   child: Stack(
-    //     alignment: Alignment.center,
-    //     children: list,
-    //   ),
-    // );
-
-    double selectCardAngle(int index) => -(index - 2) * radioStep + ((totalAngle / 2) / (tileData.length / 2)) / 2;
+      if (y < 80 && y > -350 && -vo.z < 60) cardsToRender.add(child);
+    }
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
@@ -176,27 +157,19 @@ class _HelixPeriodicTableState extends State<HelixPeriodicTable> with TickerProv
       onPanUpdate: (e) {
         _rotationController.stop();
 
-        // _dragX += e.delta.dx;
-
         angle += convertDragToAngleOffset(e.delta.dx);
 
-        print(angle);
-        // print(_dragX);
         selectedCard = normaliseRange(-(normalise(angle) / ((totalAngle / 2) / (tileData.length / 2))).floor() + 2, 0, tileData.length.toDouble()).floor();
+
         setState(() {});
       },
       onPanEnd: (e) {
         _rotationController.value = angle;
-        // angle = normalise(angle);
-        print("\n Drag end \n" + tileData.length.toString());
-        // angle = convertDragToAngleOffset(_dragX);
-        print("Selected angle: " + angle.toString());
-        print("Selected card: " + selectedCard.toString());
-        // print(_dragX);
 
-        // _dragX = normalise(_dragX);
         isMousePressed = false;
+
         print(selectCardAngle(selectedCard));
+
         _rotationController.animateTo(selectCardAngle(selectedCard), duration: const Duration(seconds: 1), curve: Curves.fastLinearToSlowEaseIn);
         _scaleController.animateTo(0, duration: const Duration(seconds: 1), curve: Curves.fastLinearToSlowEaseIn);
       },
@@ -204,38 +177,44 @@ class _HelixPeriodicTableState extends State<HelixPeriodicTable> with TickerProv
         alignment: Alignment.center,
         child: Stack(
           alignment: Alignment.center,
-          children: list,
+          children: cardsToRender,
         ),
       ),
     );
   }
 
   Widget addCard(TileData vo) {
-    var alpha = ((1 - vo.z / radio) / 2) * .6;
+    var alpha = ((1 - vo.z / radio) / 2) * 1;
 
     final isSelected = vo.idx == selectedCard;
 
+    final double darken = isSelected ? 0 : 0.2;
+
     return Container(
-      margin: const EdgeInsets.all(12),
+      // margin: const EdgeInsets.all(12),
       width: 120,
-      height: 80,
+      height: 120,
       alignment: Alignment.center,
       foregroundDecoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
         color: Colors.black.withOpacity(alpha),
       ),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          stops: [0.1, .9],
-          colors: [vo.lightColor, vo.color],
-        ),
-        borderRadius: BorderRadius.circular(12),
+        //   gradient: LinearGradient(
+        //     begin: Alignment.topLeft,
+        //     end: Alignment.bottomRight,
+        //     stops: const [0.1, .9],
+        //     colors: [vo.lightColor.darken(darken), vo.color.darken(darken)],
+        //   ),
+        borderRadius: BorderRadius.circular(4),
         border: isSelected ? Border.all(color: Colors.white) : null,
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(.2 + alpha * .2), spreadRadius: 1, blurRadius: 12, offset: Offset(0, 2))],
+        //   boxShadow: [BoxShadow(color: Colors.black.withOpacity(.2 + alpha * .2), spreadRadius: 1, blurRadius: 12, offset: Offset(0, 2))],
       ),
-      child: Text('ITEM ${vo.idx}'),
+      child: Consumer(
+        builder: (context, ref, child) {
+          return PeriodicTableTile(ref.watch(elementsBlocProvider).elements[vo.idx]);
+        },
+      ),
     );
   }
 }
