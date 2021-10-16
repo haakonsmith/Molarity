@@ -1,14 +1,11 @@
-import 'dart:io';
-
-import 'package:flutter/material.dart';
-
-import 'package:flutter/rendering.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
-
 import 'dart:core';
 
+import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:molarity/screen/periodic_table_screen.dart';
 import 'package:molarity/screen/periodic_trends_table_screen.dart';
+import 'package:universal_platform/universal_platform.dart';
 
 extension IndexedIterable<E> on Iterable<E> {
   Iterable<T> mapIndexed<T>(T Function(E e, int i) f) {
@@ -18,7 +15,7 @@ extension IndexedIterable<E> on Iterable<E> {
 }
 
 class ListDrawer extends ConsumerStatefulWidget {
-  ListDrawer({Key? key}) : super(key: key);
+  const ListDrawer({Key? key}) : super(key: key);
 
   @override
   _ListDrawerState createState() => _ListDrawerState();
@@ -45,7 +42,7 @@ class _ListDrawerState extends ConsumerState<ListDrawer> with TickerProviderStat
 
   Route _createRoutePeriodicTable() {
     return MaterialPageRoute(
-      builder: (context) => PeriodicTableScreen(),
+      builder: (context) => const PeriodicTableScreen(),
     );
   }
 
@@ -54,7 +51,7 @@ class _ListDrawerState extends ConsumerState<ListDrawer> with TickerProviderStat
     //   builder: (context) => PeriodicTableScreen(),
     // );
     return MaterialPageRoute(
-      builder: (context) => PeriodicTrendsTableScreen(),
+      builder: (context) => const PeriodicTrendsTableScreen(),
     );
   }
 
@@ -62,28 +59,28 @@ class _ListDrawerState extends ConsumerState<ListDrawer> with TickerProviderStat
   Widget build(BuildContext context) {
     final children = [
       ListDrawerTile(
-        leading: Icon(Icons.table_chart),
+        leading: const Icon(Icons.table_chart),
         onClick: () => Navigator.of(context).pushReplacement(_createRoutePeriodicTable()),
-        child: Text(
-          "Periodic Table",
+        child: const Text(
+          'Periodic Table',
           textScaleFactor: 1.2,
           style: TextStyle(fontWeight: FontWeight.w200),
         ),
       ),
       ListDrawerTile(
-        leading: Icon(Icons.auto_graph),
+        leading: const Icon(Icons.auto_graph),
         onClick: () => Navigator.of(context).pushReplacement(_createRoutePeriodicTrendsTable()),
-        child: Text(
-          "Periodicity",
+        child: const Text(
+          'Periodicity',
           textScaleFactor: 1.2,
           style: TextStyle(fontWeight: FontWeight.w200),
         ),
       ),
       ListDrawerTile(
-        leading: Icon(Icons.settings),
+        leading: const Icon(Icons.settings),
         onClick: () => Navigator.of(context).pushReplacement(_createRoutePeriodicTable()),
-        child: Text(
-          "Settings",
+        child: const Text(
+          'Settings',
           textScaleFactor: 1.2,
           style: TextStyle(fontWeight: FontWeight.w200),
         ),
@@ -94,10 +91,10 @@ class _ListDrawerState extends ConsumerState<ListDrawer> with TickerProviderStat
       children: [
         Container(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.all(Radius.circular(20)),
+            borderRadius: const BorderRadius.all(Radius.circular(20)),
             color: Theme.of(context).scaffoldBackgroundColor,
           ),
-          margin: EdgeInsets.fromLTRB(10, (Platform.isMacOS ? 25 : 0) + 50, 0, 0),
+          margin: EdgeInsets.fromLTRB(10, (UniversalPlatform.isMacOS ? 25 : 0) + 50, 0, 0),
           height: 48 * 3,
           child: AnimatedBuilder(
             animation: _animation,
@@ -109,7 +106,7 @@ class _ListDrawerState extends ConsumerState<ListDrawer> with TickerProviderStat
             },
           ),
         ),
-        Spacer()
+        const Spacer(),
       ],
     );
   }
@@ -145,13 +142,13 @@ class ListDrawerTile extends StatelessWidget {
     return Card(
       color: _backgroundColor,
       child: InkWell(
-        borderRadius: BorderRadius.all(Radius.circular(20)),
+        borderRadius: const BorderRadius.all(Radius.circular(20)),
         onTap: onClick,
         child: Container(
-          margin: EdgeInsets.all(8),
+          margin: const EdgeInsets.all(8),
           child: Row(mainAxisSize: MainAxisSize.min, children: [
             if (leading != null) leading!,
-            SizedBox(width: 5),
+            const SizedBox(width: 5),
             child,
           ]),
         ),

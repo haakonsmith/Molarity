@@ -6,35 +6,34 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:molarity/data/elements_data_bloc.dart';
+import 'package:molarity/util.dart';
+import 'package:molarity/widgets/chemoinfomatics/data.dart';
 import 'package:molarity/widgets/chemoinfomatics/util.dart';
-
-import '../data.dart';
-import '../../../util.dart';
-import 'element_property_selector.dart';
+import 'package:molarity/widgets/chemoinfomatics/widgets/element_property_selector.dart';
 
 class _AtomicGraphModel {
+  const _AtomicGraphModel(this.maxY, this.elements, this.annotationX);
+
   final double maxY;
   final List<AtomicData> elements;
   final double? annotationX;
-
-  const _AtomicGraphModel(this.maxY, this.elements, this.annotationX);
 }
 
 // TODO fix weird scaling with the control strip. Possibly using a [Wrap]
 class AtomicTrends extends ConsumerStatefulWidget {
+  const AtomicTrends({this.onAtomicPropertyChanged, this.element, this.displayLabels = true, this.intervalCount = 8, Key? key}) : super(key: key);
+
   final AtomicData? element;
   final int intervalCount;
   final bool displayLabels;
   final ValueChanged<String>? onAtomicPropertyChanged;
-
-  const AtomicTrends({this.onAtomicPropertyChanged, this.element, this.displayLabels = true, this.intervalCount = 8, Key? key}) : super(key: key);
 
   @override
   _AtomicTrendsState createState() => _AtomicTrendsState();
 }
 
 class _AtomicTrendsState extends ConsumerState<AtomicTrends> {
-  final ValueNotifier<String> attribute = ValueNotifier("Density");
+  final ValueNotifier<String> attribute = ValueNotifier('Density');
   final ValueNotifier<bool> showAll = ValueNotifier(false);
 
   @override
@@ -87,7 +86,7 @@ class _AtomicTrendsState extends ConsumerState<AtomicTrends> {
 
 class AtomicPropertyGraph extends ConsumerStatefulWidget {
   const AtomicPropertyGraph({
-    this.atomicProperty = "Density",
+    this.atomicProperty = 'Density',
     this.showAll = false,
     this.element,
     this.displayLabels = false,
@@ -95,13 +94,13 @@ class AtomicPropertyGraph extends ConsumerStatefulWidget {
     Key? key,
   }) : super(key: key);
 
-  static const Map<String, Color> colorMap = const {
-    "Boiling Point": const Color.fromRGBO(252, 69, 56, 1),
-    "Melting Point": const Color.fromRGBO(252, 88, 56, 1),
-    "Density": const Color.fromRGBO(88, 56, 252, 1),
-    "Atomic Mass": const Color.fromRGBO(72, 252, 56, 1),
-    "Molar Heat": const Color.fromRGBO(252, 56, 118, 1),
-    "Electron Negativity": const Color.fromRGBO(252, 245, 56, 1),
+  static const Map<String, Color> colorMap = {
+    'Boiling Point': Color.fromRGBO(252, 69, 56, 1),
+    'Melting Point': Color.fromRGBO(252, 88, 56, 1),
+    'Density': Color.fromRGBO(88, 56, 252, 1),
+    'Atomic Mass': Color.fromRGBO(72, 252, 56, 1),
+    'Molar Heat': Color.fromRGBO(252, 56, 118, 1),
+    'Electron Negativity': Color.fromRGBO(252, 245, 56, 1),
   };
 
   final String atomicProperty;
@@ -168,7 +167,7 @@ class _AtomicPropertyGraphState extends ConsumerState<AtomicPropertyGraph> {
     return _AtomicGraphModel(yMax, elementsData, annotationX);
   }
 
-  FlSpot _getSpotData(e, i) => FlSpot(i.toDouble() + 1, double.tryParse(e.getAssociatedStringValue(widget.atomicProperty)) ?? 0);
+  FlSpot _getSpotData(AtomicData e, int i) => FlSpot(i.toDouble() + 1, double.tryParse(e.getAssociatedStringValue(widget.atomicProperty)) ?? 0);
 
   List<TouchedSpotIndicatorData> _getSpotIndicators(
     LineChartBarData barData,
@@ -203,7 +202,7 @@ class _AtomicPropertyGraphState extends ConsumerState<AtomicPropertyGraph> {
         tooltipBgColor: Theme.of(context).scaffoldBackgroundColor,
         getTooltipItems: (touchedSpots) => touchedSpots
             .map((LineBarSpot touchedSpot) => LineTooltipItem(
-                  touchedSpot.y.toString() + " – " + elementsData[touchedSpot.x.toInt() - 1].name,
+                  '${touchedSpot.y} – ${elementsData[touchedSpot.x.toInt() - 1].name}',
                   TextStyle(color: touchedSpot.bar.colors[0], fontWeight: FontWeight.bold, fontSize: 14),
                 ))
             .toList(),
@@ -247,21 +246,21 @@ class _AtomicPropertyGraphState extends ConsumerState<AtomicPropertyGraph> {
             reservedSize: 6,
             rotateAngle: 70,
             interval: 1,
-            getTextStyles: (i) => TextStyle(fontSize: MediaQuery.of(context).size.width / 200),
+            getTextStyles: (_, __) => TextStyle(fontSize: MediaQuery.of(context).size.width / 200),
             getTitles: (value) {
               String title;
 
               try {
                 title = elementsData.elementAt(value.toInt() - 1).name;
               } catch (execption) {
-                title = "Error";
+                title = 'Error';
               }
               return title;
             }),
         leftTitles: SideTitles(
           interval: (yMax / widget.intervalCount).floorToDouble() <= 2 ? 1 : (yMax / widget.intervalCount).floorToDouble(),
           showTitles: widget.displayLabels,
-          getTextStyles: (i) => const TextStyle(fontSize: 8),
+          getTextStyles: (_, __) => const TextStyle(fontSize: 8),
           getTitles: (value) => value.toString(),
         ),
       ),
@@ -281,7 +280,7 @@ class _ControlPanel extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    final atomicAttribute = useValueNotifier("Melting Point");
+    final atomicAttribute = useValueNotifier('Melting Point');
     final shouldRemove = useValueNotifier(true);
 
     final windowSize = MediaQuery.of(context).size;
@@ -302,7 +301,7 @@ class _ControlPanel extends HookWidget {
         if (!shouldDisplayUnit) const SizedBox(width: 15),
         ValueListenableBuilder(
           valueListenable: shouldRemove,
-          builder: (BuildContext context, dynamic value, Widget? child) {
+          builder: (BuildContext context, bool value, Widget? child) {
             return Checkbox(
               value: value,
               activeColor: Theme.of(context).scaffoldBackgroundColor,
@@ -315,18 +314,18 @@ class _ControlPanel extends HookWidget {
           },
         ),
         const Text(
-          "Remove Unknown Values",
-          style: const TextStyle(fontWeight: FontWeight.w200, color: Colors.white54),
+          'Remove Unknown Values',
+          style: TextStyle(fontWeight: FontWeight.w200, color: Colors.white54),
         ).fittedBox(fit: BoxFit.fitWidth),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
           child: Center(child: dropdown).fittedBox(fit: BoxFit.fitHeight),
         ),
-        Spacer(),
+        const Spacer(),
         if (!shouldDisplayUnit)
           const Padding(
-            padding: const EdgeInsets.only(bottom: 5),
-            child: const FittedBox(child: const Text("Unit: ")),
+            padding: EdgeInsets.only(bottom: 5),
+            child: FittedBox(child: Text('Unit: ')),
           ),
         if (!shouldDisplayUnit)
           ValueListenableBuilder(

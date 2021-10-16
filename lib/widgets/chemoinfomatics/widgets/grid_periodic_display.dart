@@ -3,18 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_layout_grid/flutter_layout_grid.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-
 import 'package:molarity/data/elements_data_bloc.dart';
-import 'package:molarity/widgets/molar_mass_box.dart';
+import 'package:molarity/widgets/chemoinfomatics/data.dart';
+import 'package:molarity/widgets/chemoinfomatics/widgets/periodic_table_tile.dart';
 import 'package:molarity/widgets/info_box.dart';
-
-import '../data.dart';
-import 'periodic_table_tile.dart';
+import 'package:molarity/widgets/molar_mass_box.dart';
 
 enum _PeriodicTableStates { noElement, calculationBox, element }
 
-class PeriodicTable extends HookConsumerWidget {
-  PeriodicTable({this.onCompoundSaved, Key? key}) : super(key: key);
+class GridPeriodicTable extends HookConsumerWidget {
+  GridPeriodicTable({this.onCompoundSaved, Key? key}) : super(key: key);
 
   final CompoundDataCallback? onCompoundSaved;
 
@@ -24,7 +22,7 @@ class PeriodicTable extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     elementsBloc = ref.watch(elementsBlocProvider);
 
-    return elementsBloc!.loading ? Center(child: CircularProgressIndicator()) : _buildGrid(context);
+    return elementsBloc!.loading ? const Center(child: CircularProgressIndicator()) : _buildGrid(context);
   }
 
   Widget _buildGrid(BuildContext context) {

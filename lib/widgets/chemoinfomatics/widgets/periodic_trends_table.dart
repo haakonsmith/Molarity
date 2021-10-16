@@ -6,13 +6,13 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:molarity/data/elements_data_bloc.dart';
 import 'package:molarity/util.dart';
 import 'package:molarity/widgets/chemoinfomatics/data.dart';
-import 'package:molarity/widgets/chemoinfomatics/widgets/periodic_table_tile.dart';
 import 'package:molarity/widgets/chemoinfomatics/widgets/atomic_trends.dart';
+import 'package:molarity/widgets/chemoinfomatics/widgets/periodic_table_tile.dart';
 
 enum _PeriodicTableStates { noElement, calculationBox, element }
 
 class PeriodicTrendsTable extends ConsumerStatefulWidget {
-  PeriodicTrendsTable({Key? key}) : super(key: key);
+  const PeriodicTrendsTable({Key? key}) : super(key: key);
 
   @override
   _PeriodicTrendsTableState createState() => _PeriodicTrendsTableState();
@@ -22,7 +22,7 @@ class _PeriodicTrendsTableState extends ConsumerState<PeriodicTrendsTable> {
   ElementsBloc? elementsBloc;
 
   final ValueNotifier<AtomicData?> trackedElement = ValueNotifier(null);
-  final ValueNotifier<String> trackedAttribute = ValueNotifier("Density");
+  final ValueNotifier<String> trackedAttribute = ValueNotifier('Density');
   final ValueNotifier<_PeriodicTableStates> state = ValueNotifier(_PeriodicTableStates.noElement);
 
   late List<double> elementsData = [];
@@ -51,7 +51,7 @@ class _PeriodicTrendsTableState extends ConsumerState<PeriodicTrendsTable> {
 
     _getData();
 
-    return elementsBloc!.loading ? Center(child: CircularProgressIndicator()) : _buildGrid(context);
+    return elementsBloc!.loading ? const Center(child: CircularProgressIndicator()) : _buildGrid(context);
   }
 
   Widget _buildGrid(BuildContext context) {

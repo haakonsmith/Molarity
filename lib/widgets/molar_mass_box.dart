@@ -126,7 +126,7 @@ class _MolarMassBoxState extends ConsumerState<MolarMassBox> {
     String str = "= \~\~";
 
     widget.compound.rawCompound.forEach((key, value) {
-      str += "$value(${key.atomicMass?.toStringAsFixed(2)})\~ + \~";
+      str += '$value(${key.atomicMass?.toStringAsFixed(2)})\~ + \~';
     });
 
     return str.substring(0, str.length - 5);

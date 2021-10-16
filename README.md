@@ -8,11 +8,11 @@ Currently the project is in a usable state with:
 - A periodic trends overlay for the periodic table.
 - A detailed atomic data screen.
 
-
 ![Periodic Table Image](screenshots/periodic_table.png)
 ![Periodic Table Image](screenshots/periodic_trends.png)
 ![Periodic Table Image](screenshots/molar_mass_box.png)
 ![Periodic Table Image](screenshots/atomic_preview.png)
+
 ## Project State
 
 ### Performance

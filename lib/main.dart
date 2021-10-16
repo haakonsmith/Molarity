@@ -17,7 +17,7 @@ void main() {
 // TODO profile memory usage
 
 class Molarity extends StatelessWidget {
-  Molarity({Key? key}) : super(key: key);
+  const Molarity({Key? key}) : super(key: key);
 
   // This widget is the root of your application.
   @override

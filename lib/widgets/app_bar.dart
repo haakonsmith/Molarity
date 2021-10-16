@@ -1,14 +1,16 @@
-import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:universal_platform/universal_platform.dart';
 
 import '../util.dart';
 
 class MolarityAppBar {
   static PreferredSizeWidget buildTitle(BuildContext context, Widget? title, {double? height}) {
-    var appBar = AppbarWithTab(title: title!);
+    var appBar = AppbarWithTab(
+      title: title!,
+    );
 
     final preferredSize = PreferredSize(
       preferredSize: Size.fromHeight(height ?? computePrefferedSize(context)),
@@ -19,7 +21,7 @@ class MolarityAppBar {
       ),
     );
 
-    return Platform.isMacOS ? preferredSize : appBar;
+    return UniversalPlatform.isMacOS ? preferredSize : appBar;
   }
 
   static double computePrefferedSize(BuildContext context) {
@@ -43,6 +45,36 @@ class _PreferredAppBarSize extends Size {
 ///
 /// Half of the options don't work...
 class AppbarWithTab extends StatefulWidget implements PreferredSizeWidget {
+  AppbarWithTab({
+    Key? key,
+    this.tabVisible = true,
+    this.tabShape,
+    this.tabRadius = 20,
+    required this.title,
+    this.onPressed,
+    this.leading,
+    this.onTitleTapped,
+    this.elevation = 10,
+    this.backgroundColor,
+    this.automaticallyImplyLeading = true,
+    this.bottom,
+    this.onBackButtonPressed,
+    this.toolbarHeight,
+  })  : preferredSize = _PreferredAppBarSize(toolbarHeight, bottom?.preferredSize.height),
+        kTabShape = RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+            topRight: Radius.circular(tabRadius),
+            bottomRight: Radius.circular(tabRadius),
+          ),
+        ),
+        kAppbarShape = RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(tabRadius),
+            bottomLeft: Radius.circular(tabRadius),
+          ),
+        ),
+        super(key: key);
+
   final bool tabVisible;
 
   final double tabRadius;
@@ -88,36 +120,7 @@ class AppbarWithTab extends StatefulWidget implements PreferredSizeWidget {
   @override
   final Size preferredSize;
 
-  AppbarWithTab({
-    Key? key,
-    this.tabVisible = true,
-    this.tabShape,
-    this.tabRadius = 20,
-    required this.title,
-    this.onPressed,
-    this.leading,
-    this.onTitleTapped,
-    this.elevation = 10,
-    this.backgroundColor,
-    this.automaticallyImplyLeading = true,
-    this.bottom,
-    this.onBackButtonPressed,
-    this.toolbarHeight,
-  })  : preferredSize = _PreferredAppBarSize(toolbarHeight, bottom?.preferredSize.height),
-        kTabShape = RoundedRectangleBorder(
-          borderRadius: BorderRadius.only(
-            topRight: Radius.circular(tabRadius),
-            bottomRight: Radius.circular(tabRadius),
-          ),
-        ),
-        kAppbarShape = RoundedRectangleBorder(
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(tabRadius),
-            bottomLeft: Radius.circular(tabRadius),
-          ),
-        ),
-        super(key: key);
-
+  @override
   State<StatefulWidget> createState() => _AppbarWithTabState();
 }
 

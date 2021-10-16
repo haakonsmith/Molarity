@@ -6,8 +6,8 @@ import 'package:flutter_layout_grid/flutter_layout_grid.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:molarity/data/elements_data_bloc.dart';
 import 'package:molarity/widgets/app_bar.dart';
-import 'package:molarity/widgets/chemoinfomatics/widgets/atomic_bohr_model.dart';
 import 'package:molarity/widgets/chemoinfomatics/data.dart';
+import 'package:molarity/widgets/chemoinfomatics/widgets/atomic_bohr_model.dart';
 import 'package:molarity/widgets/chemoinfomatics/widgets/atomic_trends.dart';
 
 import '../theme.dart';

@@ -5,10 +5,10 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:molarity/data/preferenced_compounds.dart';
 import 'package:molarity/widgets/chemoinfomatics/data.dart';
 
-typedef void IndexCallback(int index);
+typedef IndexCallback = void Function(int index);
 
 class SavedCompoundDataListview extends ConsumerStatefulWidget {
-  SavedCompoundDataListview({
+  const SavedCompoundDataListview({
     Key? key,
     this.onDelete,
   }) : super(key: key);
@@ -26,7 +26,7 @@ class _SavedCompoundDataListviewState extends ConsumerState<SavedCompoundDataLis
   Widget build(BuildContext context) {
     data = ref.watch(preferencedCompoundsProvider).savedCompounds;
 
-    return Container(
+    return SizedBox(
       // color: Colors.white,
       width: MediaQuery.of(context).size.width,
       height: (data.length * 36) + (1 * 30) + 26,
@@ -40,7 +40,7 @@ class _SavedCompoundDataListviewState extends ConsumerState<SavedCompoundDataLis
     );
   }
 
-  Widget _itemBuilder(context, index) {
+  Widget _itemBuilder(BuildContext context, int index) {
     if (index == 0) return const _ListHeader();
 
     return _ListRow(
@@ -58,7 +58,7 @@ class _SavedCompoundDataListviewState extends ConsumerState<SavedCompoundDataLis
   }
 
   Widget _separatorBuilder(context, index) {
-    return Divider();
+    return const Divider();
   }
 }
 
@@ -69,12 +69,12 @@ class _ListHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return const _ListRow(
       molecularFormula: Text(
-        "Molecular Formula",
-        style: const TextStyle(fontWeight: FontWeight.bold),
+        'Molecular Formula',
+        style: TextStyle(fontWeight: FontWeight.bold),
       ),
       molarMass: Text(
-        "Molar Mass",
-        style: const TextStyle(fontWeight: FontWeight.bold),
+        'Molar Mass',
+        style: TextStyle(fontWeight: FontWeight.bold),
       ),
       isHeader: true,
     );
@@ -112,14 +112,14 @@ class _ListRow extends StatelessWidget {
             width: width / 2.5,
           ),
           molarMass,
-          Spacer(),
+          const Spacer(),
           if (onDelete != null)
             IconButton(
               onPressed: onDelete,
               iconSize: 24,
               splashRadius: 20,
               icon: const Icon(Icons.delete),
-              padding: const EdgeInsets.all(0),
+              padding: EdgeInsets.zero,
             ),
           if (!isHeader)
             IconButton(
@@ -127,7 +127,7 @@ class _ListRow extends StatelessWidget {
               iconSize: 24,
               splashRadius: 20,
               icon: const Icon(Icons.copy),
-              padding: const EdgeInsets.all(0),
+              padding: EdgeInsets.zero,
             ),
         ],
       ),

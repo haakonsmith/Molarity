@@ -1,19 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:molarity/screen/atomic_info_screen.dart';
+import 'package:molarity/theme.dart';
 import 'package:molarity/util.dart';
-import 'package:molarity/widgets/chemoinfomatics/widgets/periodic_table.dart';
-
-import '../../../theme.dart';
-import '../data.dart';
+import 'package:molarity/widgets/chemoinfomatics/data.dart';
+import 'package:molarity/widgets/chemoinfomatics/widgets/grid_periodic_display.dart';
 
 class PeriodicTableTile extends StatefulWidget {
-  final AtomicData element;
-  final Function(AtomicData)? onHover;
-  final Function(AtomicData)? onSecondaryTap;
-  final Color Function(AtomicData)? tileColorGetter;
-  final String? subText;
-  final String? superText;
-
   const PeriodicTableTile(
     this.element, {
     this.subText,
@@ -23,6 +15,13 @@ class PeriodicTableTile extends StatefulWidget {
     this.tileColorGetter,
     Key? key,
   }) : super(key: key);
+
+  final AtomicData element;
+  final Function(AtomicData)? onHover;
+  final Function(AtomicData)? onSecondaryTap;
+  final Color Function(AtomicData)? tileColorGetter;
+  final String? subText;
+  final String? superText;
 
   @override
   State<StatefulWidget> createState() => _PeriodicTableTileState();
@@ -36,7 +35,7 @@ class _PeriodicTableTileState extends State<PeriodicTableTile> {
   /// Dim the tile when hovered
   bool isDimmed = false;
 
-  GlobalKey _key = GlobalKey();
+  final GlobalKey _key = GlobalKey();
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +43,7 @@ class _PeriodicTableTileState extends State<PeriodicTableTile> {
       tileColor = categoryColorMapping[widget.element.category]!;
     else
       tileColor = widget.tileColorGetter!(widget.element);
-    var content = Column(
+    final content = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
@@ -137,7 +136,7 @@ class _PeriodicTableTileState extends State<PeriodicTableTile> {
           const end = Offset.zero;
           const curve = Curves.ease;
 
-          var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+          final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
 
           return SlideTransition(
             position: animation.drive(tween),
@@ -148,7 +147,7 @@ class _PeriodicTableTileState extends State<PeriodicTableTile> {
     } else {
       return MaterialPageRoute(
         // builder: (context) => AtomicInfoScreen(widget.element),
-        builder: (context) => PeriodicTable(),
+        builder: (context) => GridPeriodicTable(),
       );
     }
     // return MaterialPageRoute(
@@ -159,12 +158,12 @@ class _PeriodicTableTileState extends State<PeriodicTableTile> {
 }
 
 class _TileSymbol extends StatelessWidget {
-  final String symbol;
-
   const _TileSymbol(
     this.symbol, {
     Key? key,
   }) : super(key: key);
+
+  final String symbol;
 
   @override
   Widget build(BuildContext context) {
@@ -177,12 +176,12 @@ class _TileSymbol extends StatelessWidget {
 }
 
 class _TileSub extends StatelessWidget {
-  final String value;
-
   const _TileSub(
     this.value, {
     Key? key,
   }) : super(key: key);
+
+  final String value;
 
   @override
   Widget build(BuildContext context) {

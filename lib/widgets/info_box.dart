@@ -3,10 +3,10 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:molarity/data/elements_data_bloc.dart';
 
 import '../theme.dart';
-import 'chemoinfomatics/widgets/atomic_bohr_model.dart';
+import '../util.dart';
 import 'chemoinfomatics/data.dart';
 import 'chemoinfomatics/util.dart';
-import '../util.dart';
+import 'chemoinfomatics/widgets/atomic_bohr_model.dart';
 import 'chemoinfomatics/widgets/element_property_selector.dart';
 
 class InfoBox extends HookConsumerWidget {
@@ -53,8 +53,8 @@ class InfoBox extends HookConsumerWidget {
             ),
             Expanded(
               child: AtomicBohrModel(
-                element,
-                key: ValueKey(element!.symbol + "atomic"),
+                element!,
+                key: ValueKey(element!.symbol + 'atomic'),
               ),
             ),
           ]),
@@ -76,9 +76,9 @@ class InfoBox extends HookConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(children: [
-                    IconWithText(Icons.library_add, header: "Right Click", text: "to mass compounds").expanded(),
-                    IconWithText(Icons.poll, header: "Switch Views", text: "to explore the\n rest of the app").expanded(),
-                    IconWithText(Icons.assignment, header: "Click Element", text: "to naviage\n to a detailed description").expanded(),
+                    IconWithText(Icons.library_add, header: 'Right Click', text: 'to mass compounds').expanded(),
+                    IconWithText(Icons.poll, header: 'Switch Views', text: 'to explore the\n rest of the app').expanded(),
+                    IconWithText(Icons.assignment, header: 'Click Element', text: 'to naviage\n to a detailed description').expanded(),
                     // Column(
                     //   children: [FlutterLogo().expanded()],
                     // )
@@ -108,7 +108,7 @@ class _InfoTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text.rich(TextSpan(children: [
       TextSpan(
-          text: "${element.atomicNumber.toString()} – ${element.name}\n",
+          text: '${element.atomicNumber.toString()} – ${element.name}\n',
           style: TextStyle(
             fontSize: 10,
             fontWeight: FontWeight.w200,
@@ -146,18 +146,18 @@ class _InfoDataRowState extends State<_InfoDataRow> {
         children: [
           ElementalInfo(
             widget.element,
-            intialValue: "Boiling Point",
-            intialGetter: (element) => element.getAssociatedStringValue("Boiling Point"),
+            intialValue: 'Boiling Point',
+            intialGetter: (element) => element.getAssociatedStringValue('Boiling Point'),
           ).expanded(),
           ElementalInfo(
             widget.element,
-            intialValue: "Melting Point",
-            intialGetter: (element) => element.getAssociatedStringValue("Melting Point"),
+            intialValue: 'Melting Point',
+            intialGetter: (element) => element.getAssociatedStringValue('Melting Point'),
           ).expanded(),
           ElementalInfo(
             widget.element,
-            intialValue: "Phase",
-            intialGetter: (element) => element.getAssociatedStringValue("Phase"),
+            intialValue: 'Phase',
+            intialGetter: (element) => element.getAssociatedStringValue('Phase'),
           ).expanded(),
         ],
       ),
@@ -166,23 +166,28 @@ class _InfoDataRowState extends State<_InfoDataRow> {
 }
 
 class ElementalInfo extends StatefulWidget {
+  const ElementalInfo(this.elementData, {this.intialGetter, this.intialValue, Key? key}) : super(key: key);
+
   final AtomicData elementData;
   final String Function(AtomicData)? intialGetter;
   final String? intialValue;
 
-  const ElementalInfo(this.elementData, {this.intialGetter, this.intialValue, Key? key}) : super(key: key);
-
   @override
-  _ElementalInfoState createState() => _ElementalInfoState(infoGetter: intialGetter, displayedValue: intialValue);
+  _ElementalInfoState createState() => _ElementalInfoState();
 }
 
 class _ElementalInfoState extends State<ElementalInfo> {
-  final ValueNotifier<String> attribute;
+  late final ValueNotifier<String> attribute;
 
-  _ElementalInfoState({infoGetter, displayedValue}) : this.attribute = ValueNotifier(displayedValue) {
-    this.attribute.addListener(() {
+  @override
+  void initState() {
+    attribute = ValueNotifier<String>(widget.intialValue ?? 'Density');
+
+    attribute.addListener(() {
       setState(() {});
     });
+
+    super.initState();
   }
 
   @override
@@ -194,7 +199,7 @@ class _ElementalInfoState extends State<ElementalInfo> {
 
   @override
   Widget build(BuildContext context) {
-    final screenSize = MediaQuery.of(context).size;
+    final Size screenSize = MediaQuery.of(context).size;
 
     var dropDown = Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -217,7 +222,7 @@ class _ElementalInfoState extends State<ElementalInfo> {
             mainAxisSize: MainAxisSize.min,
             children: [
               SelectableText(
-                widget.elementData.getAssociatedStringValue(attribute.value) == "null" ? "Unknown" : widget.elementData.getAssociatedStringValue(attribute.value),
+                widget.elementData.getAssociatedStringValue(attribute.value) == 'null' ? 'Unknown' : widget.elementData.getAssociatedStringValue(attribute.value),
                 style: TextStyle(fontSize: screenSize.width / 80, fontWeight: FontWeight.w200),
               ),
               AtomicUnit(attribute.value, fontSize: screenSize.width / 80)
@@ -242,7 +247,7 @@ class ElementAttributeSelector extends StatefulWidget {
   final ValueNotifier<String> attribute;
   final List<String> selectables;
 
-  static const kSelectables = const <String>[
+  static const kSelectables = <String>[
     'Melting Point',
     'Boiling Point',
     'Phase',
@@ -292,7 +297,7 @@ class IconWithText extends StatelessWidget {
   final String text;
   final String header;
 
-  const IconWithText(this.icon, {this.text = "", this.header = "", Key? key}) : super(key: key);
+  const IconWithText(this.icon, {this.text = '', this.header = '', Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
