@@ -5,6 +5,8 @@ import 'package:molarity/util.dart';
 import 'package:molarity/widgets/chemoinfomatics/data.dart';
 import 'package:molarity/widgets/chemoinfomatics/widgets/grid_periodic_display.dart';
 
+typedef ShouldRebuildFunction<T> = bool Function(T oldWidget, T newWidget);
+
 class PeriodicTableTile extends StatefulWidget {
   const PeriodicTableTile(
     this.element, {
@@ -13,6 +15,7 @@ class PeriodicTableTile extends StatefulWidget {
     this.onHover,
     this.onSecondaryTap,
     this.tileColorGetter,
+    this.contentOnly = false,
     Key? key,
   }) : super(key: key);
 
@@ -22,6 +25,7 @@ class PeriodicTableTile extends StatefulWidget {
   final Color Function(AtomicData)? tileColorGetter;
   final String? subText;
   final String? superText;
+  final bool contentOnly;
 
   @override
   State<StatefulWidget> createState() => _PeriodicTableTileState();
@@ -39,6 +43,8 @@ class _PeriodicTableTileState extends State<PeriodicTableTile> {
 
   @override
   Widget build(BuildContext context) {
+    // print("Build Tile");
+
     if (widget.tileColorGetter == null)
       tileColor = categoryColorMapping[widget.element.category]!;
     else
@@ -72,6 +78,8 @@ class _PeriodicTableTileState extends State<PeriodicTableTile> {
         // Expanded(child: Center(child: elementTitle)),
       ],
     );
+
+    if (widget.contentOnly) return content;
 
     return MouseRegion(
       key: _key,
