@@ -1,4 +1,6 @@
-// This is a way of accessing and discussing atomic properties without the amount of strings as before.
+import 'package:flutter/foundation.dart';
+
+/// This is a way of accessing and discussing atomic properties without the amount of strings as before.
 enum AtomicProperty {
   meltingPoint,
   boilingPoint,
@@ -12,7 +14,7 @@ enum AtomicProperty {
   simplifedElectronConfiguration
 }
 
-typedef AztomicDataCallback = void Function(AtomicData atomicData);
+typedef AtomicDataCallback = void Function(AtomicData atomicData);
 typedef CompoundDataCallback = void Function(CompoundData compoundData);
 
 class AtomicData {
@@ -234,15 +236,13 @@ enum AtomicElementCategory {
   unknown,
 }
 
-class CompoundData {
+class CompoundData extends ChangeNotifier {
   CompoundData(this.rawCompound);
 
   factory CompoundData.fromList(List<AtomicData> elements) {
     final Map<AtomicData, int> compoundMap = {};
 
-    for (final AtomicData element in elements) {
-      compoundMap.update(element, (int value) => value + 1, ifAbsent: () => 1);
-    }
+    for (final AtomicData element in elements) compoundMap.update(element, (int value) => value + 1, ifAbsent: () => 1);
 
     return CompoundData(compoundMap);
   }
@@ -250,6 +250,10 @@ class CompoundData {
   factory CompoundData.fromAtomicData(AtomicData element) => CompoundData.fromList([element]);
 
   CompoundData.empty() : rawCompound = {};
+
+  void clear() {
+    rawCompound.clear();
+  }
 
   final Map<AtomicData, int> rawCompound;
 
@@ -269,7 +273,20 @@ class CompoundData {
 
   CompoundData addElement(AtomicData element) {
     rawCompound.update(element, (int value) => value + 1, ifAbsent: () => 1);
+    notifyListeners();
+    print("here2");
+
     return this;
+  }
+
+  String toMolecularFormula() {
+    String formula = '';
+
+    rawCompound.forEach((AtomicData key, int value) {
+      formula += key.symbol + (value == 1 ? '' : value.toString());
+    });
+
+    return formula;
   }
 
   String toTex() {

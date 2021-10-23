@@ -60,8 +60,6 @@ class _HelixPeriodicTableState extends ConsumerState<HelixPeriodicTable> with Ti
   int selectedCard = 0;
   static int numItems = 118;
 
-  final GlobalKey _key = GlobalKey();
-
   final totalAngle = pi * (numItems / 10 * 2);
 
   @override
@@ -146,6 +144,7 @@ class _HelixPeriodicTableState extends ConsumerState<HelixPeriodicTable> with Ti
     }
 
     return Listener(
+      behavior: HitTestBehavior.opaque,
       onPointerSignal: (pointerSignal) {
         if (pointerSignal is PointerScrollEvent) {
           // do something when scrolled
@@ -162,6 +161,7 @@ class _HelixPeriodicTableState extends ConsumerState<HelixPeriodicTable> with Ti
 
           setState(() {});
         }
+        if (pointerSignal is PointerEnterEvent) {}
       },
       child: KeyboardListener(
         onKeyEvent: (value) {
@@ -211,6 +211,7 @@ class _HelixPeriodicTableState extends ConsumerState<HelixPeriodicTable> with Ti
           child: Transform.scale(
             scale: 0.7,
             child: Container(
+              height: 200,
               alignment: Alignment.center,
               child: Stack(
                 alignment: Alignment.center,

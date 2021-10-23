@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:molarity/data/elements_data_bloc.dart';
 import 'package:molarity/widgets/app_bar.dart';
-import 'package:molarity/widgets/chemoinfomatics/widgets/grid_periodic_display.dart';
+import 'package:molarity/widgets/chemoinfomatics/widgets/grid_periodic_table.dart';
 import 'package:molarity/widgets/chemoinfomatics/widgets/helix_periodic_table.dart';
+import 'package:molarity/widgets/chemoinfomatics/widgets/interactive_box.dart';
 import 'package:molarity/widgets/list_drawer.dart';
 import 'package:molarity/widgets/saved_compound_data_listview.dart';
 
@@ -28,16 +29,20 @@ class PeriodicTableScreen extends StatelessWidget {
   }
 }
 
-class MobilePeriodicTableScreen extends StatefulWidget {
+class MobilePeriodicTableScreen extends ConsumerStatefulWidget {
   const MobilePeriodicTableScreen({Key? key}) : super(key: key);
 
   @override
   _MobilePeriodicTableScreenState createState() => _MobilePeriodicTableScreenState();
 }
 
-class _MobilePeriodicTableScreenState extends State<MobilePeriodicTableScreen> {
+class _MobilePeriodicTableScreenState extends ConsumerState<MobilePeriodicTableScreen> {
   @override
   Widget build(BuildContext context) {
+    final windowSize = MediaQuery.of(context).size;
+
+    if (ref.watch(elementsBlocProvider).loading) return const Center(child: CircularProgressIndicator());
+
     return Scaffold(
       appBar: MolarityAppBar.buildTitle(
         context,
@@ -46,7 +51,28 @@ class _MobilePeriodicTableScreenState extends State<MobilePeriodicTableScreen> {
         ),
       ),
       drawer: const ListDrawer(),
-      body: const HelixPeriodicTable(),
+      body: SingleChildScrollView(
+        physics: NeverScrollableScrollPhysics(),
+        primary: false,
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(windowSize.width / 30, 10.0, windowSize.width / 30, 20),
+          child: Column(
+            children: [
+              const SizedBox(height: 140),
+              // FractionallySizedBox(
+              const HelixPeriodicTable(),
+              //   heightFactor: 20,
+              // ),
+              Container(
+                child: const InteractiveBox(),
+                width: double.infinity,
+                height: 100,
+              ),
+              const SizedBox(height: 140),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -84,7 +110,9 @@ class _PeriodicDesktopTableScreenState extends ConsumerState<PeriodicDesktopTabl
                 // While it is loading make a shitty guess as to the height.
                 height: elementsBloc.loading ? windowSize.width / 2 : null,
                 width: windowSize.width,
-                child: GridPeriodicTable(),
+                child: const GridPeriodicTable(
+                  child: InteractiveBox(),
+                ),
               ),
               const SizedBox(height: 50),
               // Spacer(),

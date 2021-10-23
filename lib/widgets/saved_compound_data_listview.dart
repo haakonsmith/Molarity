@@ -4,6 +4,7 @@ import 'package:flutter_math_fork/flutter_math.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:molarity/data/preferenced_compounds.dart';
 import 'package:molarity/widgets/chemoinfomatics/data.dart';
+import 'package:molarity/widgets/chemoinfomatics/pubchem_client.dart';
 
 typedef IndexCallback = void Function(int index);
 
@@ -42,6 +43,12 @@ class _SavedCompoundDataListviewState extends ConsumerState<SavedCompoundDataLis
 
   Widget _itemBuilder(BuildContext context, int index) {
     if (index == 0) return const _ListHeader();
+
+    final pubChemClient = ref.read(pubChemClientProvider);
+
+    print(pubChemClient.searchByFormula(data[index - 1]).then((value) => pubChemClient.getPropertiesFrom(value, properties: [PubChemProperties.MolecularWeight])));
+
+    print(data[index - 1].toMolecularFormula());
 
     return _ListRow(
       molecularFormula: Math.tex(data[index - 1].toTex()),
@@ -85,6 +92,7 @@ class _ListRow extends StatelessWidget {
   const _ListRow({
     required this.molecularFormula,
     required this.molarMass,
+    this.name,
     this.isHeader = false,
     this.onDelete,
     this.onCopy,
@@ -92,6 +100,8 @@ class _ListRow extends StatelessWidget {
   }) : super(key: key);
 
   final bool isHeader;
+
+  final String? name;
 
   final Widget molecularFormula;
   final Widget molarMass;
@@ -111,6 +121,7 @@ class _ListRow extends StatelessWidget {
             child: molecularFormula,
             width: width / 2.5,
           ),
+          if (name != null) Text(name!),
           molarMass,
           const Spacer(),
           if (onDelete != null)

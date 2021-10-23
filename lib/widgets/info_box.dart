@@ -10,20 +10,16 @@ import 'chemoinfomatics/widgets/atomic_bohr_model.dart';
 import 'chemoinfomatics/widgets/element_property_selector.dart';
 
 class InfoBox extends HookConsumerWidget {
+  const InfoBox({this.element, Key? key}) : super(key: key);
+
   final AtomicData? element;
-
-  InfoBox({this.element, Key? key}) : super(key: key);
-
-  late ElementsBloc elementsBloc;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    elementsBloc = ref.watch(elementsBlocProvider);
-
-    return element == null ? _buildNullElement(context) : _buildElementInfo(context);
+    return element == null ? _buildNullElement(context, ref) : _buildElementInfo(context, ref);
   }
 
-  Widget _buildElementInfo(BuildContext context) {
+  Widget _buildElementInfo(BuildContext context, WidgetRef ref) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(8.0, 8, 8, 0),
       child: Card(
@@ -63,7 +59,8 @@ class InfoBox extends HookConsumerWidget {
     );
   }
 
-  Widget _buildNullElement(BuildContext context) {
+  Widget _buildNullElement(BuildContext context, WidgetRef ref) {
+    final elementsBloc = ref.watch(elementsBlocProvider);
     return Padding(
       padding: const EdgeInsets.fromLTRB(8.0, 8, 8, 0),
       child: Card(

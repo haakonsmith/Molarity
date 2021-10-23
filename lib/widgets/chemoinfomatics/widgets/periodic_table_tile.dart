@@ -3,7 +3,7 @@ import 'package:molarity/screen/atomic_info_screen.dart';
 import 'package:molarity/theme.dart';
 import 'package:molarity/util.dart';
 import 'package:molarity/widgets/chemoinfomatics/data.dart';
-import 'package:molarity/widgets/chemoinfomatics/widgets/grid_periodic_display.dart';
+import 'package:molarity/widgets/chemoinfomatics/widgets/grid_periodic_table.dart';
 
 typedef ShouldRebuildFunction<T> = bool Function(T oldWidget, T newWidget);
 
