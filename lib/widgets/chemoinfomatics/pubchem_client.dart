@@ -4,21 +4,61 @@ import 'dart:convert';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:molarity/widgets/chemoinfomatics/data.dart';
+import 'package:sortedmap/sortedmap.dart';
 
 enum PubChemProperties { MolecularFormula, MolecularWeight, Title }
 
 typedef ListKey = int;
 
-class PubChemCompoundData extends CompoundData {
-  PubChemCompoundData(this.cid) : super.empty();
+class PubChemCompoundData extends CompoundData with Comparable {
+  PubChemCompoundData(this.cid, this.title, this.molecularWeight, this.pubchemCompoundDesignation) : super.empty();
 
   PubChemCompoundData.fromJson(Map json, [CompoundData? compoundFormula])
       : cid = json['CID'],
+        title = json['Title'],
+        pubchemCompoundDesignation = json['Title'],
+        molecularWeight = double.parse(json['MolecularWeight']),
         super.empty() {
     if (compoundFormula != null) rawCompound.addAll(compoundFormula.rawCompound);
   }
 
-  final int cid;
+  final String? pubchemCompoundDesignation;
+  final int? cid;
+  final String? title;
+  final double? molecularWeight;
+
+  double distanceTo(PubChemCompoundData other) {
+    double distance = 0;
+
+    if (molecularWeight != null && other.molecularWeight != null) distance += (other.molecularWeight! - molecularWeight!).abs();
+
+    return distance;
+  }
+
+  double distanceToBasic(CompoundData other) {
+    double distance = 0;
+
+    if (molecularWeight != null && other.molarMass != null) distance += (other.molarMass - molecularWeight!).abs();
+
+    return distance;
+  }
+
+  @override
+  int compareTo(other) {
+    assert(other is PubChemCompoundData);
+
+    final distance = distanceTo(other);
+
+    if (distance > 0)
+      return -1;
+    else
+      return 1;
+  }
+
+  @override
+  String toString() {
+    return title ?? 'Unknown Title';
+  }
 }
 
 class PubChemClient {
@@ -29,15 +69,30 @@ class PubChemClient {
   static const String authority = 'pubchem.ncbi.nlm.nih.gov';
   static const String dataType = 'JSON';
 
-  void getProperties(CompoundData compound, List<PubChemProperties> properties) {
-    // compound.toMolecularFormula()
+  /// This caches listkeys, these keys will be valid with pubchem, because they are invalidated, internally, quite quickly.
+  final Map<Uri, ListKey> listKeyCache = {};
+
+  final Map<String, Map> searchCache = {};
+
+  /// This is a set, because there cannot be any duplicate properties, also, I wanna be able to easily attempt to add properties.
+  Future<PubChemCompoundData> getPropertiesOf(CompoundData compound, Set<PubChemProperties> properties) async {
+    final listKey = await searchByFormula(compound, maxRecords: 10);
+
+    properties.add(PubChemProperties.MolecularFormula);
+    properties.add(PubChemProperties.MolecularWeight);
+
+    final pubChemResults = await getPropertiesFrom(listKey, properties: properties);
+
+    final results = _sortCompoundResultsByReference(pubChemResults, compound);
+
+    return results[0];
   }
 
-  Future<ListKey> searchByFormula(CompoundData compound, {int maxRecords = 10}) async {
+  Future<ListKey> searchByFormula(CompoundData compound, {int maxRecords = 10, bool allowOtherElements = false}) async {
     final url = Uri.https(
       authority,
       '/rest/pug/compound/formula/${compound.toMolecularFormula()}/$dataType',
-      {'AllowOtherElements': 'true', 'MaxRecords': maxRecords.toString()},
+      {'AllowOtherElements': allowOtherElements.toString(), 'MaxRecords': maxRecords.toString()},
     );
 
     final response = await client.get(url);
@@ -51,26 +106,21 @@ class PubChemClient {
     return int.parse(decodedResponse['ListKey']);
   }
 
-  Future<List<PubChemCompoundData>> getPropertiesFrom(ListKey listKey, {required List<PubChemProperties> properties}) async {
+  Future<List<PubChemCompoundData>> getPropertiesFrom(ListKey listKey, {required Set<PubChemProperties> properties}) async {
     final url = Uri.https(
       authority,
       '/rest/pug/compound/listkey/$listKey/property/${properties.map((e) => e.toString().replaceFirst('PubChemProperties.', '')).toList().join(',')}/JSON',
     );
 
-    print(url);
+    final Map response = await getSearchFromListKey(url);
 
-    final response = await getListKey(url);
-
-    print(response);
     return Future.value((response['PropertyTable']['Properties'] as List).map((e) => PubChemCompoundData.fromJson(e)).toList());
   }
 
-  Future<Map> getListKey(Uri url) async {
+  Future<Map> getSearchFromListKey(Uri url) async {
     final response = await client.get(url);
 
     var finalResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
-
-    print(finalResponse);
 
     bool shouldTestIfComplete = true;
     bool responseVerified = !_responseIsCompleted(finalResponse);
@@ -93,7 +143,7 @@ class PubChemClient {
           break;
         }
 
-        if (i > 4) {
+        if (i > 10) {
           shouldTestIfComplete = false;
           break;
         }
@@ -104,25 +154,51 @@ class PubChemClient {
         await Future.delayed(const Duration(seconds: 1));
       }
 
-    if (!responseVerified) return Future.error("Timeout");
+    if (!responseVerified) return Future.error('Timeout');
 
     return finalResponse;
   }
 
   bool _responseIsCompleted(Map json) => !json.containsKey('Waiting');
 
-  Future<http.Response> get(Uri url, [int retryAttempts = 3, int tries = 0]) async {
-    try {
-      final response = await client.get(url);
-    } catch (e) {
-      // if (e) {
-      print(e);
-      if (tries <= retryAttempts) return get(url, retryAttempts, ++tries);
-      // } else
-      //   rethrow;
+  /// PubChem + HTTP seems to randomly error, so let's just give it another shot 🙃
+  Future<http.Response> get(Uri url, [int retryAttempts = 3, bool shouldTestCache = true]) async {
+    int tries = 0;
+
+    bool shouldRetry = true;
+
+    http.Response? response;
+
+    while (tries < retryAttempts && shouldRetry) {
+      shouldRetry = false;
+
+      try {
+        response = await client.get(url);
+      } catch (e) {
+        print(e);
+        shouldRetry = true;
+      }
+
+      tries++;
     }
 
-    return Future.error("Get error");
+    print('Number of tries taken: ${tries.toString()}');
+
+    if (tries > retryAttempts) return Future.error("Exceeded retry limit");
+
+    return Future.value(response!);
+  }
+
+  List<PubChemCompoundData> _sortCompoundResultsByReference(List<PubChemCompoundData> data, CompoundData compound) {
+    final List<PubChemCompoundData> result = [];
+
+    final splayTree = SortedMap<int, double>(const Ordering.byValue());
+
+    for (int i = 0; i < data.length; i++) splayTree[i] = data[i].distanceToBasic(compound);
+
+    for (final int index in splayTree.keys) result.add(data[index]);
+
+    return result;
   }
 
   // https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/formula/C10H21N/JSON?AllowOtherElements=true&MaxRecords=10

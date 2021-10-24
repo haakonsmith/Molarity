@@ -46,11 +46,26 @@ class _SavedCompoundDataListviewState extends ConsumerState<SavedCompoundDataLis
 
     final pubChemClient = ref.read(pubChemClientProvider);
 
-    print(pubChemClient.searchByFormula(data[index - 1]).then((value) => pubChemClient.getPropertiesFrom(value, properties: [PubChemProperties.MolecularWeight])));
+    // print(pubChemClient.searchByFormula(data[index - 1]).then((value) => pubChemClient.getPropertiesFrom(value, properties: [PubChemProperties.MolecularWeight])));
 
     print(data[index - 1].toMolecularFormula());
 
     return _ListRow(
+      name: FutureBuilder(
+        future: pubChemClient.getPropertiesOf(data[index - 1], {PubChemProperties.Title}),
+        builder: (BuildContext context, AsyncSnapshot<PubChemCompoundData> snapshot) => snapshot.hasData
+            ? Text(
+                '(${snapshot.data!.title})',
+              )
+            : const SizedBox(
+                child: Center(
+                    child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                )),
+                width: 16,
+                height: 16,
+              ),
+      ),
       molecularFormula: Math.tex(data[index - 1].toTex()),
       molarMass: Math.tex(data[index - 1].molarMass.toStringAsFixed(2)),
       onDelete: () {
@@ -101,7 +116,7 @@ class _ListRow extends StatelessWidget {
 
   final bool isHeader;
 
-  final String? name;
+  final Widget? name;
 
   final Widget molecularFormula;
   final Widget molarMass;
@@ -116,30 +131,43 @@ class _ListRow extends StatelessWidget {
     return SizedBox(
       height: !isHeader ? 20 : 30,
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          SizedBox(
-            child: molecularFormula,
-            width: width / 2.5,
-          ),
-          if (name != null) Text(name!),
-          molarMass,
-          const Spacer(),
-          if (onDelete != null)
-            IconButton(
-              onPressed: onDelete,
-              iconSize: 24,
-              splashRadius: 20,
-              icon: const Icon(Icons.delete),
-              padding: EdgeInsets.zero,
-            ),
-          if (!isHeader)
-            IconButton(
-              onPressed: onCopy,
-              iconSize: 24,
-              splashRadius: 20,
-              icon: const Icon(Icons.copy),
-              padding: EdgeInsets.zero,
-            ),
+          Expanded(
+              child: Row(
+            children: [
+              molecularFormula,
+              const SizedBox(width: 10),
+              if (name != null) name!,
+            ],
+          )),
+          Expanded(
+              child: Row(
+            children: [
+              molarMass,
+              const Spacer(),
+              if (onDelete != null)
+                IconButton(
+                  onPressed: onDelete,
+                  iconSize: 24,
+                  splashRadius: 20,
+                  icon: const Icon(Icons.delete),
+                  padding: EdgeInsets.zero,
+                ),
+              if (!isHeader)
+                IconButton(
+                  onPressed: onCopy,
+                  iconSize: 24,
+                  splashRadius: 20,
+                  icon: const Icon(Icons.copy),
+                  padding: EdgeInsets.zero,
+                ),
+            ],
+          )),
+          // if (isHeader)
+          //   SizedBox(
+          //     width: 48,
+          //   )
         ],
       ),
     );

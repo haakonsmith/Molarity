@@ -7,7 +7,7 @@ import 'package:molarity/data/elements_data_bloc.dart';
 import 'package:molarity/widgets/chemoinfomatics/widgets/interactive_box.dart';
 import 'package:molarity/widgets/chemoinfomatics/widgets/periodic_table_tile.dart';
 
-class GridPeriodicTable extends HookConsumerWidget {
+class GridPeriodicTable extends ConsumerWidget {
   const GridPeriodicTable({this.child, Key? key}) : super(key: key);
 
   /// Places a child in the empty centre space of the periodic table.
