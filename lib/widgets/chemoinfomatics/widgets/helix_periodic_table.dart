@@ -9,11 +9,8 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:molarity/data/elements_data_bloc.dart';
 import 'package:molarity/screen/atomic_info_screen.dart';
 import 'package:molarity/theme.dart';
+import 'package:molarity/util.dart';
 import 'package:molarity/widgets/chemoinfomatics/data.dart';
-import 'package:molarity/widgets/chemoinfomatics/widgets/periodic_table_tile.dart';
-
-import '../../../util.dart';
-import '../../should_rebuild.dart';
 
 // Normalizes any number to an arbitrary range
 // by assuming the range wraps around when going below min or above max

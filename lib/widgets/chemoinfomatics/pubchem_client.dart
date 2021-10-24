@@ -10,6 +10,9 @@ enum PubChemProperties { MolecularFormula, MolecularWeight, Title }
 
 typedef ListKey = int;
 
+/// This is a subclass of [CompoundData], meaning that it expands on the properties that compound data has.
+/// This has been done because, due to the nature of pubchem, [PubChemCompoundData] is likely going to be a really heavy object,
+/// thus only using it if necessary would be desirable. However, this is probably mitigated by the fact that dart isn't C++.
 class PubChemCompoundData extends CompoundData with Comparable {
   PubChemCompoundData(this.cid, this.title, this.molecularWeight, this.pubchemCompoundDesignation) : super.empty();
 
@@ -28,13 +31,12 @@ class PubChemCompoundData extends CompoundData with Comparable {
   final double? molecularWeight;
 
   double distanceTo(PubChemCompoundData other) {
-    double distance = 0;
-
-    if (molecularWeight != null && other.molecularWeight != null) distance += (other.molecularWeight! - molecularWeight!).abs();
+    double distance = distanceToBasic(other);
 
     return distance;
   }
 
+  /// Dart is a pansy language without operator overloading.
   double distanceToBasic(CompoundData other) {
     double distance = 0;
 
@@ -56,11 +58,14 @@ class PubChemCompoundData extends CompoundData with Comparable {
   }
 
   @override
-  String toString() {
-    return title ?? 'Unknown Title';
-  }
+  String toString() => cid.toString() + (title ?? 'Unknown Title') + molecularWeight.toString();
 }
 
+/// This is a http client for pubchem rest. This is not entirely self contained, as it required [CompoundData] from another part of the code.
+///
+/// TODO(haakonsmith): profile and improve performance on large queries, .
+/// TODO(haakonsmith): possibly move these decoding functions into a compute function to save performance,
+/// TODO(haakonsmith): expand the capabilities to the full range of properties and further`,
 class PubChemClient {
   PubChemClient() : client = http.Client();
 

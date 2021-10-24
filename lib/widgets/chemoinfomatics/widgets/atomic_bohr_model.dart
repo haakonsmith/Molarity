@@ -65,7 +65,7 @@ class _AtomicBohrModelState extends State<AtomicBohrModel> with TickerProviderSt
 }
 
 /// This is the painter for the
-// TODO, make sure all the electrons are being coloured correctly
+// TODO(haakonsmith): make sure all the electrons are being coloured correct,
 class AtomicBohrModelPainter extends CustomPainter {
   AtomicBohrModelPainter({
     this.rotationOffset = 0,
