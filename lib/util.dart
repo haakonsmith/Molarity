@@ -1,7 +1,10 @@
 /// This whole file is just a bunch of utilites that don't really have a better place to go
 
+// ignore_for_file: unnecessary_this
+
 import 'dart:ui';
 
+import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
 extension HexColor on Color {
@@ -73,9 +76,10 @@ extension ExtendedIterable<E> on Iterable<E> {
 }
 
 extension CapExtension on String {
-  String get inCaps => this.length > 0 ? '${this[0].toUpperCase()}${this.substring(1)}' : '';
-  String get allInCaps => this.toUpperCase();
-  String get capitalizeFirstofEach => this.replaceAll(RegExp(' +'), ' ').split(" ").map((str) => str.inCaps).join(" ");
+  String get inCaps => this.isNotEmpty ? '${this[0].toUpperCase()}${this.substring(1)}' : '';
+  String get allInCaps => toUpperCase();
+  String get capitalizeFirstofEach => replaceAll(RegExp(' +'), ' ').split(' ').map((str) => str.inCaps).join(' ');
+  String get lowerCaseFirstLetter => this.isNotEmpty ? '${this[0].toLowerCase()}${this.substring(1)}' : '';
 }
 
 extension StyledWidget on Widget {
@@ -116,4 +120,25 @@ extension StyledWidget on Widget {
   }) {
     return Padding(padding: EdgeInsets.only(left: left, right: right, top: top, bottom: bottom), child: this);
   }
+}
+
+mixin AsyncSafeData {
+  bool _loading = false;
+
+  bool get loading => _loading;
+
+  Future<void> asyncDataUpdate(Future<void> Function() update) async {
+    _loading = true;
+
+    await update();
+
+    _loading = false;
+  }
+
+  /// Returns the data, if it has been loaded, otherwise returns null
+  T? asyncSafeData<T>(T Function() getter) => loading ? null : getter();
+
+  /// Returns the data, if it has been loaded, otherwise returns null
+  // Widget asyncLoadingWidget<Widget>(Widget Function() getter) => loading ? (Widget) Container()  : getter();
+
 }

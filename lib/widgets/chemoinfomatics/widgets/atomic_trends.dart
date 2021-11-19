@@ -21,11 +21,19 @@ class _AtomicGraphModel {
 
 // TODO fix weird scaling with the control strip. Possibly using a [Wrap]
 class AtomicTrends extends ConsumerStatefulWidget {
-  const AtomicTrends({this.onAtomicPropertyChanged, this.element, this.displayLabels = true, this.intervalCount = 8, Key? key}) : super(key: key);
+  const AtomicTrends({
+    this.onAtomicPropertyChanged,
+    this.element,
+    this.displayLabels = true,
+    this.displayGrid = true,
+    this.intervalCount = 8,
+    Key? key,
+  }) : super(key: key);
 
   final AtomicData? element;
   final int intervalCount;
   final bool displayLabels;
+  final bool displayGrid;
   final ValueChanged<String>? onAtomicPropertyChanged;
 
   @override
@@ -72,6 +80,7 @@ class _AtomicTrendsState extends ConsumerState<AtomicTrends> {
                     atomicProperty: property,
                     showAll: showAll,
                     element: widget.element,
+                    displayGrid: widget.displayGrid,
                     displayLabels: widget.displayLabels,
                   );
                 },
@@ -90,6 +99,7 @@ class AtomicPropertyGraph extends ConsumerStatefulWidget {
     this.showAll = false,
     this.element,
     this.displayLabels = false,
+    this.displayGrid = true,
     this.intervalCount = 8,
     Key? key,
   }) : super(key: key);
@@ -107,6 +117,7 @@ class AtomicPropertyGraph extends ConsumerStatefulWidget {
 
   final bool showAll;
   final bool displayLabels;
+  final bool displayGrid;
   final AtomicData? element;
   final int intervalCount;
 
@@ -263,11 +274,13 @@ class _AtomicPropertyGraphState extends ConsumerState<AtomicPropertyGraph> {
           getTextStyles: (_, __) => const TextStyle(fontSize: 8),
           getTitles: (value) => value.toString(),
         ),
+        rightTitles: SideTitles(showTitles: false),
+        topTitles: SideTitles(showTitles: false),
       ),
       axisTitleData: FlAxisTitleData(
         leftTitle: AxisTitle(showTitle: widget.displayLabels, textStyle: const TextStyle(fontSize: 12), titleText: widget.atomicProperty, margin: 5),
       ),
-      gridData: FlGridData(show: true, horizontalInterval: (yMax / widget.intervalCount) <= 1 ? 1 : (yMax / widget.intervalCount)),
+      gridData: FlGridData(show: widget.displayGrid, horizontalInterval: (yMax / widget.intervalCount) <= 1 ? 1 : (yMax / widget.intervalCount)),
     );
   }
 }

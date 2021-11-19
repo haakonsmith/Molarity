@@ -1,4 +1,6 @@
 import 'package:flutter/foundation.dart';
+import 'package:molarity/data/elements_data_bloc.dart';
+import 'package:molarity/util.dart';
 
 /// This is a way of accessing and discussing atomic properties without the amount of strings as before.
 enum AtomicProperty {
@@ -11,8 +13,15 @@ enum AtomicProperty {
   phase,
 
   // This is the simplifed electron configuration
-  simplifedElectronConfiguration
+  electronConfiguration
 }
+
+AtomicProperty atomicPropertyFromString(String str) => AtomicProperty.values.firstWhere((e) {
+      // print('$e compared to $str');
+      // print('comparison type: ${e.runtimeType}');
+      // print('comparison string?: ${e.toString()}');
+      return e.toString() == 'AtomicProperty.${str.replaceAll(' ', '').lowerCaseFirstLetter}' || e.toString() == str;
+    });
 
 typedef AtomicDataCallback = void Function(AtomicData atomicData);
 typedef CompoundDataCallback = void Function(CompoundData compoundData);
@@ -139,7 +148,7 @@ class AtomicData {
         'Electron Configuration',
       ];
 
-  String getPropertyStringName(AtomicProperty property) {
+  static String getPropertyStringName(AtomicProperty property) {
     String name;
 
     switch (property) {
@@ -164,7 +173,7 @@ class AtomicData {
       case AtomicProperty.electronNegativity:
         name = 'Electron Negativity';
         break;
-      case AtomicProperty.simplifedElectronConfiguration:
+      case AtomicProperty.electronConfiguration:
         name = 'Electron Configuration';
         break;
       default:
@@ -249,6 +258,20 @@ class CompoundData extends ChangeNotifier {
 
   factory CompoundData.fromAtomicData(AtomicData element) => CompoundData.fromList([element]);
 
+  factory CompoundData.deserialise(String data, ElementsBloc elementsBloc) {
+    final elements = data.split(',');
+
+    final rawCompound = <AtomicData, int>{};
+
+    for (final element in elements) {
+      final identifiers = element.split(':');
+
+      rawCompound[elementsBloc.getElementBySymbol(identifiers.first)] = int.parse(identifiers[1]);
+    }
+
+    return CompoundData(rawCompound);
+  }
+
   CompoundData.empty() : rawCompound = {};
 
   void clear() {
@@ -273,8 +296,8 @@ class CompoundData extends ChangeNotifier {
 
   CompoundData addElement(AtomicData element) {
     rawCompound.update(element, (int value) => value + 1, ifAbsent: () => 1);
+
     notifyListeners();
-    print("here2");
 
     return this;
   }
@@ -287,6 +310,17 @@ class CompoundData extends ChangeNotifier {
     });
 
     return formula;
+  }
+
+  /// This converts the compound into a string
+  String serialise() {
+    String formula = '';
+
+    rawCompound.forEach((AtomicData key, int value) {
+      formula += ',${key.symbol}:$value';
+    });
+
+    return formula.substring(1);
   }
 
   String toTex() {

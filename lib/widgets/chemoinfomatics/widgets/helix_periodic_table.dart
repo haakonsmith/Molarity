@@ -6,6 +6,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:molarity/data/active_atomic_data.dart';
 import 'package:molarity/data/elements_data_bloc.dart';
 import 'package:molarity/screen/atomic_info_screen.dart';
 import 'package:molarity/theme.dart';
@@ -66,7 +67,7 @@ class _HelixPeriodicTableState extends ConsumerState<HelixPeriodicTable> with Ti
 
     final elements = ref.read(elementsBlocProvider).getElements();
 
-    widgets = tileData.map((e) => KeyedSubtree(child: PeriodicTableTile(elements[e.idx]), key: ValueKey("terst" + e.idx.toString()))).toList();
+    widgets = tileData.map((e) => KeyedSubtree(child: PeriodicTableTile(elements[e.idx]), key: ValueKey('test${e.idx}'))).toList();
 
     _scaleController = AnimationController(duration: const Duration(milliseconds: 500), vsync: this);
     _scaleController.addListener(() => setState(() {}));
@@ -87,7 +88,11 @@ class _HelixPeriodicTableState extends ConsumerState<HelixPeriodicTable> with Ti
   double convertDragToAngleOffset(double panX) => (-panX * .006);
 
   double normalise(double angle) => angle - (angle / (totalAngle)).floorToDouble() * totalAngle;
-  double selectCardAngle(int index) => -(index - 2) * radioStep + ((totalAngle / 2) / (tileData.length / 2)) / 2;
+  double selectCardAngle(int index) {
+    ref.read(activeAtomicDataNotifier).state = ref.read(elementsBlocProvider).elements[index];
+
+    return -(index - 2) * radioStep + ((totalAngle / 2) / (tileData.length / 2)) / 2;
+  }
   // double normalise(double angle) => normaliseRange(angle, -pi, pi);
 
   // Normalizes any number to an arbitrary range
@@ -160,60 +165,49 @@ class _HelixPeriodicTableState extends ConsumerState<HelixPeriodicTable> with Ti
         }
         if (pointerSignal is PointerEnterEvent) {}
       },
-      child: KeyboardListener(
-        onKeyEvent: (value) {
-          if (value.logicalKey == LogicalKeyboardKey.arrowRight) {
-            selectedCard += 1;
-          }
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onPanDown: (e) {
+          isMousePressed = true;
+
+          _scaleController.animateTo(1, duration: const Duration(seconds: 1), curve: Curves.fastLinearToSlowEaseIn);
         },
-        focusNode: FocusNode(),
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onPanDown: (e) {
-            isMousePressed = true;
+        onPanUpdate: (e) {
+          _rotationController.stop();
 
-            _scaleController.animateTo(1, duration: const Duration(seconds: 1), curve: Curves.fastLinearToSlowEaseIn);
-          },
-          onPanUpdate: (e) {
-            _rotationController.stop();
+          angle += convertDragToAngleOffset(e.delta.dx);
 
-            angle += convertDragToAngleOffset(e.delta.dx);
+          if (e.delta.dy * e.delta.dy > 25) {
+            final yaddition = ((e.delta.dy.abs()) / 20).round() * radioStep * 1 * e.delta.dy.sign;
+            print((yaddition + angle) < totalAngle);
 
-            // print(e.delta.dy);
-            // print((-e.delta.dy * 5).round());
+            if ((yaddition + angle) < 0) angle += yaddition;
+            // else
+            if ((yaddition + angle) < totalAngle) angle += yaddition;
+          }
 
-            if (e.delta.dy * e.delta.dy > 25) {
-              final yaddition = ((e.delta.dy.abs()) / 20).round() * radioStep * 1 * e.delta.dy.sign;
-              print((yaddition + angle) < totalAngle);
+          selectedCard = normaliseRange(-(normalise(angle) / ((totalAngle / 2) / (tileData.length / 2))).floor() + 2, 0, tileData.length.toDouble()).floor();
 
-              if ((yaddition + angle) < 0) angle += yaddition;
-              // else
-              if ((yaddition + angle) < totalAngle) angle += yaddition;
-            }
+          setState(() {});
+        },
+        onPanEnd: (e) {
+          _rotationController.value = angle;
 
-            selectedCard = normaliseRange(-(normalise(angle) / ((totalAngle / 2) / (tileData.length / 2))).floor() + 2, 0, tileData.length.toDouble()).floor();
+          isMousePressed = false;
 
-            setState(() {});
-          },
-          onPanEnd: (e) {
-            _rotationController.value = angle;
+          print(selectCardAngle(selectedCard));
 
-            isMousePressed = false;
-
-            print(selectCardAngle(selectedCard));
-
-            _rotationController.animateTo(selectCardAngle(selectedCard), duration: const Duration(seconds: 1), curve: Curves.fastLinearToSlowEaseIn);
-            _scaleController.animateTo(0, duration: const Duration(seconds: 1), curve: Curves.fastLinearToSlowEaseIn);
-          },
-          child: Transform.scale(
-            scale: 0.7,
-            child: Container(
-              height: 200,
+          _rotationController.animateTo(selectCardAngle(selectedCard), duration: const Duration(seconds: 1), curve: Curves.fastLinearToSlowEaseIn);
+          _scaleController.animateTo(0, duration: const Duration(seconds: 1), curve: Curves.fastLinearToSlowEaseIn);
+        },
+        child: Transform.scale(
+          scale: 0.7,
+          child: Container(
+            height: 200,
+            alignment: Alignment.center,
+            child: Stack(
               alignment: Alignment.center,
-              child: Stack(
-                alignment: Alignment.center,
-                children: cardsToRender,
-              ),
+              children: cardsToRender,
             ),
           ),
         ),
@@ -222,7 +216,7 @@ class _HelixPeriodicTableState extends ConsumerState<HelixPeriodicTable> with Ti
   }
 
   Widget addCard(TileData vo) {
-    var alpha = ((1 - vo.z / radio) / 2) * 1;
+    final alpha = ((1 - vo.z / radio) / 2) * 1;
 
     final isSelected = vo.idx == selectedCard;
 
@@ -251,8 +245,8 @@ class _HelixPeriodicTableState extends ConsumerState<HelixPeriodicTable> with Ti
             //     stops: const [0.1, .9],
             //     colors: [vo.lightColor.darken(darken), vo.color.darken(darken)],
             //   ),
-            borderRadius: BorderRadius.circular(4),
-            border: isSelected ? Border.all(color: Colors.white) : null,
+            borderRadius: BorderRadius.circular(20),
+            border: isSelected ? Border.all(color: Colors.white24) : null,
             //   boxShadow: [BoxShadow(color: Colors.black.withOpacity(.2 + alpha * .2), spreadRadius: 1, blurRadius: 12, offset: Offset(0, 2))],
           ),
           child: widgets[vo.idx],
@@ -371,10 +365,10 @@ class _PeriodicTableTileState extends State<PeriodicTableTile> {
       color: tileColor.darken(isDimmed ? .1 : 0),
       margin: const EdgeInsets.all(1),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(4.0),
+        borderRadius: BorderRadius.circular(20.0),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(2),
+        padding: const EdgeInsets.all(6),
         child: DefaultTextStyle.merge(
           style: TextStyle(color: Colors.white60.withOpacity(0.8)),
           child: content,

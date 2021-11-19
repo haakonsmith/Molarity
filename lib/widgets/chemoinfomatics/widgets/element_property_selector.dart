@@ -4,7 +4,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 class AtomicAttributeSelector extends HookWidget {
   const AtomicAttributeSelector({
     this.onChanged,
-    this.intialValue = "Density",
+    this.intialValue = 'Density',
     Key? key,
     this.selectables = kSelectables,
     this.backgroundColor = Colors.transparent,
@@ -15,7 +15,7 @@ class AtomicAttributeSelector extends HookWidget {
   final String intialValue;
   final List<String> selectables;
 
-  static const kSelectables = const <String>[
+  static const kSelectables = <String>[
     'Melting Point',
     'Boiling Point',
     'Phase',
@@ -31,7 +31,7 @@ class AtomicAttributeSelector extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (!selectables.contains(intialValue)) throw ArgumentError.value(intialValue, "AtomicAttributeSelector");
+    if (!selectables.contains(intialValue)) throw ArgumentError.value(intialValue, 'AtomicAttributeSelector');
 
     final dropdownValue = useState(intialValue);
 

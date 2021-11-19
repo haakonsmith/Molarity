@@ -2,13 +2,12 @@ import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:molarity/util.dart';
 import 'package:universal_platform/universal_platform.dart';
-
-import '../util.dart';
 
 class MolarityAppBar {
   static PreferredSizeWidget buildTitle(BuildContext context, Widget? title, {double? height}) {
-    var appBar = AppbarWithTab(
+    final appBar = AppbarWithTab(
       title: title!,
     );
 
@@ -162,9 +161,9 @@ class _AppbarWithTabState extends State<AppbarWithTab> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           if (!canPop) _buildTab(context),
-          if (!canPop) Spacer(),
+          if (!canPop) const Spacer(),
           Hero(
-            tag: "_topBarBtn",
+            tag: '_topBarBtn',
             transitionOnUserGestures: true,
             createRectTween: (Rect? begin, Rect? end) => RectTween(
               begin: Rect.fromCenter(
@@ -197,7 +196,7 @@ class _AppbarWithTabState extends State<AppbarWithTab> {
         color: backgroundColor,
         elevation: widget.elevation,
         shape: widget.tabShape ?? widget.kTabShape,
-        margin: const EdgeInsets.all(0),
+        margin: EdgeInsets.zero,
         child: Container(
           padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
           height: double.infinity,
@@ -214,7 +213,7 @@ class _AppbarWithTabState extends State<AppbarWithTab> {
       color: Colors.transparent,
       child: Card(
         color: backgroundColor,
-        margin: const EdgeInsets.all(0),
+        margin: EdgeInsets.zero,
         elevation: 0,
         shape: widget.kAppbarShape,
         child: Container(
@@ -235,7 +234,7 @@ class _AppbarWithTabState extends State<AppbarWithTab> {
 }
 
 ShapeBorder kBackButtonShape = const RoundedRectangleBorder(
-  borderRadius: const BorderRadius.only(
+  borderRadius: BorderRadius.only(
     topRight: Radius.circular(20),
     bottomRight: Radius.circular(20),
   ),

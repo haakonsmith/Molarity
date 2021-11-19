@@ -5,15 +5,27 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:molarity/util.dart';
 import 'package:molarity/widgets/chemoinfomatics/data.dart';
 
-class ElementsBloc extends ChangeNotifier {
+class ElementsBloc extends ChangeNotifier with AsyncSafeData {
+  ElementsBloc() {
+    final elementsFuture = asyncDataUpdate(() async {
+      _elements = await _loadElements();
+      notifyListeners();
+    });
+
+    // This is done as a seperate step to reduce ui hang while it's loading, as spectral images are likely not used immediately.
+    asyncDataUpdate(() async {
+      await elementsFuture;
+      _spectraImages = await _loadSpectraImages();
+      notifyListeners();
+    });
+  }
+
   /// This must reflect the asset path in pubspec.yaml
   static const String periodicTablePath = 'assets/periodic_table.json';
   static const String atomicSpectraRootPath = 'assets/atomic_images';
-
-  bool _loading = true;
-  bool get loading => _loading;
 
   late List<AtomicData> _elements;
   late Map<String, Image> _spectraImages;
@@ -44,25 +56,12 @@ class ElementsBloc extends ChangeNotifier {
     return result;
   }
 
-  ElementsBloc() {
-    _asyncDataUpdate(() async {
-      _elements = await _loadElements();
-      _spectraImages = await _loadSpectraImages();
-    });
+  Widget? getSpectralImage(String elementName) => asyncSafeData(() => _spectraImages[elementName] as Widget) ?? const CircularProgressIndicator();
 
-    // This is done as a seperate step to reduce ui hang while it's loading, as spectral images are likely not used immediately.
-    // _asyncDataUpdate(() async {
-    // });
-  }
-
-  Widget? getSpectralImage(String elementName) => !_loading ? _spectraImages[elementName] : const CircularProgressIndicator();
-
-  List<AtomicData> get elements {
-    return !_loading ? _elements : [];
-  }
+  List<AtomicData> get elements => asyncSafeData(() => _elements) ?? [];
 
   List<AtomicData> getElements({bool Function(AtomicData)? ignoreThisValue}) {
-    if (_loading) return [];
+    if (loading) return [];
 
     final List<AtomicData> newElements = [];
 
@@ -93,20 +92,6 @@ class ElementsBloc extends ChangeNotifier {
 
   AtomicData getElementBySymbol(String symbol) => _elements.firstWhere((element) => element.symbol.toLowerCase() == symbol.toLowerCase());
   AtomicData getElementByAtomicNumber(int atomicNumber) => _elements.firstWhere((element) => element.atomicNumber == atomicNumber);
-
-  // static ElementsBloc of(BuildContext context, {listen: false}) {
-  //   return Provider.of<ElementsBloc>(context, listen: listen);
-  // }
-
-  Future<void> _asyncDataUpdate(Future<void> Function() update) async {
-    _loading = true;
-
-    await update();
-
-    _loading = false;
-
-    notifyListeners();
-  }
 }
 
 final elementsBlocProvider = ChangeNotifierProvider((_) => ElementsBloc());

@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:molarity/data/elements_data_bloc.dart';
+import 'package:molarity/data/settings_bloc.dart';
 
-import '../theme.dart';
-import '../util.dart';
-import 'chemoinfomatics/data.dart';
-import 'chemoinfomatics/util.dart';
-import 'chemoinfomatics/widgets/atomic_bohr_model.dart';
-import 'chemoinfomatics/widgets/element_property_selector.dart';
+import 'package:molarity/theme.dart';
+import 'package:molarity/util.dart';
+import 'package:molarity/widgets/chemoinfomatics/data.dart';
+import 'package:molarity/widgets/chemoinfomatics/util.dart';
+import 'package:molarity/widgets/chemoinfomatics/widgets/atomic_bohr_model.dart';
+import 'package:molarity/widgets/chemoinfomatics/widgets/element_property_selector.dart';
 
 class InfoBox extends HookConsumerWidget {
   const InfoBox({this.element, Key? key}) : super(key: key);
@@ -48,9 +49,15 @@ class InfoBox extends HookConsumerWidget {
               ),
             ),
             Expanded(
-              child: AtomicBohrModel(
-                element!,
-                key: ValueKey(element!.symbol + 'atomic'),
+              child: Hero(
+                tag: 'bohrModel',
+                child: Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: AtomicBohrModel(
+                    element!,
+                    key: ValueKey('${element!.symbol}atomic'),
+                  ),
+                ),
               ),
             ),
           ]),
@@ -73,12 +80,9 @@ class InfoBox extends HookConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(children: [
-                    IconWithText(Icons.library_add, header: 'Right Click', text: 'to mass compounds').expanded(),
-                    IconWithText(Icons.poll, header: 'Switch Views', text: 'to explore the\n rest of the app').expanded(),
-                    IconWithText(Icons.assignment, header: 'Click Element', text: 'to naviage\n to a detailed description').expanded(),
-                    // Column(
-                    //   children: [FlutterLogo().expanded()],
-                    // )
+                    const IconWithText(Icons.library_add, header: 'Right Click', text: 'to mass compounds').expanded(),
+                    const IconWithText(Icons.poll, header: 'Switch Views', text: 'to explore the\n rest of the app').expanded(),
+                    const IconWithText(Icons.assignment, header: 'Click Element', text: 'to naviage\n to a detailed description').expanded(),
                   ]).expanded()
                 ],
               ),
@@ -106,7 +110,7 @@ class _InfoTitle extends StatelessWidget {
     return Text.rich(TextSpan(children: [
       TextSpan(
           text: '${element.atomicNumber.toString()} – ${element.name}\n',
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 10,
             fontWeight: FontWeight.w200,
           )),
@@ -121,88 +125,89 @@ class _InfoTitle extends StatelessWidget {
   }
 }
 
-class _InfoDataRow extends StatefulWidget {
-  const _InfoDataRow({
-    Key? key,
-    required this.element,
-  }) : super(key: key);
+class _InfoDataRow extends ConsumerStatefulWidget {
+  const _InfoDataRow({Key? key, required this.element}) : super(key: key);
 
   final AtomicData element;
 
   @override
-  State<StatefulWidget> createState() => _InfoDataRowState();
+  _InfoDataRowState createState() => _InfoDataRowState();
 }
 
-class _InfoDataRowState extends State<_InfoDataRow> {
+class _InfoDataRowState extends ConsumerState<_InfoDataRow> {
   @override
   Widget build(BuildContext context) {
+    final settingsBloc = ref.watch(settingsBlocProvider);
+
     return Expanded(
       flex: 3,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ElementalInfo(
-            widget.element,
-            intialValue: 'Boiling Point',
-            intialGetter: (element) => element.getAssociatedStringValue('Boiling Point'),
-          ).expanded(),
-          ElementalInfo(
-            widget.element,
-            intialValue: 'Melting Point',
-            intialGetter: (element) => element.getAssociatedStringValue('Melting Point'),
-          ).expanded(),
-          ElementalInfo(
-            widget.element,
-            intialValue: 'Phase',
-            intialGetter: (element) => element.getAssociatedStringValue('Phase'),
-          ).expanded(),
-        ],
+        children: settingsBloc.loading
+            ? [const Center(child: CircularProgressIndicator())]
+            : [
+                ElementalInfo(
+                  widget.element,
+                  intialValue: settingsBloc.shouldPersistAtomicPreviewCategories ? settingsBloc.savedAtomicPropertyCategories[0] : AtomicProperty.boilingPoint,
+                  onChanged: (property) {
+                    if (settingsBloc.shouldPersistAtomicPreviewCategories) settingsBloc.setSavedAtomicPropertyCategory(0, property);
+                  },
+                ).expanded(),
+                ElementalInfo(
+                  widget.element,
+                  intialValue: settingsBloc.shouldPersistAtomicPreviewCategories ? settingsBloc.savedAtomicPropertyCategories[1] : AtomicProperty.meltingPoint,
+                  onChanged: (property) {
+                    if (settingsBloc.shouldPersistAtomicPreviewCategories) settingsBloc.setSavedAtomicPropertyCategory(1, property);
+                  },
+                ).expanded(),
+                ElementalInfo(
+                  widget.element,
+                  intialValue: settingsBloc.shouldPersistAtomicPreviewCategories ? settingsBloc.savedAtomicPropertyCategories[2] : AtomicProperty.phase,
+                  onChanged: (property) {
+                    if (settingsBloc.shouldPersistAtomicPreviewCategories) settingsBloc.setSavedAtomicPropertyCategory(2, property);
+                  },
+                ).expanded(),
+              ],
       ),
     );
   }
 }
 
-class ElementalInfo extends StatefulWidget {
-  const ElementalInfo(this.elementData, {this.intialGetter, this.intialValue, Key? key}) : super(key: key);
+class ElementalInfo extends ConsumerStatefulWidget {
+  const ElementalInfo(this.elementData, {this.onChanged, this.intialValue, Key? key}) : super(key: key);
 
   final AtomicData elementData;
-  final String Function(AtomicData)? intialGetter;
-  final String? intialValue;
+  final AtomicProperty? intialValue;
+  final void Function(AtomicProperty)? onChanged;
 
   @override
   _ElementalInfoState createState() => _ElementalInfoState();
 }
 
-class _ElementalInfoState extends State<ElementalInfo> {
-  late final ValueNotifier<String> attribute;
+class _ElementalInfoState extends ConsumerState<ElementalInfo> {
+  late AtomicProperty atomicProperty;
 
   @override
   void initState() {
-    attribute = ValueNotifier<String>(widget.intialValue ?? 'Density');
+    atomicProperty = widget.intialValue ?? AtomicProperty.density;
 
-    attribute.addListener(() {
-      setState(() {});
-    });
+    print("Init state:!" + atomicProperty.toString());
 
     super.initState();
-  }
-
-  @override
-  void dispose() {
-    attribute.dispose();
-
-    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final Size screenSize = MediaQuery.of(context).size;
 
-    var dropDown = Padding(
+    final dropDown = Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: AtomicAttributeSelector(onChanged: (val) {
-        attribute.value = val!;
-      }),
+      child: AtomicAttributeSelector(
+          intialValue: AtomicData.getPropertyStringName(atomicProperty),
+          onChanged: (val) {
+            setState(() => atomicProperty = atomicPropertyFromString(val!));
+            widget.onChanged?.call(atomicPropertyFromString(val!));
+          }),
     );
 
     return Column(
@@ -219,10 +224,12 @@ class _ElementalInfoState extends State<ElementalInfo> {
             mainAxisSize: MainAxisSize.min,
             children: [
               SelectableText(
-                widget.elementData.getAssociatedStringValue(attribute.value) == 'null' ? 'Unknown' : widget.elementData.getAssociatedStringValue(attribute.value),
+                widget.elementData.getAssociatedStringValue(AtomicData.getPropertyStringName(atomicProperty)) == 'null'
+                    ? 'Unknown'
+                    : widget.elementData.getAssociatedStringValue(AtomicData.getPropertyStringName(atomicProperty)),
                 style: TextStyle(fontSize: screenSize.width / 80, fontWeight: FontWeight.w200),
               ),
-              AtomicUnit(attribute.value, fontSize: screenSize.width / 80)
+              AtomicUnit(AtomicData.getPropertyStringName(atomicProperty), fontSize: screenSize.width / 80)
             ],
           ),
         ).fittedBox(fit: BoxFit.fitWidth).flexible(),
@@ -231,70 +238,12 @@ class _ElementalInfoState extends State<ElementalInfo> {
   }
 }
 
-// TODO seperate into own file
-// TODO round the corners...
-class ElementAttributeSelector extends StatefulWidget {
-  const ElementAttributeSelector({
-    required this.attribute,
-    Key? key,
-    this.selectables = kSelectables,
-    this.backgroundColor = Colors.transparent,
-  }) : super(key: key);
-
-  final ValueNotifier<String> attribute;
-  final List<String> selectables;
-
-  static const kSelectables = <String>[
-    'Melting Point',
-    'Boiling Point',
-    'Phase',
-    'Density',
-    'Atomic Mass',
-    'Molar Heat',
-    'Electron Negativity',
-    // 'First Ionisation Energy',
-    'Electron Configuration',
-  ];
-
-  final backgroundColor;
-
-  @override
-  State<StatefulWidget> createState() => _ElementAttributeSelectorState();
-}
-
-class _ElementAttributeSelectorState extends State<ElementAttributeSelector> {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: widget.backgroundColor,
-      child: DropdownButton<String>(
-        // underline: Container(),
-        value: widget.attribute.value,
-        items: widget.selectables.map((String value) {
-          return DropdownMenuItem<String>(
-            value: value,
-            child: Text(
-              value,
-              style: const TextStyle(fontWeight: FontWeight.w200, color: Colors.white54),
-            ),
-          );
-        }).toList(),
-        onChanged: (value) {
-          widget.attribute.value = value!;
-
-          setState(() {});
-        },
-      ),
-    );
-  }
-}
-
 class IconWithText extends StatelessWidget {
+  const IconWithText(this.icon, {this.text = '', this.header = '', Key? key}) : super(key: key);
+
   final IconData icon;
   final String text;
   final String header;
-
-  const IconWithText(this.icon, {this.text = '', this.header = '', Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

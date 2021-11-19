@@ -4,7 +4,7 @@ import 'package:flutter_math_fork/flutter_math.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:molarity/data/preferenced_compounds.dart';
 
-import 'chemoinfomatics/data.dart';
+import 'package:molarity/widgets/chemoinfomatics/data.dart';
 
 class MolarMassBox extends ConsumerStatefulWidget {
   final CompoundData compound;

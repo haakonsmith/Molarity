@@ -52,23 +52,23 @@ class _MobilePeriodicTableScreenState extends ConsumerState<MobilePeriodicTableS
       ),
       drawer: const ListDrawer(),
       body: SingleChildScrollView(
-        physics: NeverScrollableScrollPhysics(),
+        physics: const NeverScrollableScrollPhysics(),
         primary: false,
         child: Padding(
           padding: EdgeInsets.fromLTRB(windowSize.width / 30, 10.0, windowSize.width / 30, 20),
           child: Column(
-            children: [
-              const SizedBox(height: 140),
+            children: const [
+              SizedBox(height: 180),
               // FractionallySizedBox(
-              const HelixPeriodicTable(),
+              HelixPeriodicTable(),
               //   heightFactor: 20,
               // ),
-              Container(
-                child: const InteractiveBox(),
+              SizedBox(
+                child: InteractiveBox(),
                 width: double.infinity,
                 height: 100,
               ),
-              const SizedBox(height: 140),
+              SizedBox(height: 140),
             ],
           ),
         ),

@@ -41,11 +41,7 @@ class InteractiveBox extends ConsumerWidget {
 
 class InteractiveBoxHandle extends ChangeNotifier {
   InteractiveBoxHandle() {
-    print("Here3");
-    compound.addListener(() {
-      print("Here");
-      notifyListeners();
-    });
+    compound.addListener(() => notifyListeners());
   }
 
   CompoundData compound = CompoundData.empty();

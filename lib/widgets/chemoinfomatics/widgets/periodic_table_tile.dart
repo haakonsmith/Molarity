@@ -49,7 +49,7 @@ class _PeriodicTableTileState extends State<PeriodicTableTile> {
       tileColor = categoryColorMapping[widget.element.category]!;
     else
       tileColor = widget.tileColorGetter!(widget.element);
-    Widget content = Column(
+    final Widget content = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
@@ -155,7 +155,7 @@ class _PeriodicTableTileState extends State<PeriodicTableTile> {
     } else {
       return MaterialPageRoute(
         // builder: (context) => AtomicInfoScreen(widget.element),
-        builder: (context) => GridPeriodicTable(),
+        builder: (context) => const GridPeriodicTable(),
       );
     }
     // return MaterialPageRoute(

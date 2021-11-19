@@ -5,6 +5,7 @@ import 'package:flutter/rendering.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:molarity/screen/periodic_table_screen.dart';
 import 'package:molarity/screen/periodic_trends_table_screen.dart';
+import 'package:molarity/screen/settings_screen.dart';
 import 'package:universal_platform/universal_platform.dart';
 
 extension IndexedIterable<E> on Iterable<E> {
@@ -47,11 +48,14 @@ class _ListDrawerState extends ConsumerState<ListDrawer> with TickerProviderStat
   }
 
   Route _createRoutePeriodicTrendsTable() {
-    // return MaterialPageRoute(
-    //   builder: (context) => PeriodicTableScreen(),
-    // );
     return MaterialPageRoute(
       builder: (context) => const PeriodicTrendsTableScreen(),
+    );
+  }
+
+  Route _createRouteSettings() {
+    return MaterialPageRoute(
+      builder: (context) => const SettingsScreen(),
     );
   }
 
@@ -78,7 +82,7 @@ class _ListDrawerState extends ConsumerState<ListDrawer> with TickerProviderStat
       ),
       ListDrawerTile(
         leading: const Icon(Icons.settings),
-        onClick: () => Navigator.of(context).pushReplacement(_createRoutePeriodicTable()),
+        onClick: () => Navigator.of(context).pushReplacement(_createRouteSettings()),
         child: const Text(
           'Settings',
           textScaleFactor: 1.2,

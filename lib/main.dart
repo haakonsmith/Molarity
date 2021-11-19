@@ -5,7 +5,7 @@ import 'package:molarity/theme.dart';
 
 void main() {
   runApp(
-    ProviderScope(
+    const ProviderScope(
       child: Molarity(),
     ),
   );
@@ -30,14 +30,11 @@ class Molarity extends StatelessWidget {
         primarySwatch: mcgpalette0,
         toggleableActiveColor: mcgpalette0.shade500,
         cardColor: Colors.white.withOpacity(0.05),
-
         cardTheme: CardTheme(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15.0),
           ),
         ),
-
-        // primaryColor: mcgpalette0.shade500
         scaffoldBackgroundColor: const Color.fromRGBO(26, 31, 44, 1),
       ),
       home: const PeriodicTableScreen(),

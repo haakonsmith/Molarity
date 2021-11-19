@@ -31,7 +31,7 @@ class PubChemCompoundData extends CompoundData with Comparable {
   final double? molecularWeight;
 
   double distanceTo(PubChemCompoundData other) {
-    double distance = distanceToBasic(other);
+    final double distance = distanceToBasic(other);
 
     return distance;
   }
