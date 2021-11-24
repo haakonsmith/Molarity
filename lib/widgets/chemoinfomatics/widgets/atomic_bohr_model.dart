@@ -40,8 +40,7 @@ class _AtomicBohrModelState extends State<AtomicBohrModel> with TickerProviderSt
   Widget build(BuildContext context) {
     return FittedBox(
       fit: BoxFit.fitWidth,
-      child: Container(
-        // margin: const EdgeInsets.all(20),
+      child: SizedBox(
         width: widget.width,
         height: widget.height,
         child: RepaintBoundary(

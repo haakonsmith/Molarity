@@ -4,17 +4,18 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_layout_grid/flutter_layout_grid.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:molarity/data/active_atomic_data.dart';
+import 'package:molarity/data/active_selectors.dart';
 import 'package:molarity/data/elements_data_bloc.dart';
 import 'package:molarity/widgets/chemoinfomatics/data.dart';
 import 'package:molarity/widgets/chemoinfomatics/widgets/interactive_box.dart';
 import 'package:molarity/widgets/chemoinfomatics/widgets/periodic_table_tile.dart';
 
 class GridPeriodicTable extends ConsumerStatefulWidget {
-  const GridPeriodicTable({this.child, Key? key}) : super(key: key);
+  const GridPeriodicTable({this.tileColor, this.child, Key? key}) : super(key: key);
 
   /// Places a child in the empty centre space of the periodic table.
   final Widget? child;
+  final Color Function(AtomicData atomicData)? tileColor;
 
   @override
   _GridPeriodicTableState createState() => _GridPeriodicTableState();
@@ -22,7 +23,6 @@ class GridPeriodicTable extends ConsumerStatefulWidget {
 
 class _GridPeriodicTableState extends ConsumerState<GridPeriodicTable> with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
-
   late final Animation<double> _animation;
 
   @override
@@ -59,7 +59,7 @@ class _GridPeriodicTableState extends ConsumerState<GridPeriodicTable> with Sing
       child: widget.child,
     );
 
-    return LayoutGrid(
+    final table = LayoutGrid(
       gridFit: GridFit.loose,
       columnSizes: repeat(18, [1.fr]),
       rowSizes: repeat(10, [auto]),
@@ -70,6 +70,8 @@ class _GridPeriodicTableState extends ConsumerState<GridPeriodicTable> with Sing
         for (final e in elementsBloc.elements) _buildTile(e, handle, ref).withGridPlacement(columnStart: e.x, rowStart: e.y),
       ],
     );
+
+    return table;
   }
 
   AspectRatio _buildTile(AtomicData e, InteractiveBoxHandle handle, WidgetRef ref) {
@@ -89,9 +91,10 @@ class _GridPeriodicTableState extends ConsumerState<GridPeriodicTable> with Sing
             handle.state = InteractiveState.calculationBox;
           },
           onHover: (element) {
-            ref.read(activeAtomicDataNotifier).state = element;
+            ref.read(activeSelectorsProvider).atomicData = element;
             if (handle.state != InteractiveState.calculationBox) handle.state = InteractiveState.element;
           },
+          tileColorGetter: widget.tileColor,
           key: ValueKey(e.symbol),
         ),
       ),

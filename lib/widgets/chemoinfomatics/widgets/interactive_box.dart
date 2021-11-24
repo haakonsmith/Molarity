@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:molarity/data/active_atomic_data.dart';
+import 'package:molarity/data/active_selectors.dart';
 
 import 'package:molarity/widgets/chemoinfomatics/data.dart';
 import 'package:molarity/widgets/info_box.dart';
@@ -10,9 +10,10 @@ enum InteractiveState { noElement, calculationBox, element }
 
 /// This creates an interactive box for a combination of atomic previews and molar mass calculations.
 class InteractiveBox extends ConsumerWidget {
-  const InteractiveBox({Key? key, this.onCompoundSaved}) : super(key: key);
+  const InteractiveBox({Key? key, this.onCompoundSaved, this.numberOfInfoboxes = 3}) : super(key: key);
 
   final CompoundDataCallback? onCompoundSaved;
+  final int numberOfInfoboxes;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -20,7 +21,7 @@ class InteractiveBox extends ConsumerWidget {
 
     switch (handle.state) {
       case InteractiveState.element:
-        return InfoBox(element: ref.watch(activeAtomicDataNotifier).state);
+        return InfoBox(element: ref.watch(activeSelectorsProvider).atomicData, numberOfInfoboxes: numberOfInfoboxes);
       case InteractiveState.calculationBox:
         return MolarMassBox(
           compound: handle.compound,
@@ -34,7 +35,10 @@ class InteractiveBox extends ConsumerWidget {
           },
         );
       default:
-        return const InfoBox(element: null);
+        return InfoBox(
+          element: null,
+          numberOfInfoboxes: numberOfInfoboxes,
+        );
     }
   }
 }

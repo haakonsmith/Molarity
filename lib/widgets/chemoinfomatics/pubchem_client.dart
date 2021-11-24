@@ -134,8 +134,6 @@ class PubChemClient {
 
     if (responseVerified)
       while (shouldTestIfComplete) {
-        print("testing....");
-
         final response = await get(url);
 
         final decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
@@ -155,7 +153,6 @@ class PubChemClient {
 
         i++;
 
-        print("failed response");
         await Future.delayed(const Duration(seconds: 1));
       }
 
@@ -180,7 +177,6 @@ class PubChemClient {
       try {
         response = await client.get(url);
       } catch (e) {
-        print(e);
         shouldRetry = true;
       }
 
@@ -189,7 +185,7 @@ class PubChemClient {
 
     print('Number of tries taken: ${tries.toString()}');
 
-    if (tries > retryAttempts) return Future.error("Exceeded retry limit");
+    if (tries > retryAttempts) return Future.error('Exceeded retry limit');
 
     return Future.value(response!);
   }

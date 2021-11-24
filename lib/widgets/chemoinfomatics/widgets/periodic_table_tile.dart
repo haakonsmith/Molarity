@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:molarity/screen/atomic_info_screen.dart';
 import 'package:molarity/theme.dart';
 import 'package:molarity/util.dart';
+import 'package:molarity/widgets/animations/slide_page_route.dart';
 import 'package:molarity/widgets/chemoinfomatics/data.dart';
 import 'package:molarity/widgets/chemoinfomatics/widgets/grid_periodic_table.dart';
-
-typedef ShouldRebuildFunction<T> = bool Function(T oldWidget, T newWidget);
 
 class PeriodicTableTile extends StatefulWidget {
   const PeriodicTableTile(
@@ -15,7 +14,9 @@ class PeriodicTableTile extends StatefulWidget {
     this.onHover,
     this.onSecondaryTap,
     this.tileColorGetter,
-    this.contentOnly = false,
+    this.shouldListen = false,
+    this.borderRadius,
+    this.padding,
     Key? key,
   }) : super(key: key);
 
@@ -25,7 +26,10 @@ class PeriodicTableTile extends StatefulWidget {
   final Color Function(AtomicData)? tileColorGetter;
   final String? subText;
   final String? superText;
-  final bool contentOnly;
+  final bool shouldListen;
+
+  final BorderRadius? borderRadius;
+  final EdgeInsets? padding;
 
   @override
   State<StatefulWidget> createState() => _PeriodicTableTileState();
@@ -44,11 +48,8 @@ class _PeriodicTableTileState extends State<PeriodicTableTile> {
   @override
   Widget build(BuildContext context) {
     // print("Build Tile");
+    tileColor = widget.tileColorGetter?.call(widget.element) ?? categoryColorMapping[widget.element.category]!;
 
-    if (widget.tileColorGetter == null)
-      tileColor = categoryColorMapping[widget.element.category]!;
-    else
-      tileColor = widget.tileColorGetter!(widget.element);
     final Widget content = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -79,7 +80,7 @@ class _PeriodicTableTileState extends State<PeriodicTableTile> {
       ],
     );
 
-    if (widget.contentOnly) return content;
+    if (widget.shouldListen) return content;
 
     return MouseRegion(
       key: _key,
@@ -97,17 +98,17 @@ class _PeriodicTableTileState extends State<PeriodicTableTile> {
       }),
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
-        onTap: () => Navigator.of(context).push(_createRoute(_key)),
-        onSecondaryTap: () => widget.onSecondaryTap!(widget.element),
+        onTap: () => Navigator.of(context).push(slidePageRoute(_key, AtomicInfoScreen(widget.element))),
+        onSecondaryTap: () => widget.onSecondaryTap?.call(widget.element),
         child: Card(
           // elevation: elevation,
           color: tileColor.darken(isDimmed ? .1 : 0),
           margin: const EdgeInsets.all(1),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(4.0),
+            borderRadius: widget.borderRadius ?? BorderRadius.circular(4.0),
           ),
           child: Padding(
-            padding: const EdgeInsets.all(2),
+            padding: widget.padding ?? const EdgeInsets.all(2),
             child: DefaultTextStyle.merge(
               style: TextStyle(color: Colors.white60.withOpacity(0.8)),
               child: content,
@@ -116,52 +117,6 @@ class _PeriodicTableTileState extends State<PeriodicTableTile> {
         ),
       ),
     );
-  }
-
-  Route _createRoute(GlobalKey key) {
-    final _context = key.currentContext;
-
-    if (_context != null) {
-      final size = _context.size!;
-
-      final screenSize = MediaQuery.of(_context).size;
-      final screenRect = Rect.fromLTRB(100, screenSize.height, screenSize.width, 100);
-
-      return PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => AtomicInfoScreen(widget.element),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          // final begin = RelativeRect.fromSize(screenRect, size);
-          // final end = RelativeRect.fromSize(screenRect, screenSize);
-          // const curve = Curves.ease;
-
-          // var tween = RectTween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-          // return Rect(
-          //   rect: animation.drive(tween),
-          //   child: child,
-          // );
-          const begin = Offset(0.0, 1.0);
-          const end = Offset.zero;
-          const curve = Curves.ease;
-
-          final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-          return SlideTransition(
-            position: animation.drive(tween),
-            child: child,
-          );
-        },
-      );
-    } else {
-      return MaterialPageRoute(
-        // builder: (context) => AtomicInfoScreen(widget.element),
-        builder: (context) => const GridPeriodicTable(),
-      );
-    }
-    // return MaterialPageRoute(
-    //   // builder: (context) => AtomicInfoScreen(widget.element),
-    //   builder: (context) => PeriodicTable(),
-    // );
   }
 }
 

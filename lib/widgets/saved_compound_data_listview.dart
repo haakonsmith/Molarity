@@ -126,8 +126,6 @@ class _ListRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
-
     return SizedBox(
       height: !isHeader ? 20 : 30,
       child: Row(

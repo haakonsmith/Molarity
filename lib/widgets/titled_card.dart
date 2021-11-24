@@ -23,7 +23,7 @@ class TitledCard extends StatelessWidget {
               child: title,
               textAlign: TextAlign.left,
             ),
-            Divider(),
+            const Divider(),
             child.expanded(),
           ],
         ),

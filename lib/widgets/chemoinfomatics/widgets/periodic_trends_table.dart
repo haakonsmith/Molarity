@@ -124,7 +124,18 @@ class _PeriodicTrendsTableState extends ConsumerState<PeriodicTrendsTable> with 
         break;
     }
 
-    return AspectRatio(aspectRatio: 401 / 122.2, child: infoBoxFiller).withGridPlacement(columnSpan: 10, rowStart: 0, columnStart: 2, rowSpan: 3);
+    return AspectRatio(
+      aspectRatio: 401 / 122.2,
+      child: AnimatedBuilder(
+        animation: _animation,
+        child: infoBoxFiller,
+        builder: (context, child) {
+          final double value = _animation.value - sqrt(20) / 10;
+
+          return Opacity(opacity: value.clamp(0, 1), child: child);
+        },
+      ),
+    ).withGridPlacement(columnSpan: 10, rowStart: 0, columnStart: 2, rowSpan: 3);
   }
 
   Widget _buildTile(AtomicData e, List<double> _elementsData, double _yMax) {

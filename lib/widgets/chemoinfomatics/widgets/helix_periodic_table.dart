@@ -3,15 +3,12 @@ import 'dart:math';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:molarity/data/active_atomic_data.dart';
+import 'package:molarity/data/active_selectors.dart';
 import 'package:molarity/data/elements_data_bloc.dart';
-import 'package:molarity/screen/atomic_info_screen.dart';
-import 'package:molarity/theme.dart';
-import 'package:molarity/util.dart';
 import 'package:molarity/widgets/chemoinfomatics/data.dart';
+import 'package:molarity/widgets/chemoinfomatics/widgets/periodic_table_tile.dart';
 
 // Normalizes any number to an arbitrary range
 // by assuming the range wraps around when going below min or above max
@@ -58,16 +55,27 @@ class _HelixPeriodicTableState extends ConsumerState<HelixPeriodicTable> with Ti
   int selectedCard = 0;
   static int numItems = 118;
 
+  double yShift = 0;
+
   final totalAngle = pi * (numItems / 10 * 2);
+  late final List<AtomicData> elements;
 
   @override
   void initState() {
     tileData = List.generate(numItems, (index) => TileData(index)).toList();
     radioStep = (totalAngle) / numItems;
 
-    final elements = ref.read(elementsBlocProvider).getElements();
+    elements = ref.read(elementsBlocProvider).getElements();
 
-    widgets = tileData.map((e) => KeyedSubtree(child: PeriodicTableTile(elements[e.idx]), key: ValueKey('test${e.idx}'))).toList();
+    widgets = tileData
+        .map((e) => KeyedSubtree(
+            child: PeriodicTableTile(
+              elements[e.idx],
+              borderRadius: BorderRadius.circular(20),
+              padding: const EdgeInsets.all(8),
+            ),
+            key: ValueKey('terst${e.idx}')))
+        .toList();
 
     _scaleController = AnimationController(duration: const Duration(milliseconds: 500), vsync: this);
     _scaleController.addListener(() => setState(() {}));
@@ -84,16 +92,12 @@ class _HelixPeriodicTableState extends ConsumerState<HelixPeriodicTable> with Ti
   }
 
   // Radians
-  // double convertDragToAngleOffset(double panX) => normalise(pi / 2 + (-panX * .006));
   double convertDragToAngleOffset(double panX) => (-panX * .006);
 
-  double normalise(double angle) => angle - (angle / (totalAngle)).floorToDouble() * totalAngle;
-  double selectCardAngle(int index) {
-    ref.read(activeAtomicDataNotifier).state = ref.read(elementsBlocProvider).elements[index];
+  double normalise(double angle) => angle - radioStep.floorToDouble() * totalAngle;
+  double selectCardAngle(int index) => radioStep * (-(index - 2) + 1 / 2);
 
-    return -(index - 2) * radioStep + ((totalAngle / 2) / (tileData.length / 2)) / 2;
-  }
-  // double normalise(double angle) => normaliseRange(angle, -pi, pi);
+  // void _runAngleAnimation()
 
   // Normalizes any number to an arbitrary range
   // by assuming the range wraps around when going below min or above max
@@ -109,12 +113,13 @@ class _HelixPeriodicTableState extends ConsumerState<HelixPeriodicTable> with Ti
   Widget build(BuildContext context) {
     // process positions.
     for (var i = 0; i < tileData.length; ++i) {
-      final c = tileData[i];
-      final ang = angle + c.idx * radioStep;
-      c.angle = ang + pi / 2;
-      c.x = cos(ang) * radio;
-//      c.y = sin(ang) * 10;
-      c.z = sin(ang) * radio;
+      final card = tileData[i];
+      final angleOffset = angle + card.idx * radioStep;
+
+      card.angle = angleOffset + pi / 2;
+      card.x = cos(angleOffset) * radio;
+      // c.y = sin(ang) * 10;
+      card.z = sin(angleOffset) * radio;
     }
 
     // sort in Z axis.
@@ -123,9 +128,12 @@ class _HelixPeriodicTableState extends ConsumerState<HelixPeriodicTable> with Ti
     final List<Widget> cardsToRender = [];
 
     for (final vo in tileData) {
-      final y = vo.idx * 15.0 + angle * 25 - 100;
+      // This formula is not magic, it this same one used to select a card from an angle, but without the floor, so it doesn't snap.
+      // This makes it a continous function. However, it does use -1 as the minimum just to account for some stuff
+      final selectionValue = normaliseRange(-(normalise(angle) / radioStep) + 2, -1, tileData.length.toDouble());
+      final double y = vo.idx * 15 - selectionValue * 15;
 
-      if (y < 80 && y > -350 && -vo.z < 60) {
+      if (y < 200 && y > -200 && -vo.z < 100) {
         final mt2 = Matrix4.identity();
 
         mt2.setEntry(3, 2, 0.0005);
@@ -149,21 +157,17 @@ class _HelixPeriodicTableState extends ConsumerState<HelixPeriodicTable> with Ti
       behavior: HitTestBehavior.opaque,
       onPointerSignal: (pointerSignal) {
         if (pointerSignal is PointerScrollEvent) {
-          // do something when scrolled
-          // print('Scrolled');
-          // print(pointerSignal.scrollDelta);
           if (100 % pointerSignal.scrollDelta.dy > 1) selectedCard += (pointerSignal.scrollDelta.dy).sign.toInt();
 
           if (selectedCard > tileData.length - 1) selectedCard = selectedCard - 1;
           if (selectedCard < 0) selectedCard = 0;
-          // angle += convertDragToAngleOffset(pointerSignal.scrollDelta.dy);
-          // selectedCard = normaliseRange(-(normalise(angle) / ((totalAngle / 2) / (tileData.length / 2))).floor() + 2, 0, tileData.length.toDouble()).floor();
-          // _rotationController.value = angle;
+
+          ref.read(activeSelectorsProvider).atomicData = elements[selectedCard];
+
           _rotationController.animateTo(selectCardAngle(selectedCard), duration: const Duration(seconds: 1), curve: Curves.fastLinearToSlowEaseIn);
 
           setState(() {});
         }
-        if (pointerSignal is PointerEnterEvent) {}
       },
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
@@ -177,16 +181,7 @@ class _HelixPeriodicTableState extends ConsumerState<HelixPeriodicTable> with Ti
 
           angle += convertDragToAngleOffset(e.delta.dx);
 
-          if (e.delta.dy * e.delta.dy > 25) {
-            final yaddition = ((e.delta.dy.abs()) / 20).round() * radioStep * 1 * e.delta.dy.sign;
-            print((yaddition + angle) < totalAngle);
-
-            if ((yaddition + angle) < 0) angle += yaddition;
-            // else
-            if ((yaddition + angle) < totalAngle) angle += yaddition;
-          }
-
-          selectedCard = normaliseRange(-(normalise(angle) / ((totalAngle / 2) / (tileData.length / 2))).floor() + 2, 0, tileData.length.toDouble()).floor();
+          selectedCard = normaliseRange(-(normalise(angle) / radioStep).floor() + 2, 0, tileData.length.toDouble()).floor();
 
           setState(() {});
         },
@@ -195,15 +190,18 @@ class _HelixPeriodicTableState extends ConsumerState<HelixPeriodicTable> with Ti
 
           isMousePressed = false;
 
-          print(selectCardAngle(selectedCard));
+          print(selectedCard);
+
+          ref.read(activeSelectorsProvider).atomicData = elements[selectedCard];
 
           _rotationController.animateTo(selectCardAngle(selectedCard), duration: const Duration(seconds: 1), curve: Curves.fastLinearToSlowEaseIn);
           _scaleController.animateTo(0, duration: const Duration(seconds: 1), curve: Curves.fastLinearToSlowEaseIn);
         },
         child: Transform.scale(
-          scale: 0.7,
+          scale: 0.8,
           child: Container(
-            height: 200,
+            height: 400,
+            width: 400,
             alignment: Alignment.center,
             child: Stack(
               alignment: Alignment.center,
@@ -216,200 +214,47 @@ class _HelixPeriodicTableState extends ConsumerState<HelixPeriodicTable> with Ti
   }
 
   Widget addCard(TileData vo) {
-    final alpha = ((1 - vo.z / radio) / 2) * 1;
+    // var alpha = ((1 - vo.z / radio) / 2);
+    // final alpha = (1 - vo.z / 700) / 2;
+
+    // if (alpha < 0.2) {
+    //   print(alpha);
+    //   print(vo.z / 4000);
+    //   print(vo.idx);
+    // }
 
     final isSelected = vo.idx == selectedCard;
 
-    final double darken = isSelected ? 0 : 0.2;
+    // final double darken = isSelected ? 0 : 0.2;
 
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: () => Navigator.of(context).push(MaterialPageRoute(
-            builder: (context) => AtomicInfoScreen(
-                  ref.read(elementsBlocProvider).elements[vo.idx],
-                ))),
-        child: Container(
-          // margin: const EdgeInsets.all(12),
-          width: 120,
-          height: 120,
-          alignment: Alignment.center,
-          foregroundDecoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            color: Colors.black.withOpacity(alpha),
-          ),
-          decoration: BoxDecoration(
-            //   gradient: LinearGradient(
-            //     begin: Alignment.topLeft,
-            //     end: Alignment.bottomRight,
-            //     stops: const [0.1, .9],
-            //     colors: [vo.lightColor.darken(darken), vo.color.darken(darken)],
-            //   ),
-            borderRadius: BorderRadius.circular(20),
-            border: isSelected ? Border.all(color: Colors.white24) : null,
-            //   boxShadow: [BoxShadow(color: Colors.black.withOpacity(.2 + alpha * .2), spreadRadius: 1, blurRadius: 12, offset: Offset(0, 2))],
-          ),
-          child: widgets[vo.idx],
+    return Container(
+      width: 120,
+      height: 120,
+      alignment: Alignment.center,
+      foregroundDecoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        // color: Color.fromRGBO(255, 255, 255, ),
+      ),
+      decoration: BoxDecoration(
+        // gradient: LinearGradient(
+        //   begin: Alignment.topLeft,
+        //   end: Alignment.bottomRight,
+        //   stops: const [0.1, .9],
+        //   colors: [vo.lightColor.darken(darken), vo.color.darken(darken)],
+        // ),
+        borderRadius: BorderRadius.circular(25),
+        border: isSelected ? Border.all(color: Colors.white) : null,
+        //   boxShadow: [BoxShadow(color: Colors.black.withOpacity(.2 + alpha * .2), spreadRadius: 1, blurRadius: 12, offset: Offset(0, 2))],
+      ),
+      child: Opacity(
+        opacity: (vo.z / 100).clamp(0, 1),
+        child: PeriodicTableTile(
+          elements[vo.idx],
+          borderRadius: BorderRadius.circular(20),
+          padding: const EdgeInsets.all(8),
+          // shouldListen: !isSelected,
         ),
       ),
-    );
-  }
-
-  Route? _createRoute(GlobalKey key) {
-    final _context = key.currentContext;
-
-    if (_context != null) {
-      final size = _context.size!;
-
-      // final screenSize = MediaQuery.of(_context).size;
-      final screenSize = Size(100, 100);
-      final screenRect = Rect.fromLTRB(100, screenSize.height, screenSize.width, 100);
-
-      return PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => AtomicInfoScreen(ref.read(elementsBlocProvider).elements[0]),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          const begin = Offset(0.0, 1.0);
-          const end = Offset.zero;
-          const curve = Curves.ease;
-
-          final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-
-          return SlideTransition(
-            position: animation.drive(tween),
-            child: child,
-          );
-        },
-      );
-    }
-    // return MaterialPageRoute(
-    //   // builder: (context) => AtomicInfoScreen(widget.element),
-    //   builder: (context) => PeriodicTable(),
-    // );
-  }
-}
-
-class PeriodicTableTile extends StatefulWidget {
-  const PeriodicTableTile(
-    this.element, {
-    this.subText,
-    this.superText,
-    this.onHover,
-    this.onSecondaryTap,
-    this.tileColorGetter,
-    this.contentOnly = false,
-    Key? key,
-  }) : super(key: key);
-
-  final AtomicData element;
-  final Function(AtomicData)? onHover;
-  final Function(AtomicData)? onSecondaryTap;
-  final Color Function(AtomicData)? tileColorGetter;
-  final String? subText;
-  final String? superText;
-  final bool contentOnly;
-
-  @override
-  State<StatefulWidget> createState() => _PeriodicTableTileState();
-}
-
-class _PeriodicTableTileState extends State<PeriodicTableTile> {
-  Color tileColor = Colors.white;
-
-  double elevation = 8;
-
-  /// Dim the tile when hovered
-  bool isDimmed = false;
-
-  @override
-  Widget build(BuildContext context) {
-    // print("Build Tile");
-
-    if (widget.tileColorGetter == null)
-      tileColor = categoryColorMapping[widget.element.category]!;
-    else
-      tileColor = widget.tileColorGetter!(widget.element);
-    Widget content = Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          flex: 3,
-          child: FittedBox(
-            fit: BoxFit.fitHeight,
-            child: _TileSub(widget.superText ?? widget.element.atomicNumber.toString()),
-          ),
-        ),
-        Expanded(
-          flex: 5,
-          child: Center(
-            child: FittedBox(
-              fit: BoxFit.fitHeight,
-              child: _TileSymbol(widget.element.symbol),
-            ),
-          ),
-        ),
-        Expanded(
-          flex: 3,
-          child: FittedBox(
-            fit: BoxFit.fitHeight,
-            child: _TileSub(widget.subText ?? widget.element.symbol),
-          ),
-        ),
-        // Expanded(child: Center(child: elementTitle)),
-      ],
-    );
-
-    if (widget.contentOnly) return content;
-
-    return Card(
-      // elevation: elevation,
-      color: tileColor.darken(isDimmed ? .1 : 0),
-      margin: const EdgeInsets.all(1),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20.0),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(6),
-        child: DefaultTextStyle.merge(
-          style: TextStyle(color: Colors.white60.withOpacity(0.8)),
-          child: content,
-        ),
-      ),
-    );
-  }
-}
-
-class _TileSymbol extends StatelessWidget {
-  const _TileSymbol(
-    this.symbol, {
-    Key? key,
-  }) : super(key: key);
-
-  final String symbol;
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      symbol,
-      style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 25),
-      textScaleFactor: 1.5,
-    );
-  }
-}
-
-class _TileSub extends StatelessWidget {
-  const _TileSub(
-    this.value, {
-    Key? key,
-  }) : super(key: key);
-
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      value,
-      style: const TextStyle(fontWeight: FontWeight.w200, fontSize: 15),
-      textScaleFactor: 0.7,
     );
   }
 }

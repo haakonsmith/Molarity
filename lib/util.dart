@@ -120,6 +120,14 @@ extension StyledWidget on Widget {
   }) {
     return Padding(padding: EdgeInsets.only(left: left, right: right, top: top, bottom: bottom), child: this);
   }
+
+  Widget withPaddingSymetric({double vertical = 0, double horizontal = 0}) => Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: horizontal,
+          vertical: vertical,
+        ),
+        child: this,
+      );
 }
 
 mixin AsyncSafeData {

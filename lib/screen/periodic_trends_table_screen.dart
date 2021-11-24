@@ -9,15 +9,20 @@ class PeriodicTrendsTableScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: MolarityAppBar.buildTitle(context, const Text('Periodic Trends')),
-      drawer: const ListDrawer(),
-      body: const SingleChildScrollView(
+    final Widget content;
+
+    if (MediaQuery.of(context).size.width <= 500)
+      content = const Center(
+        child: Text('Sorry, not working on mobile :)'),
+      );
+    else
+      content = const SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.fromLTRB(30.0, 10.0, 30.0, 0),
           child: PeriodicTrendsTable(),
         ),
-      ),
-    );
+      );
+
+    return Scaffold(appBar: MolarityAppBar.buildTitle(context, const Text('Periodic Trends')), drawer: const ListDrawer(), body: content);
   }
 }
