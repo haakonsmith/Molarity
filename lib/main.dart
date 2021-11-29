@@ -5,7 +5,7 @@ import 'package:molarity/theme.dart';
 
 void main() {
   runApp(
-    ProviderScope(
+    const ProviderScope(
       child: Molarity(),
     ),
   );
@@ -15,9 +15,8 @@ void main() {
 // TODO add trends screen
 // TODO add temperature experimentation screen
 // TODO profile memory usage
-
 class Molarity extends StatelessWidget {
-  Molarity({Key? key}) : super(key: key);
+  const Molarity({Key? key}) : super(key: key);
 
   // This widget is the root of your application.
   @override
@@ -30,17 +29,14 @@ class Molarity extends StatelessWidget {
         primarySwatch: mcgpalette0,
         toggleableActiveColor: mcgpalette0.shade500,
         cardColor: Colors.white.withOpacity(0.05),
-
         cardTheme: CardTheme(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15.0),
           ),
         ),
-
-        // primaryColor: mcgpalette0.shade500
         scaffoldBackgroundColor: const Color.fromRGBO(26, 31, 44, 1),
       ),
-      home: PeriodicTableScreen(),
+      home: const PeriodicTableScreen(),
     );
   }
 }

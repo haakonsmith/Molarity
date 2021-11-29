@@ -3,16 +3,17 @@ import 'package:flutter/services.dart';
 import 'package:flutter_math_fork/flutter_math.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:molarity/data/preferenced_compounds.dart';
+import 'package:molarity/util.dart';
 
-import 'chemoinfomatics/data.dart';
+import 'package:molarity/widgets/chemoinfomatics/data.dart';
 
 class MolarMassBox extends ConsumerStatefulWidget {
+  const MolarMassBox({required this.compound, this.onClear, Key? key, this.onClose, this.onSave}) : super(key: key);
+
   final CompoundData compound;
   final VoidCallback? onClear;
   final VoidCallback? onClose;
   final CompoundDataCallback? onSave;
-
-  MolarMassBox({required this.compound, this.onClear, Key? key, this.onClose, this.onSave}) : super(key: key);
 
   @override
   _MolarMassBoxState createState() => _MolarMassBoxState();
@@ -22,19 +23,20 @@ class _MolarMassBoxState extends ConsumerState<MolarMassBox> {
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
+    final orientation = MediaQuery.of(context).orientation;
 
     final clearButton = _ControlButton(
-      icon: Icon(Icons.delete_forever),
+      icon: const Icon(Icons.delete_forever),
       onTap: widget.onClear,
     );
 
     final closeButton = _ControlButton(
-      icon: Icon(Icons.close),
+      icon: const Icon(Icons.close),
       onTap: widget.onClose,
     );
 
     final saveButton = _ControlButton(
-      icon: Icon(Icons.save),
+      icon: const Icon(Icons.save),
       onTap: () {
         ref.read(preferencedCompoundsProvider).addSavedCompound(widget.compound.copy());
 
@@ -43,15 +45,17 @@ class _MolarMassBoxState extends ConsumerState<MolarMassBox> {
     );
 
     final copyToClipboard = _ControlButton(
-      icon: Icon(Icons.copy),
+      icon: const Icon(Icons.copy),
       onTap: () {
         Clipboard.setData(ClipboardData(text: widget.compound.molarMass.toString()));
       },
     );
 
+    final double fontSize = orientation == Orientation.landscape ? screenSize.width / 80 : 14;
+
     final math = Math.tex(
       _generateText(),
-      textStyle: TextStyle(fontSize: screenSize.width / 80),
+      textStyle: TextStyle(fontSize: fontSize),
       // textScaleFactor: screenSize.width / 1000,
       // maxLines: 3,
     ).texBreak().parts;
@@ -82,8 +86,8 @@ class _MolarMassBoxState extends ConsumerState<MolarMassBox> {
       child: Row(
         children: [
           Math.tex(
-            "=" + widget.compound.toTex(),
-            textScaleFactor: screenSize.width / 1000,
+            '=${widget.compound.toTex()}',
+            textStyle: TextStyle(fontSize: fontSize),
           ),
         ],
       ),
@@ -104,8 +108,8 @@ class _MolarMassBoxState extends ConsumerState<MolarMassBox> {
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Math.tex(
-                      "=" + widget.compound.molarMass.toStringAsFixed(2) + r"gmol^{-1}",
-                      textScaleFactor: screenSize.width / 1000,
+                      '=' + widget.compound.molarMass.toStringAsFixed(2) + r'gmol^{-1}',
+                      textStyle: TextStyle(fontSize: fontSize),
                     ),
                   ),
                 ],
@@ -123,10 +127,10 @@ class _MolarMassBoxState extends ConsumerState<MolarMassBox> {
   }
 
   String _generateText() {
-    String str = "= \~\~";
+    String str = '= \~\~';
 
     widget.compound.rawCompound.forEach((key, value) {
-      str += "$value(${key.atomicMass?.toStringAsFixed(2)})\~ + \~";
+      str += '$value(${key.atomicMass?.toStringAsFixed(2)})\~ + \~';
     });
 
     return str.substring(0, str.length - 5);
@@ -149,7 +153,7 @@ class _ControlButton extends StatelessWidget {
       height: 40,
       width: 40,
       child: InkWell(
-        borderRadius: const BorderRadius.all(const Radius.circular(20)),
+        borderRadius: const BorderRadius.all(Radius.circular(20)),
         onTap: onTap,
         child: icon,
       ),

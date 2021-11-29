@@ -1,14 +1,16 @@
-import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:molarity/util.dart';
+import 'package:universal_platform/universal_platform.dart';
 
-import '../util.dart';
-
+// ignore: avoid_classes_with_only_static_members
 class MolarityAppBar {
   static PreferredSizeWidget buildTitle(BuildContext context, Widget? title, {double? height}) {
-    var appBar = AppbarWithTab(title: title!);
+    final appBar = AppbarWithTab(
+      title: title!,
+    );
 
     final preferredSize = PreferredSize(
       preferredSize: Size.fromHeight(height ?? computePrefferedSize(context)),
@@ -19,14 +21,16 @@ class MolarityAppBar {
       ),
     );
 
-    return Platform.isMacOS ? preferredSize : appBar;
+    return UniversalPlatform.isMacOS ? preferredSize : appBar;
   }
 
   static double computePrefferedSize(BuildContext context) {
     // final double height = (MediaQuery.of(context).size.width / 25) >= 60 ? MediaQuery.of(context).size.width / 25 : 60;
     final double height = (MediaQuery.of(context).size.width / 20);
 
-    return max(55, height);
+    // if (!UniversalPlatform.isDesktop) height = 30;
+
+    return max(75, height);
     // return (MediaQuery.of(context).size.width / 25).clamp(50, 70);
   }
 }
@@ -43,6 +47,36 @@ class _PreferredAppBarSize extends Size {
 ///
 /// Half of the options don't work...
 class AppbarWithTab extends StatefulWidget implements PreferredSizeWidget {
+  AppbarWithTab({
+    Key? key,
+    this.tabVisible = true,
+    this.tabShape,
+    this.tabRadius = 20,
+    required this.title,
+    this.onPressed,
+    this.leading,
+    this.onTitleTapped,
+    this.elevation = 10,
+    this.backgroundColor,
+    this.automaticallyImplyLeading = true,
+    this.bottom,
+    this.onBackButtonPressed,
+    this.toolbarHeight,
+  })  : preferredSize = _PreferredAppBarSize(toolbarHeight, bottom?.preferredSize.height),
+        kTabShape = RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+            topRight: Radius.circular(tabRadius),
+            bottomRight: Radius.circular(tabRadius),
+          ),
+        ),
+        kAppbarShape = RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(tabRadius),
+            bottomLeft: Radius.circular(tabRadius),
+          ),
+        ),
+        super(key: key);
+
   final bool tabVisible;
 
   final double tabRadius;
@@ -88,36 +122,7 @@ class AppbarWithTab extends StatefulWidget implements PreferredSizeWidget {
   @override
   final Size preferredSize;
 
-  AppbarWithTab({
-    Key? key,
-    this.tabVisible = true,
-    this.tabShape,
-    this.tabRadius = 20,
-    required this.title,
-    this.onPressed,
-    this.leading,
-    this.onTitleTapped,
-    this.elevation = 10,
-    this.backgroundColor,
-    this.automaticallyImplyLeading = true,
-    this.bottom,
-    this.onBackButtonPressed,
-    this.toolbarHeight,
-  })  : preferredSize = _PreferredAppBarSize(toolbarHeight, bottom?.preferredSize.height),
-        kTabShape = RoundedRectangleBorder(
-          borderRadius: BorderRadius.only(
-            topRight: Radius.circular(tabRadius),
-            bottomRight: Radius.circular(tabRadius),
-          ),
-        ),
-        kAppbarShape = RoundedRectangleBorder(
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(tabRadius),
-            bottomLeft: Radius.circular(tabRadius),
-          ),
-        ),
-        super(key: key);
-
+  @override
   State<StatefulWidget> createState() => _AppbarWithTabState();
 }
 
@@ -155,13 +160,17 @@ class _AppbarWithTabState extends State<AppbarWithTab> {
     }
 
     return SafeArea(
+      top: true,
+      left: false,
+      right: false,
+      minimum: const EdgeInsets.only(top: 10),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           if (!canPop) _buildTab(context),
-          if (!canPop) Spacer(),
+          if (!canPop) const Spacer(),
           Hero(
-            tag: "_topBarBtn",
+            tag: '_topBarBtn',
             transitionOnUserGestures: true,
             createRectTween: (Rect? begin, Rect? end) => RectTween(
               begin: Rect.fromCenter(
@@ -194,11 +203,15 @@ class _AppbarWithTabState extends State<AppbarWithTab> {
         color: backgroundColor,
         elevation: widget.elevation,
         shape: widget.tabShape ?? widget.kTabShape,
-        margin: const EdgeInsets.all(0),
-        child: Container(
-          padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
-          height: double.infinity,
-          child: leading?.fittedBox(fit: BoxFit.fitHeight),
+        margin: EdgeInsets.zero,
+        child: SafeArea(
+          right: false,
+          top: false,
+          minimum: const EdgeInsets.only(left: 10),
+          child: SizedBox(
+            height: double.infinity,
+            child: leading?.fittedBox(fit: BoxFit.fitHeight),
+          ),
         ),
       ),
     );
@@ -211,7 +224,7 @@ class _AppbarWithTabState extends State<AppbarWithTab> {
       color: Colors.transparent,
       child: Card(
         color: backgroundColor,
-        margin: const EdgeInsets.all(0),
+        margin: EdgeInsets.zero,
         elevation: 0,
         shape: widget.kAppbarShape,
         child: Container(
@@ -232,7 +245,7 @@ class _AppbarWithTabState extends State<AppbarWithTab> {
 }
 
 ShapeBorder kBackButtonShape = const RoundedRectangleBorder(
-  borderRadius: const BorderRadius.only(
+  borderRadius: BorderRadius.only(
     topRight: Radius.circular(20),
     bottomRight: Radius.circular(20),
   ),

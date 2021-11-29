@@ -1,4 +1,8 @@
-// This is a way of accessing and discussing atomic properties without the amount of strings as before.
+import 'package:flutter/foundation.dart';
+import 'package:molarity/data/elements_data_bloc.dart';
+import 'package:molarity/util.dart';
+
+/// This is a way of accessing and discussing atomic properties without the amount of strings as before.
 enum AtomicProperty {
   meltingPoint,
   boilingPoint,
@@ -9,36 +13,16 @@ enum AtomicProperty {
   phase,
 
   // This is the simplifed electron configuration
-  simplifedElectronConfiguration
+  electronConfiguration
 }
 
-typedef void AtomicDataCallback(AtomicData atomicData);
-typedef void CompoundDataCallback(CompoundData compoundData);
+AtomicProperty atomicPropertyFromString(String str) => AtomicProperty.values.firstWhere((e) => e.toString() == 'AtomicProperty.${str.replaceAll(' ', '').lowerCaseFirstLetter}' || e.toString() == str);
+
+typedef AtomicDataCallback = void Function(AtomicData atomicData);
+typedef CompoundDataCallback = void Function(CompoundData compoundData);
+typedef AtomicPropertyCallback = void Function(AtomicProperty compoundData);
 
 class AtomicData {
-  int atomicNumber;
-  String symbol;
-  List<int> shells;
-  AtomicElementCategory category;
-  String categoryValue;
-  String electronConfiguration;
-  String name;
-  int x, y;
-  double? meltingPoint;
-  double? boilingPoint;
-  String phase;
-  String summary;
-  double? density;
-  double? atomicMass;
-  String color;
-  String molarHeat;
-  String discoveredBy;
-  String electronAffinity;
-  bool hasSpectralImage;
-  double? electronNegativity;
-  String semanticElectronConfiguration;
-  List<String> ionisationEnergies;
-
   AtomicData(
       {required this.name,
       required this.categoryValue,
@@ -63,6 +47,54 @@ class AtomicData {
       required this.category,
       required this.atomicNumber,
       required this.symbol});
+
+  AtomicData.fromJson(Map<String, dynamic> json)
+      : atomicNumber = json['number'] as int,
+        symbol = json['symbol'] as String,
+        electronConfiguration = json['electron_configuration'] as String,
+        shells = (json['shells'] as List).cast<int>(),
+        category = atomicElementCategoryFromString(json['category'] as String),
+        categoryValue = json['category'] as String,
+        meltingPoint = parseJsonDouble(json['melt']),
+        boilingPoint = parseJsonDouble(json['boil']),
+        phase = json['phase'] as String,
+        electronNegativity = parseJsonDouble(json['electronegativity_pauling']),
+        semanticElectronConfiguration = json['electron_configuration_semantic'] as String,
+        ionisationEnergies = (json['ionization_energies'] as List).cast<String>(),
+        summary = json['summary'] as String,
+        electronAffinity = (json['electron_affinity']).toString(),
+        discoveredBy = (json['discovered_by'] ?? 'Unknown') as String,
+        molarHeat = json['molar_heat'].toString(),
+        hasSpectralImage = json['spectral_img'] != null,
+        color = (json['color'] ?? 'Unknown') as String,
+        density = parseJsonDouble(json['density']),
+        atomicMass = parseJsonDouble(json['atomic_mass']),
+        name = json['name'] as String,
+        x = (json['xpos'] as int) - 1,
+        y = (json['ypos'] as int) - 1;
+
+  int atomicNumber;
+  String symbol;
+  List<int> shells;
+  AtomicElementCategory category;
+  String categoryValue;
+  String electronConfiguration;
+  String name;
+  int x, y;
+  double? meltingPoint;
+  double? boilingPoint;
+  String phase;
+  String summary;
+  double? density;
+  double? atomicMass;
+  String color;
+  String molarHeat;
+  String discoveredBy;
+  String electronAffinity;
+  bool hasSpectralImage;
+  double? electronNegativity;
+  String semanticElectronConfiguration;
+  List<String> ionisationEnergies;
 
   static AtomicElementCategory atomicElementCategoryFromString(String string) {
     switch (string) {
@@ -92,41 +124,17 @@ class AtomicData {
     return AtomicElementCategory.unknown;
   }
 
-  AtomicData.fromJson(Map json)
-      : this.atomicNumber = json["number"] as int,
-        this.symbol = json["symbol"] as String,
-        this.electronConfiguration = json["electron_configuration"] as String,
-        this.shells = (json["shells"] as List).cast<int>(),
-        this.category = atomicElementCategoryFromString(json['category'] as String),
-        this.categoryValue = json["category"] as String,
-        this.meltingPoint = parseJsonDouble(json["melt"]),
-        this.boilingPoint = parseJsonDouble(json["boil"]),
-        this.phase = json["phase"] as String,
-        this.electronNegativity = parseJsonDouble(json["electronegativity_pauling"]),
-        this.semanticElectronConfiguration = json["electron_configuration_semantic"] as String,
-        this.ionisationEnergies = (json["ionization_energies"] as List).cast<String>(),
-        this.summary = json["summary"] as String,
-        this.electronAffinity = (json["electron_affinity"]).toString(),
-        this.discoveredBy = (json["discovered_by"] ?? "Unknown") as String,
-        this.molarHeat = json["molar_heat"].toString(),
-        this.hasSpectralImage = json["spectral_img"] != null,
-        this.color = (json["color"] ?? "Unknown") as String,
-        this.density = parseJsonDouble(json["density"]),
-        this.atomicMass = parseJsonDouble(json["atomic_mass"]),
-        this.name = json["name"] as String,
-        this.x = (json['xpos'] as int) - 1,
-        this.y = (json['ypos'] as int) - 1;
+  @override
+  String toString() => 'Z: $atomicNumber';
 
-  String toString() => "Z: $atomicNumber";
-
-  static double? parseJsonDouble(dynamic json) {
-    if (json == "null" || json == null)
+  static double? parseJsonDouble(json) {
+    if (json == 'null' || json == null)
       return null;
     else
       return (json as num).toDouble();
   }
 
-  List<String> get associatedProperties => [
+  List<String> get associatedProperties => <String>[
         'Melting Point',
         'Boiling Point',
         'Density',
@@ -136,36 +144,36 @@ class AtomicData {
         'Electron Configuration',
       ];
 
-  String getPropertyStringName(AtomicProperty property) {
+  static String getPropertyStringName(AtomicProperty property) {
     String name;
 
     switch (property) {
       case AtomicProperty.meltingPoint:
-        name = "Melting Point";
+        name = 'Melting Point';
         break;
       case AtomicProperty.boilingPoint:
-        name = "Boiling Point";
+        name = 'Boiling Point';
         break;
       case AtomicProperty.phase:
-        name = "Phase";
+        name = 'Phase';
         break;
       case AtomicProperty.density:
-        name = "Density";
+        name = 'Density';
         break;
       case AtomicProperty.atomicMass:
-        name = "Atomic Mass";
+        name = 'Atomic Mass';
         break;
       case AtomicProperty.molarHeat:
-        name = "Molar Heat";
+        name = 'Molar Heat';
         break;
       case AtomicProperty.electronNegativity:
-        name = "Electron Negativity";
+        name = 'Electron Negativity';
         break;
-      case AtomicProperty.simplifedElectronConfiguration:
-        name = "Electron Configuration";
+      case AtomicProperty.electronConfiguration:
+        name = 'Electron Configuration';
         break;
       default:
-        name = "Invalid Property";
+        name = 'Invalid Property';
     }
 
     return name;
@@ -175,44 +183,45 @@ class AtomicData {
     String returnValue;
 
     switch (property) {
-      case "Melting Point":
+      case 'Melting Point':
         returnValue = meltingPoint.toString();
         break;
-      case "Boiling Point":
+      case 'Boiling Point':
         returnValue = boilingPoint.toString();
         break;
-      case "Phase":
+      case 'Phase':
         returnValue = phase;
         break;
-      case "Density":
+      case 'Density':
         returnValue = density.toString();
         break;
-      case "Atomic Mass":
-        returnValue = atomicMass?.toStringAsFixed(3) ?? "Unknown";
+      case 'Atomic Mass':
+        returnValue = atomicMass?.toStringAsFixed(3) ?? 'Unknown';
         break;
-      case "Molar Heat":
+      case 'Molar Heat':
         returnValue = molarHeat;
         break;
-      case "Electron Negativity":
+      case 'Electron Negativity':
         returnValue = electronNegativity.toString();
         break;
-      case "Electron Configuration":
+      case 'Electron Configuration':
         String electronConfig = '';
-        final electrons = semanticElectronConfiguration.split(' ');
-        for (var i = 0; i < electrons.length; i++) {
-          final electron = electrons[i];
+        final List<String> electrons = semanticElectronConfiguration.split(' ');
+
+        for (int i = 0; i < electrons.length; i++) {
+          final String electron = electrons[i];
 
           if (i == 3)
-            electronConfig += '\n' + electron;
+            electronConfig += '\n$electron';
           else
-            electronConfig += ' ' + electron;
+            electronConfig += ' $electron';
         }
 
         returnValue = electronConfig.trim();
 
         break;
       default:
-        returnValue = "Invalid Info Getter Value";
+        returnValue = 'Invalid Info Getter Value';
     }
 
     return returnValue;
@@ -232,56 +241,96 @@ enum AtomicElementCategory {
   unknown,
 }
 
-class CompoundData {
-  final Map<AtomicData, int> rawCompound;
-
+class CompoundData extends ChangeNotifier {
   CompoundData(this.rawCompound);
 
   factory CompoundData.fromList(List<AtomicData> elements) {
-    Map<AtomicData, int> compoundMap = {};
+    final Map<AtomicData, int> compoundMap = {};
 
-    elements.forEach((element) {
-      compoundMap.update(element, (value) => value + 1, ifAbsent: () => 1);
-    });
+    for (final AtomicData element in elements) compoundMap.update(element, (int value) => value + 1, ifAbsent: () => 1);
 
     return CompoundData(compoundMap);
   }
 
-  factory CompoundData.fromAtomicData(element) => CompoundData.fromList([element]);
+  factory CompoundData.fromAtomicData(AtomicData element) => CompoundData.fromList([element]);
 
-  CompoundData.empty() : this.rawCompound = {};
+  factory CompoundData.deserialise(String data, ElementsBloc elementsBloc) {
+    final elements = data.split(',');
+
+    final rawCompound = <AtomicData, int>{};
+
+    for (final element in elements) {
+      final identifiers = element.split(':');
+
+      rawCompound[elementsBloc.getElementBySymbol(identifiers.first)] = int.parse(identifiers[1]);
+    }
+
+    return CompoundData(rawCompound);
+  }
+
+  CompoundData.empty() : rawCompound = {};
+
+  void clear() {
+    rawCompound.clear();
+  }
+
+  final Map<AtomicData, int> rawCompound;
 
   double get molarMass {
     double molarMass = 0;
 
-    rawCompound.forEach((key, value) {
-      molarMass += double.parse(key.getAssociatedStringValue("Atomic Mass")) * value;
+    rawCompound.forEach((AtomicData key, int value) {
+      molarMass += double.parse(key.getAssociatedStringValue('Atomic Mass')) * value;
     });
 
     return molarMass;
   }
 
   CompoundData copy() {
-    return CompoundData(Map.from(rawCompound));
+    return CompoundData(Map<AtomicData, int>.from(rawCompound));
   }
 
   CompoundData addElement(AtomicData element) {
-    rawCompound.update(element, (value) => value + 1, ifAbsent: () => 1);
+    rawCompound.update(element, (int value) => value + 1, ifAbsent: () => 1);
+
+    notifyListeners();
+
     return this;
   }
 
-  String toTex() {
-    String tex = "";
+  String toMolecularFormula() {
+    String formula = '';
 
-    rawCompound.forEach((key, value) {
+    rawCompound.forEach((AtomicData key, int value) {
+      formula += key.symbol + (value == 1 ? '' : value.toString());
+    });
+
+    return formula;
+  }
+
+  /// This converts the compound into a string
+  String serialise() {
+    String formula = '';
+
+    rawCompound.forEach((AtomicData key, int value) {
+      formula += ',${key.symbol}:$value';
+    });
+
+    return formula.substring(1);
+  }
+
+  String toTex() {
+    String tex = '';
+
+    rawCompound.forEach((AtomicData key, int value) {
       if (value == 1)
-        tex += "${key.symbol}";
+        tex += key.symbol;
       else
-        tex += "${key.symbol}_$value";
+        tex += '${key.symbol}_{$value}';
     });
 
     return tex;
   }
 
-  operator +(AtomicData other) => addElement(other);
+  CompoundData operator +(AtomicData other) => addElement(other);
 }

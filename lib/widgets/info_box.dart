@@ -1,206 +1,230 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:molarity/data/elements_data_bloc.dart';
+import 'package:molarity/data/settings_bloc.dart';
 
-import '../theme.dart';
-import 'chemoinfomatics/widgets/atomic_bohr_model.dart';
-import 'chemoinfomatics/data.dart';
-import 'chemoinfomatics/util.dart';
-import '../util.dart';
-import 'chemoinfomatics/widgets/element_property_selector.dart';
+import 'package:molarity/theme.dart';
+import 'package:molarity/util.dart';
+import 'package:molarity/widgets/chemoinfomatics/data.dart';
+import 'package:molarity/widgets/chemoinfomatics/util.dart';
+import 'package:molarity/widgets/chemoinfomatics/widgets/atomic_bohr_model.dart';
+import 'package:molarity/widgets/chemoinfomatics/widgets/atomic_property_selector.dart';
 
 class InfoBox extends HookConsumerWidget {
+  const InfoBox({this.element, Key? key, this.numberOfInfoboxes = 3}) : super(key: key);
+
   final AtomicData? element;
-
-  InfoBox({this.element, Key? key}) : super(key: key);
-
-  late ElementsBloc elementsBloc;
+  final int numberOfInfoboxes;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    elementsBloc = ref.watch(elementsBlocProvider);
-
-    return element == null ? _buildNullElement(context) : _buildElementInfo(context);
-  }
-
-  Widget _buildElementInfo(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(8.0, 8, 8, 0),
       child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Row(children: [
-            Expanded(
-              flex: 2,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    flex: 2,
-                    child: FittedBox(
-                      fit: BoxFit.contain,
-                      child: _InfoTitle(
-                        element: element!,
-                      ),
-                    ),
-                  ),
-                  // Definitely don't add a key to this
-                  _InfoDataRow(
-                    element: element!,
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: AtomicBohrModel(
-                element,
-                key: ValueKey(element!.symbol + "atomic"),
-              ),
-            ),
-          ]),
-        ),
+        child: Padding(padding: const EdgeInsets.all(12.0), child: element == null ? _buildNullElement(context, ref) : _buildElementInfo(context, ref)),
       ),
     );
   }
 
-  Widget _buildNullElement(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(8.0, 8, 8, 0),
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Row(children: [
+  Widget _buildElementInfo(BuildContext context, WidgetRef ref) {
+    return Row(children: [
+      Expanded(
+        flex: numberOfInfoboxes < 2 ? 1 : 2,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
             Expanded(
               flex: 2,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(children: [
-                    IconWithText(Icons.library_add, header: "Right Click", text: "to mass compounds").expanded(),
-                    IconWithText(Icons.poll, header: "Switch Views", text: "to explore the\n rest of the app").expanded(),
-                    IconWithText(Icons.assignment, header: "Click Element", text: "to naviage\n to a detailed description").expanded(),
-                    // Column(
-                    //   children: [FlutterLogo().expanded()],
-                    // )
-                  ]).expanded()
-                ],
+              child: FittedBox(
+                fit: BoxFit.contain,
+                child: _InfoTitle(
+                  width: numberOfInfoboxes < 2 ? 200 : null,
+                  element: element!,
+                ),
               ),
             ),
-            Expanded(
-              child: AtomicBohrModel(elementsBloc.getElementBySymbol('pt')),
+            // Definitely don't add a key to this
+            _InfoDataRow(
+              numberOfChildren: numberOfInfoboxes,
+              element: element!,
             ),
-          ]),
+          ],
         ),
       ),
-    );
+      Expanded(
+        child: Hero(
+          tag: 'bohrModel',
+          child: Padding(
+            padding: const EdgeInsets.all(10),
+            child: AtomicBohrModel(
+              element!,
+              key: ValueKey('${element!.symbol}atomic$numberOfInfoboxes'),
+            ),
+          ),
+        ),
+      ),
+    ]);
+  }
+
+  Widget _buildNullElement(BuildContext context, WidgetRef ref) {
+    final elementsBloc = ref.watch(elementsBlocProvider);
+
+    return Row(children: [
+      Expanded(
+        flex: numberOfInfoboxes < 2 ? 1 : 2,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+                    children: numberOfInfoboxes > 1
+                        ? [
+                            const IconWithText(Icons.library_add, header: 'Right Click', text: 'to mass compounds').expanded(),
+                            const IconWithText(Icons.poll, header: 'Switch Views', text: 'to explore the\n rest of the app').expanded(),
+                            const IconWithText(Icons.assignment, header: 'Click Element', text: 'to naviage\n to a detailed description').expanded(),
+                          ]
+                        : [
+                            const IconWithText(Icons.account_balance_wallet, header: 'Click Element', text: 'to naviage\n to a detailed description').withPaddingSymetric(vertical: 15).expanded(),
+                          ])
+                .expanded()
+          ],
+        ),
+      ),
+      Expanded(
+        child: Hero(
+          tag: 'bohrModel',
+          child: Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: AtomicBohrModel(elementsBloc.getElementBySymbol('pt')),
+          ),
+        ),
+      ),
+    ]);
   }
 }
 
 class _InfoTitle extends StatelessWidget {
   const _InfoTitle({
-    Key? key,
+    this.width,
     required this.element,
+    Key? key,
   }) : super(key: key);
 
   final AtomicData element;
+  final double? width;
 
   @override
   Widget build(BuildContext context) {
-    return Text.rich(TextSpan(children: [
-      TextSpan(
-          text: "${element.atomicNumber.toString()} – ${element.name}\n",
-          style: TextStyle(
-            fontSize: 10,
-            fontWeight: FontWeight.w200,
-          )),
-      TextSpan(
-        text: element.categoryValue.capitalizeFirstofEach,
-        style: TextStyle(
-          color: categoryColorMapping[element.category],
-          fontSize: 7,
+    return SizedBox(
+      width: width,
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Text.rich(
+          TextSpan(
+            children: [
+              TextSpan(text: '${element.atomicNumber.toString()} – ${element.name}\n', style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w200)),
+              TextSpan(
+                text: element.categoryValue.capitalizeFirstofEach,
+                style: TextStyle(color: categoryColorMapping[element.category], fontSize: 17),
+              )
+            ],
+          ),
+          textAlign: TextAlign.left,
         ),
-      )
-    ]));
-  }
-}
-
-class _InfoDataRow extends StatefulWidget {
-  const _InfoDataRow({
-    Key? key,
-    required this.element,
-  }) : super(key: key);
-
-  final AtomicData element;
-
-  @override
-  State<StatefulWidget> createState() => _InfoDataRowState();
-}
-
-class _InfoDataRowState extends State<_InfoDataRow> {
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      flex: 3,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ElementalInfo(
-            widget.element,
-            intialValue: "Boiling Point",
-            intialGetter: (element) => element.getAssociatedStringValue("Boiling Point"),
-          ).expanded(),
-          ElementalInfo(
-            widget.element,
-            intialValue: "Melting Point",
-            intialGetter: (element) => element.getAssociatedStringValue("Melting Point"),
-          ).expanded(),
-          ElementalInfo(
-            widget.element,
-            intialValue: "Phase",
-            intialGetter: (element) => element.getAssociatedStringValue("Phase"),
-          ).expanded(),
-        ],
+        alignment: Alignment.centerLeft,
       ),
     );
   }
 }
 
-class ElementalInfo extends StatefulWidget {
-  final AtomicData elementData;
-  final String Function(AtomicData)? intialGetter;
-  final String? intialValue;
+class _InfoDataRow extends ConsumerStatefulWidget {
+  const _InfoDataRow({
+    Key? key,
+    required this.element,
+    this.numberOfChildren = 3,
+  }) : super(key: key);
 
-  const ElementalInfo(this.elementData, {this.intialGetter, this.intialValue, Key? key}) : super(key: key);
+  final AtomicData element;
+  final int numberOfChildren;
 
   @override
-  _ElementalInfoState createState() => _ElementalInfoState(infoGetter: intialGetter, displayedValue: intialValue);
+  _InfoDataRowState createState() => _InfoDataRowState();
 }
 
-class _ElementalInfoState extends State<ElementalInfo> {
-  final ValueNotifier<String> attribute;
+class _InfoDataRowState extends ConsumerState<_InfoDataRow> {
+  @override
+  Widget build(BuildContext context) {
+    final settingsBloc = ref.watch(settingsBlocProvider);
 
-  _ElementalInfoState({infoGetter, displayedValue}) : this.attribute = ValueNotifier(displayedValue) {
-    this.attribute.addListener(() {
-      setState(() {});
-    });
+    return Expanded(
+      flex: 3,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: settingsBloc.loading
+            ? [const Center(child: CircularProgressIndicator())]
+            : [
+                if (widget.numberOfChildren > 0)
+                  ElementalInfo(
+                    widget.element,
+                    intialValue: settingsBloc.shouldPersistAtomicPreviewCategories ? settingsBloc.savedAtomicPropertyCategories[0] : AtomicProperty.boilingPoint,
+                    onChanged: (property) {
+                      if (settingsBloc.shouldPersistAtomicPreviewCategories) settingsBloc.setSavedAtomicPropertyCategory(0, property);
+                    },
+                  ).expanded(),
+                if (widget.numberOfChildren > 1)
+                  ElementalInfo(
+                    widget.element,
+                    intialValue: settingsBloc.shouldPersistAtomicPreviewCategories ? settingsBloc.savedAtomicPropertyCategories[1] : AtomicProperty.meltingPoint,
+                    onChanged: (property) {
+                      if (settingsBloc.shouldPersistAtomicPreviewCategories) settingsBloc.setSavedAtomicPropertyCategory(1, property);
+                    },
+                  ).expanded(),
+                if (widget.numberOfChildren > 2)
+                  ElementalInfo(
+                    widget.element,
+                    intialValue: settingsBloc.shouldPersistAtomicPreviewCategories ? settingsBloc.savedAtomicPropertyCategories[2] : AtomicProperty.phase,
+                    onChanged: (property) {
+                      if (settingsBloc.shouldPersistAtomicPreviewCategories) settingsBloc.setSavedAtomicPropertyCategory(2, property);
+                    },
+                  ).expanded(),
+              ],
+      ),
+    );
   }
+}
+
+class ElementalInfo extends ConsumerStatefulWidget {
+  const ElementalInfo(this.elementData, {this.onChanged, this.intialValue, Key? key}) : super(key: key);
+
+  final AtomicData elementData;
+  final AtomicProperty? intialValue;
+  final void Function(AtomicProperty)? onChanged;
 
   @override
-  void dispose() {
-    attribute.dispose();
+  _ElementalInfoState createState() => _ElementalInfoState();
+}
 
-    super.dispose();
+class _ElementalInfoState extends ConsumerState<ElementalInfo> {
+  late AtomicProperty atomicProperty;
+
+  @override
+  void initState() {
+    atomicProperty = widget.intialValue ?? AtomicProperty.density;
+
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    final screenSize = MediaQuery.of(context).size;
+    final Size screenSize = MediaQuery.of(context).size;
 
-    var dropDown = Padding(
+    final dropDown = Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: AtomicAttributeSelector(onChanged: (val) {
-        attribute.value = val!;
-      }),
+      child: AtomicPropertySelector(
+          intialValue: AtomicData.getPropertyStringName(atomicProperty),
+          onChanged: (val) {
+            setState(() => atomicProperty = atomicPropertyFromString(val!));
+            widget.onChanged?.call(atomicPropertyFromString(val!));
+          }),
     );
 
     return Column(
@@ -210,112 +234,57 @@ class _ElementalInfoState extends State<ElementalInfo> {
       children: [
         dropDown.fittedBox().expanded(flex: 2),
         Padding(
-          padding: const EdgeInsets.fromLTRB(20, 0, 0, 0),
+          padding: const EdgeInsets.fromLTRB(5, 5, 5, 10),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               SelectableText(
-                widget.elementData.getAssociatedStringValue(attribute.value) == "null" ? "Unknown" : widget.elementData.getAssociatedStringValue(attribute.value),
-                style: TextStyle(fontSize: screenSize.width / 80, fontWeight: FontWeight.w200),
+                widget.elementData.getAssociatedStringValue(AtomicData.getPropertyStringName(atomicProperty)) == 'null'
+                    ? 'Unknown'
+                    : widget.elementData.getAssociatedStringValue(AtomicData.getPropertyStringName(atomicProperty)),
+                style: const TextStyle(fontWeight: FontWeight.w200),
               ),
-              AtomicUnit(attribute.value, fontSize: screenSize.width / 80)
+              AtomicUnit(
+                AtomicData.getPropertyStringName(atomicProperty),
+                fontSize: 14,
+              ).withPaddingOnly(bottom: 2),
             ],
           ),
-        ).fittedBox(fit: BoxFit.fitWidth).flexible(),
+        ).fittedBox(fit: BoxFit.fitWidth).expanded(),
       ],
     );
   }
 }
 
-// TODO seperate into own file
-// TODO round the corners...
-class ElementAttributeSelector extends StatefulWidget {
-  const ElementAttributeSelector({
-    required this.attribute,
-    Key? key,
-    this.selectables = kSelectables,
-    this.backgroundColor = Colors.transparent,
-  }) : super(key: key);
-
-  final ValueNotifier<String> attribute;
-  final List<String> selectables;
-
-  static const kSelectables = const <String>[
-    'Melting Point',
-    'Boiling Point',
-    'Phase',
-    'Density',
-    'Atomic Mass',
-    'Molar Heat',
-    'Electron Negativity',
-    // 'First Ionisation Energy',
-    'Electron Configuration',
-  ];
-
-  final backgroundColor;
-
-  @override
-  State<StatefulWidget> createState() => _ElementAttributeSelectorState();
-}
-
-class _ElementAttributeSelectorState extends State<ElementAttributeSelector> {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: widget.backgroundColor,
-      child: DropdownButton<String>(
-        // underline: Container(),
-        value: widget.attribute.value,
-        items: widget.selectables.map((String value) {
-          return DropdownMenuItem<String>(
-            value: value,
-            child: Text(
-              value,
-              style: const TextStyle(fontWeight: FontWeight.w200, color: Colors.white54),
-            ),
-          );
-        }).toList(),
-        onChanged: (value) {
-          widget.attribute.value = value!;
-
-          setState(() {});
-        },
-      ),
-    );
-  }
-}
-
 class IconWithText extends StatelessWidget {
+  const IconWithText(this.icon, {this.text = '', this.header = '', Key? key}) : super(key: key);
+
   final IconData icon;
   final String text;
   final String header;
 
-  const IconWithText(this.icon, {this.text = "", this.header = "", Key? key}) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
-    final screenSize = MediaQuery.of(context).size;
-
     return Column(
       children: [
         Expanded(
           flex: 2,
-          child: Icon(icon, size: screenSize.width / 20, color: Colors.white70),
+          child: Icon(icon, size: 20, color: Colors.white70).fittedBox(),
         ),
         Expanded(
-            child: Text(
-          header,
-          textAlign: TextAlign.center,
-          style: TextStyle(fontSize: screenSize.width / 100, fontWeight: FontWeight.bold),
-        )),
+          child: Text(
+            header,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ).withPaddingSymetric(horizontal: 20).fittedBox(),
+        ),
         Expanded(
           child: Text(
             text,
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: screenSize.width / 100),
-          ),
+            style: const TextStyle(fontSize: 20),
+          ).fittedBox(),
         )
       ],
     );
