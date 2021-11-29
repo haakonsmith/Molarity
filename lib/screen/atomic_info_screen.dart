@@ -29,7 +29,7 @@ class AtomicInfoScreen extends StatelessWidget {
     final appBarTitle = Text.rich(
       TextSpan(children: [
         TextSpan(text: '${element.atomicNumber.toString()} – ${element.name} ', style: const TextStyle(fontSize: 25, fontWeight: FontWeight.w200, color: Colors.white)),
-        TextSpan(text: element.categoryValue.capitalizeFirstofEach, style: TextStyle(color: categoryColorMapping[element.category], fontWeight: FontWeight.w200)),
+        TextSpan(text: element.categoryValue.capitalizeFirstofEach, style: TextStyle(color: categoryColorMapping[element.category], fontWeight: FontWeight.w200, fontSize: 18)),
       ]),
     );
 
@@ -73,7 +73,7 @@ class AtomicInfoScreen extends StatelessWidget {
       columnSizes: repeat(3, [1.fr]),
       rowSizes: repeat(5, [auto]),
       areas: '''
-      bohr trend trend
+      preview trend trend
       preview trend trend
       prop prop prop
       info info info
@@ -82,12 +82,14 @@ class AtomicInfoScreen extends StatelessWidget {
       columnGap: 1,
       rowGap: 1,
       children: [
-        // AspectRatio(aspectRatio: 1 / 1.5, child: AtomicInfoPreview(element)).inGridArea('preview'),
+        AspectRatio(aspectRatio: 1 / 1.5, child: AtomicInfoPreview(element)).inGridArea('preview'),
         AspectRatio(aspectRatio: 2 / 1.5, child: TrendsCard(element: element, key: _trendKey)).inGridArea('trend'),
+        // _AtomicDetails(element, key: const ValueKey('Atomic Details')).inGridArea('preview'),
         _AtomicDetails(element, key: const ValueKey('Atomic Details')).inGridArea('info'),
         AtomicProperties(element).inGridArea('prop'),
-        AtomicImage().inGridArea('preview'),
-        AtomicBohrCard(atomicData: element).inGridArea('bohr'),
+        // AtomicProperties(element, maxLength: 2).inGridArea('preview'),
+        // const AtomicImage().inGridArea('preview'),
+        // AtomicBohrCard(atomicData: element).inGridArea('bohr'),
         _AtomicEmissionSpectra(element).inGridArea('spectra'),
       ],
     );

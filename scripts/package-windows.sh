@@ -1,0 +1,1 @@
+wixl msi-packager/test.xml -o build/packages/Molarity.msi

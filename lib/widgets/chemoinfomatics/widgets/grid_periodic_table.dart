@@ -75,6 +75,8 @@ class _GridPeriodicTableState extends ConsumerState<GridPeriodicTable> with Sing
   }
 
   AspectRatio _buildTile(AtomicData e, InteractiveBoxHandle handle, WidgetRef ref) {
+    final tileColor = widget.tileColor?.call(e);
+
     return AspectRatio(
       aspectRatio: 40.1 / 42.4,
       child: AnimatedBuilder(
@@ -94,7 +96,7 @@ class _GridPeriodicTableState extends ConsumerState<GridPeriodicTable> with Sing
             ref.read(activeSelectorsProvider).atomicData = element;
             if (handle.state != InteractiveState.calculationBox) handle.state = InteractiveState.element;
           },
-          tileColorGetter: widget.tileColor,
+          tileColor: tileColor,
           key: ValueKey(e.symbol),
         ),
       ),

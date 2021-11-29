@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:molarity/util.dart';
 import 'package:universal_platform/universal_platform.dart';
 
+// ignore: avoid_classes_with_only_static_members
 class MolarityAppBar {
   static PreferredSizeWidget buildTitle(BuildContext context, Widget? title, {double? height}) {
     final appBar = AppbarWithTab(
@@ -27,7 +28,9 @@ class MolarityAppBar {
     // final double height = (MediaQuery.of(context).size.width / 25) >= 60 ? MediaQuery.of(context).size.width / 25 : 60;
     final double height = (MediaQuery.of(context).size.width / 20);
 
-    return max(55, height);
+    // if (!UniversalPlatform.isDesktop) height = 30;
+
+    return max(75, height);
     // return (MediaQuery.of(context).size.width / 25).clamp(50, 70);
   }
 }
@@ -157,6 +160,10 @@ class _AppbarWithTabState extends State<AppbarWithTab> {
     }
 
     return SafeArea(
+      top: true,
+      left: false,
+      right: false,
+      minimum: const EdgeInsets.only(top: 10),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -197,10 +204,14 @@ class _AppbarWithTabState extends State<AppbarWithTab> {
         elevation: widget.elevation,
         shape: widget.tabShape ?? widget.kTabShape,
         margin: EdgeInsets.zero,
-        child: Container(
-          padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
-          height: double.infinity,
-          child: leading?.fittedBox(fit: BoxFit.fitHeight),
+        child: SafeArea(
+          right: false,
+          top: false,
+          minimum: const EdgeInsets.only(left: 10),
+          child: SizedBox(
+            height: double.infinity,
+            child: leading?.fittedBox(fit: BoxFit.fitHeight),
+          ),
         ),
       ),
     );

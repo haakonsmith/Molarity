@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:molarity/widgets/chemoinfomatics/data.dart';
-import 'package:molarity/widgets/chemoinfomatics/widgets/grid_periodic_table.dart';
 
 Route slidePageRoute(GlobalKey key, Widget page) {
   final _context = key.currentContext;

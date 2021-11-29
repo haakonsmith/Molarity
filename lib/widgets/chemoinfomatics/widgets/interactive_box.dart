@@ -28,10 +28,10 @@ class InteractiveBox extends ConsumerWidget {
           onSave: onCompoundSaved,
           onClear: () {
             handle.compound.clear();
-            handle.state = InteractiveState.noElement;
+            handle.state = InteractiveState.element;
           },
           onClose: () {
-            handle.state = InteractiveState.noElement;
+            handle.state = InteractiveState.element;
           },
         );
       default:

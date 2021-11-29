@@ -1,9 +1,10 @@
 import 'package:flutter/foundation.dart';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:molarity/data/active_selectors.dart';
 import 'package:molarity/data/elements_data_bloc.dart';
+import 'package:molarity/highlight_elements_mixin.dart';
 import 'package:molarity/screen/atomic_info_screen.dart';
 import 'package:molarity/theme.dart';
 import 'package:molarity/util.dart';
@@ -22,13 +23,10 @@ class PeriodicTableScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // return LayoutBuilder(
-    //   builder: (context, constraints) {},
-    // );
     if (MediaQuery.of(context).size.width <= 500)
       return const MobilePeriodicTableScreen();
     else
-      return const PeriodicDesktopTableScreen();
+      return const DesktopPeriodicTableScreen();
   }
 }
 
@@ -39,22 +37,55 @@ class MobilePeriodicTableScreen extends ConsumerStatefulWidget {
   _MobilePeriodicTableScreenState createState() => _MobilePeriodicTableScreenState();
 }
 
-class _MobilePeriodicTableScreenState extends ConsumerState<MobilePeriodicTableScreen> {
+class _MobilePeriodicTableScreenState extends ConsumerState<MobilePeriodicTableScreen> with HighlightElementsMixin {
   bool shouldAllowScroll = true;
+
+  final GlobalKey _key = GlobalKey();
 
   @override
   Widget build(BuildContext context) {
-    final windowSize = MediaQuery.of(context).size;
-
     if (ref.watch(elementsBlocProvider).loading) return const Center(child: CircularProgressIndicator());
 
-    return Scaffold(
-      appBar: MolarityAppBar.buildTitle(
-        context,
-        const Text(
-          'Periodic Table',
-        ),
+    final windowSize = MediaQuery.of(context).size;
+
+    final searchBox = SizedBox(
+      width: windowSize.width / 2,
+      child: TextField(
+        style: const TextStyle(fontSize: 40),
+        focusNode: keyBoardFocusNode,
+        controller: searchController,
+        onChanged: (string) {
+          highlightElements(string);
+
+          if (highlightedElements.isNotEmpty) ref.read(activeSelectorsProvider).atomicData = highlightedElements.first;
+        },
+        onSubmitted: (_) => Navigator.push(context, slidePageRoute(_key, AtomicInfoScreen(highlightedElements.first))).then(closeSearch),
       ),
+    );
+
+    final title = GestureDetector(
+      onTap: () {
+        setState(toggleSearch);
+      },
+      child: Row(
+        children: [
+          if (this.showSearch)
+            const Icon(
+              Icons.close,
+              size: 40,
+            ),
+          if (!this.showSearch)
+            const Text(
+              'Periodic Table',
+            )
+          else
+            searchBox,
+        ],
+      ),
+    );
+
+    return Scaffold(
+      appBar: MolarityAppBar.buildTitle(context, title),
       drawer: const ListDrawer(),
       body: SingleChildScrollView(
         physics: shouldAllowScroll ? null : const NeverScrollableScrollPhysics(),
@@ -64,28 +95,20 @@ class _MobilePeriodicTableScreenState extends ConsumerState<MobilePeriodicTableS
           child: Column(
             children: [
               // This means that the scrolling doesn't doesn't interfere with the helix periodic table.
-              MouseRegion(
-                child: const HelixPeriodicTable(),
-                onEnter: (_) {
-                  setState(() {
-                    shouldAllowScroll = false;
-                  });
-                },
-                onExit: (_) {
-                  setState(() {
-                    shouldAllowScroll = true;
-                  });
-                },
+              Listener(
+                onPointerDown: (_) => setState(() => shouldAllowScroll = false),
+                onPointerUp: (_) => setState(() => shouldAllowScroll = true),
+                child: MouseRegion(
+                  child: HelixPeriodicTable(
+                    intialElement: highlightedElements.isNotEmpty ? highlightedElements.first : null,
+                  ),
+                  onEnter: (_) => setState(() => shouldAllowScroll = false),
+                  onExit: (_) => setState(() => shouldAllowScroll = true),
+                ),
               ),
               const SizedBox(height: 10),
-              const SizedBox(
-                child: InteractiveBox(numberOfInfoboxes: 1),
-                height: 200,
-              ),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                child: SavedCompoundDataListview(),
-              ),
+              const SizedBox(child: InteractiveBox(numberOfInfoboxes: 1), height: 200),
+              const Padding(padding: EdgeInsets.symmetric(horizontal: 8, vertical: 8), child: SavedCompoundDataListview()),
             ],
           ),
         ),
@@ -95,63 +118,21 @@ class _MobilePeriodicTableScreenState extends ConsumerState<MobilePeriodicTableS
 }
 
 /// This is the first landing page and screen which shows the basic periodic table
-class PeriodicDesktopTableScreen extends ConsumerStatefulWidget {
-  const PeriodicDesktopTableScreen({Key? key}) : super(key: key);
+class DesktopPeriodicTableScreen extends ConsumerStatefulWidget {
+  const DesktopPeriodicTableScreen({Key? key}) : super(key: key);
 
   @override
   _PeriodicDesktopTableScreenState createState() => _PeriodicDesktopTableScreenState();
 }
 
-class _PeriodicDesktopTableScreenState extends ConsumerState<PeriodicDesktopTableScreen> with AutomaticKeepAliveClientMixin {
-  bool _showSearch = false;
-
-  late final Map<Type, Action<Intent>> _actionMap;
-  final Map<ShortcutActivator, Intent> _shortcutMap = const {
-    SingleActivator(LogicalKeyboardKey.keyP, meta: true): ActivateIntent(),
-  };
-
-  final searchController = TextEditingController();
-
+class _PeriodicDesktopTableScreenState extends ConsumerState<DesktopPeriodicTableScreen> with AutomaticKeepAliveClientMixin, HighlightElementsMixin {
   final GlobalKey _key = GlobalKey();
 
   @override
-  void initState() {
-    super.initState();
-
-    _actionMap = <Type, Action<Intent>>{
-      ActivateIntent: CallbackAction<Intent>(
-        onInvoke: (Intent intent) => setState(() {
-          _showSearch = !_showSearch;
-          if (_showSearch) keyBoardFocusNode.requestFocus();
-        }),
-      ),
-    };
-
-    print('initstate');
-
-    keyBoardFocusNode.onKeyEvent = (node, event) {
-      if (event.logicalKey == LogicalKeyboardKey.escape) {
-        setState(() {
-          _showSearch = !_showSearch;
-          shortcutFocusNode.requestFocus();
-        });
-      }
-
-      return KeyEventResult.ignored;
-    };
-  }
-
-  final keyBoardFocusNode = FocusNode();
-  final shortcutFocusNode = FocusNode();
-
-  bool shouldRequestFocusOnBuild = true;
-
-  List<AtomicData> highlightedElements = [];
-
-  @override
   Widget build(BuildContext context) {
-    if (shouldRequestFocusOnBuild) shortcutFocusNode.requestFocus();
-    shouldRequestFocusOnBuild = false;
+    super.build(context);
+
+    reFocus();
 
     final elementsBloc = ref.watch(elementsBlocProvider);
     final windowSize = MediaQuery.of(context).size;
@@ -164,7 +145,7 @@ class _PeriodicDesktopTableScreenState extends ConsumerState<PeriodicDesktopTabl
           width: windowSize.width,
           child: GridPeriodicTable(
             child: const InteractiveBox(),
-            tileColor: (atomicData) {
+            tileColor: (AtomicData atomicData) {
               if (highlightedElements.isEmpty) return categoryColorMapping[atomicData.category]!;
               return highlightedElements.contains(atomicData) ? categoryColorMapping[atomicData.category]! : categoryColorMapping[atomicData.category]!.darken(0.2).desaturate();
             },
@@ -181,30 +162,13 @@ class _PeriodicDesktopTableScreenState extends ConsumerState<PeriodicDesktopTabl
         style: const TextStyle(fontSize: 40),
         focusNode: keyBoardFocusNode,
         controller: searchController,
-        onChanged: (value) {
-          setState(() {
-            highlightedElements = elementsBloc.elements.where((element) => element.symbol.toLowerCase().contains(value)).toList();
-          });
-        },
-        onSubmitted: (value) {
-          searchController.clear();
-          shouldRequestFocusOnBuild = true;
-
-          Navigator.push(context, slidePageRoute(_key, AtomicInfoScreen(highlightedElements.first))).then((_) {
-            setState(() {
-              _showSearch = false;
-            });
-            highlightedElements.clear();
-          });
-        },
+        onChanged: highlightElements,
+        onSubmitted: (_) => Navigator.push(context, slidePageRoute(_key, AtomicInfoScreen(highlightedElements.first))).then(closeSearch),
       ),
     );
 
     return Scaffold(
-      appBar: MolarityAppBar.buildTitle(
-        context,
-        !_showSearch ? const Text('Periodic Table') : searchBox,
-      ),
+      appBar: MolarityAppBar.buildTitle(context, !this.showSearch ? const Text('Periodic Table') : searchBox),
       drawer: const ListDrawer(),
       body: SingleChildScrollView(
         child: Padding(
@@ -212,8 +176,8 @@ class _PeriodicDesktopTableScreenState extends ConsumerState<PeriodicDesktopTabl
           child: FocusableActionDetector(
             autofocus: true,
             focusNode: shortcutFocusNode,
-            actions: _actionMap,
-            shortcuts: _shortcutMap,
+            actions: actionMap,
+            shortcuts: shortcutMap,
             child: content,
           ),
         ),

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-class AtomicAttributeSelector extends HookWidget {
-  const AtomicAttributeSelector({
+class AtomicPropertySelector extends HookConsumerWidget {
+  const AtomicPropertySelector({
     this.onChanged,
     this.intialValue = 'Density',
     Key? key,
@@ -30,10 +31,12 @@ class AtomicAttributeSelector extends HookWidget {
   final Color backgroundColor;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     if (!selectables.contains(intialValue)) throw ArgumentError.value(intialValue, 'AtomicAttributeSelector');
 
     final dropdownValue = useState(intialValue);
+    dropdownValue.value = intialValue;
+    print(dropdownValue.value);
 
     return Container(
       color: backgroundColor,

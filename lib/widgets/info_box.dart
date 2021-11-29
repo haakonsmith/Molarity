@@ -8,7 +8,7 @@ import 'package:molarity/util.dart';
 import 'package:molarity/widgets/chemoinfomatics/data.dart';
 import 'package:molarity/widgets/chemoinfomatics/util.dart';
 import 'package:molarity/widgets/chemoinfomatics/widgets/atomic_bohr_model.dart';
-import 'package:molarity/widgets/chemoinfomatics/widgets/element_property_selector.dart';
+import 'package:molarity/widgets/chemoinfomatics/widgets/atomic_property_selector.dart';
 
 class InfoBox extends HookConsumerWidget {
   const InfoBox({this.element, Key? key, this.numberOfInfoboxes = 3}) : super(key: key);
@@ -116,13 +116,22 @@ class _InfoTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: width,
-      child: Text.rich(TextSpan(children: [
-        TextSpan(text: '${element.atomicNumber.toString()} – ${element.name}\n', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w200)),
-        TextSpan(
-          text: element.categoryValue.capitalizeFirstofEach,
-          style: TextStyle(color: categoryColorMapping[element.category], fontSize: 17),
-        )
-      ])),
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Text.rich(
+          TextSpan(
+            children: [
+              TextSpan(text: '${element.atomicNumber.toString()} – ${element.name}\n', style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w200)),
+              TextSpan(
+                text: element.categoryValue.capitalizeFirstofEach,
+                style: TextStyle(color: categoryColorMapping[element.category], fontSize: 17),
+              )
+            ],
+          ),
+          textAlign: TextAlign.left,
+        ),
+        alignment: Alignment.centerLeft,
+      ),
     );
   }
 }
@@ -201,8 +210,6 @@ class _ElementalInfoState extends ConsumerState<ElementalInfo> {
   void initState() {
     atomicProperty = widget.intialValue ?? AtomicProperty.density;
 
-    print("Init state:!" + atomicProperty.toString());
-
     super.initState();
   }
 
@@ -212,7 +219,7 @@ class _ElementalInfoState extends ConsumerState<ElementalInfo> {
 
     final dropDown = Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: AtomicAttributeSelector(
+      child: AtomicPropertySelector(
           intialValue: AtomicData.getPropertyStringName(atomicProperty),
           onChanged: (val) {
             setState(() => atomicProperty = atomicPropertyFromString(val!));

@@ -106,8 +106,6 @@ class PubChemClient {
 
     if (decodedResponse['Message'] != 'Your request is running') return Future.error('HTTPS failed');
 
-    print(PubChemProperties.MolecularFormula.toString());
-
     return int.parse(decodedResponse['ListKey']);
   }
 
@@ -183,6 +181,7 @@ class PubChemClient {
       tries++;
     }
 
+    print(url);
     print('Number of tries taken: ${tries.toString()}');
 
     if (tries > retryAttempts) return Future.error('Exceeded retry limit');

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_math_fork/flutter_math.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:molarity/data/preferenced_compounds.dart';
+import 'package:molarity/util.dart';
 
 import 'package:molarity/widgets/chemoinfomatics/data.dart';
 
@@ -22,6 +23,7 @@ class _MolarMassBoxState extends ConsumerState<MolarMassBox> {
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
+    final orientation = MediaQuery.of(context).orientation;
 
     final clearButton = _ControlButton(
       icon: const Icon(Icons.delete_forever),
@@ -49,9 +51,11 @@ class _MolarMassBoxState extends ConsumerState<MolarMassBox> {
       },
     );
 
+    final double fontSize = orientation == Orientation.landscape ? screenSize.width / 80 : 14;
+
     final math = Math.tex(
       _generateText(),
-      textStyle: TextStyle(fontSize: screenSize.width / 80),
+      textStyle: TextStyle(fontSize: fontSize),
       // textScaleFactor: screenSize.width / 1000,
       // maxLines: 3,
     ).texBreak().parts;
@@ -83,7 +87,7 @@ class _MolarMassBoxState extends ConsumerState<MolarMassBox> {
         children: [
           Math.tex(
             '=${widget.compound.toTex()}',
-            textScaleFactor: screenSize.width / 1000,
+            textStyle: TextStyle(fontSize: fontSize),
           ),
         ],
       ),
@@ -105,7 +109,7 @@ class _MolarMassBoxState extends ConsumerState<MolarMassBox> {
                     alignment: Alignment.centerLeft,
                     child: Math.tex(
                       '=' + widget.compound.molarMass.toStringAsFixed(2) + r'gmol^{-1}',
-                      textScaleFactor: screenSize.width / 1000,
+                      textStyle: TextStyle(fontSize: fontSize),
                     ),
                   ),
                 ],

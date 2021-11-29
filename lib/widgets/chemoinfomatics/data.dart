@@ -16,15 +16,11 @@ enum AtomicProperty {
   electronConfiguration
 }
 
-AtomicProperty atomicPropertyFromString(String str) => AtomicProperty.values.firstWhere((e) {
-      // print('$e compared to $str');
-      // print('comparison type: ${e.runtimeType}');
-      // print('comparison string?: ${e.toString()}');
-      return e.toString() == 'AtomicProperty.${str.replaceAll(' ', '').lowerCaseFirstLetter}' || e.toString() == str;
-    });
+AtomicProperty atomicPropertyFromString(String str) => AtomicProperty.values.firstWhere((e) => e.toString() == 'AtomicProperty.${str.replaceAll(' ', '').lowerCaseFirstLetter}' || e.toString() == str);
 
 typedef AtomicDataCallback = void Function(AtomicData atomicData);
 typedef CompoundDataCallback = void Function(CompoundData compoundData);
+typedef AtomicPropertyCallback = void Function(AtomicProperty compoundData);
 
 class AtomicData {
   AtomicData(

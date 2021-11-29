@@ -5,11 +5,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:molarity/data/active_selectors.dart';
 import 'package:molarity/data/elements_data_bloc.dart';
 import 'package:molarity/util.dart';
 import 'package:molarity/widgets/chemoinfomatics/data.dart';
 import 'package:molarity/widgets/chemoinfomatics/util.dart';
-import 'package:molarity/widgets/chemoinfomatics/widgets/element_property_selector.dart';
+import 'package:molarity/widgets/chemoinfomatics/widgets/atomic_property_selector.dart';
 
 class _AtomicGraphModel {
   const _AtomicGraphModel(this.maxY, this.elements, this.annotationX);
@@ -24,6 +25,7 @@ class AtomicTrends extends ConsumerStatefulWidget {
   const AtomicTrends({
     this.onAtomicPropertyChanged,
     this.element,
+    this.intialProperty,
     this.displayLabels = true,
     this.displayGrid = true,
     this.intervalCount = 8,
@@ -34,6 +36,7 @@ class AtomicTrends extends ConsumerStatefulWidget {
   final int intervalCount;
   final bool displayLabels;
   final bool displayGrid;
+  final AtomicProperty? intialProperty;
   final ValueChanged<String>? onAtomicPropertyChanged;
 
   @override
@@ -41,27 +44,25 @@ class AtomicTrends extends ConsumerStatefulWidget {
 }
 
 class _AtomicTrendsState extends ConsumerState<AtomicTrends> {
-  final ValueNotifier<String> attribute = ValueNotifier('Density');
-  final ValueNotifier<bool> showAll = ValueNotifier(false);
-
-  @override
-  void dispose() {
-    attribute.dispose();
-    showAll.dispose();
-
-    super.dispose();
-  }
+  late AtomicProperty property;
+  bool showAll = false;
 
   @override
   Widget build(BuildContext context) {
+    property = widget.intialProperty ?? ref.read(activeSelectorsProvider).atomicProperty;
+
     final controlStrip = _ControlPanel(
+      intialProperty: property,
       onCheckBoxChanged: (val) {
-        showAll.value = val;
+        setState(() => showAll = val);
       },
       onDropDownChanged: (val) {
-        attribute.value = val;
-
         if (widget.onAtomicPropertyChanged != null) widget.onAtomicPropertyChanged!(val);
+
+        ref.read(activeSelectorsProvider).atomicProperty = atomicPropertyFromString(val);
+        setState(() {
+          property = atomicPropertyFromString(val);
+        });
       },
     );
 
@@ -70,22 +71,12 @@ class _AtomicTrendsState extends ConsumerState<AtomicTrends> {
         Flexible(child: controlStrip),
         Expanded(
           flex: 5,
-          child: ValueListenableBuilder(
-            valueListenable: showAll,
-            builder: (context, bool showAll, child) {
-              return ValueListenableBuilder(
-                valueListenable: attribute,
-                builder: (BuildContext context, String property, Widget? child) {
-                  return AtomicPropertyGraph(
-                    atomicProperty: property,
-                    showAll: showAll,
-                    element: widget.element,
-                    displayGrid: widget.displayGrid,
-                    displayLabels: widget.displayLabels,
-                  );
-                },
-              );
-            },
+          child: AtomicPropertyGraph(
+            atomicProperty: AtomicData.getPropertyStringName(property),
+            showAll: showAll,
+            element: widget.element,
+            displayGrid: widget.displayGrid,
+            displayLabels: widget.displayLabels,
           ),
         ),
       ],
@@ -140,7 +131,10 @@ class _AtomicPropertyGraphState extends ConsumerState<AtomicPropertyGraph> {
 
   @override
   Widget build(BuildContext context) {
-    return LineChart(lineChartData);
+    return LineChart(
+      lineChartData,
+      swapAnimationDuration: const Duration(milliseconds: 300),
+    );
   }
 
   @override
@@ -286,8 +280,14 @@ class _AtomicPropertyGraphState extends ConsumerState<AtomicPropertyGraph> {
 }
 
 class _ControlPanel extends HookWidget {
-  const _ControlPanel({Key? key, this.onCheckBoxChanged, this.onDropDownChanged}) : super(key: key);
+  const _ControlPanel({
+    Key? key,
+    this.onCheckBoxChanged,
+    this.onDropDownChanged,
+    this.intialProperty,
+  }) : super(key: key);
 
+  final AtomicProperty? intialProperty;
   final ValueChanged<bool>? onCheckBoxChanged;
   final ValueChanged<String>? onDropDownChanged;
 
@@ -296,11 +296,16 @@ class _ControlPanel extends HookWidget {
     final atomicAttribute = useValueNotifier('Melting Point');
     final shouldRemove = useValueNotifier(true);
 
+    atomicAttribute.value = AtomicData.getPropertyStringName(intialProperty ?? AtomicProperty.density);
+    print(intialProperty);
+    print(atomicAttribute.value);
+
     final windowSize = MediaQuery.of(context).size;
     final shouldDisplayUnit = windowSize.width <= 530;
 
-    final dropdown = AtomicAttributeSelector(
+    final dropdown = AtomicPropertySelector(
       selectables: const ['Melting Point', 'Boiling Point', 'Density', 'Atomic Mass', 'Molar Heat', 'Electron Negativity'],
+      intialValue: atomicAttribute.value,
       onChanged: (val) {
         atomicAttribute.value = val!;
 

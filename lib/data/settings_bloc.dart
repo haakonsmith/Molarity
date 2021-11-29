@@ -24,7 +24,7 @@ class SettingsBloc extends ChangeNotifier with AsyncSafeData {
     _savedAtomicPropertyCategories = instance.containsKey('savedAtomicPropertyCategories')
         ? instance.getStringList('savedAtomicPropertyCategories')!.map((e) => atomicPropertyFromString(e)).toList()
         : kSavedAtomicPropertyCategories;
-    print('saved atomic property categories: $_savedAtomicPropertyCategories');
+    // print('saved atomic property categories: $_savedAtomicPropertyCategories');
   }
 
   //////////////////////

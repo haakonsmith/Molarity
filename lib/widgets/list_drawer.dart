@@ -91,27 +91,29 @@ class _ListDrawerState extends ConsumerState<ListDrawer> with TickerProviderStat
       )
     ];
 
-    return Column(
-      children: [
-        Container(
-          decoration: BoxDecoration(
-            borderRadius: const BorderRadius.all(Radius.circular(20)),
-            color: Theme.of(context).scaffoldBackgroundColor,
+    return SafeArea(
+      child: Column(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: const BorderRadius.all(Radius.circular(20)),
+              color: Theme.of(context).scaffoldBackgroundColor,
+            ),
+            margin: EdgeInsets.fromLTRB(10, (UniversalPlatform.isMacOS ? 25 : 0) + 50, 0, 0),
+            height: 48 * 3,
+            child: AnimatedBuilder(
+              animation: _animation,
+              builder: (BuildContext context, Widget? child) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: children.mapIndexed((e, i) => Transform.translate(offset: Offset(_offset(i, _animation.value), 0), child: e)).toList(),
+                );
+              },
+            ),
           ),
-          margin: EdgeInsets.fromLTRB(10, (UniversalPlatform.isMacOS ? 25 : 0) + 50, 0, 0),
-          height: 48 * 3,
-          child: AnimatedBuilder(
-            animation: _animation,
-            builder: (BuildContext context, Widget? child) {
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: children.mapIndexed((e, i) => Transform.translate(offset: Offset(_offset(i, _animation.value), 0), child: e)).toList(),
-              );
-            },
-          ),
-        ),
-        const Spacer(),
-      ],
+          const Spacer(),
+        ],
+      ),
     );
   }
 

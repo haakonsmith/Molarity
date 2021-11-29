@@ -31,11 +31,17 @@ class _SavedCompoundDataListviewState extends ConsumerState<SavedCompoundDataLis
       // color: Colors.white,
       width: MediaQuery.of(context).size.width,
       height: (data.length * 36) + (1 * 30) + 26,
+
       child: Card(
         // margin: const EdgeInsets.all(7),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8),
-          child: ListView.separated(itemBuilder: _itemBuilder, separatorBuilder: _separatorBuilder, itemCount: data.length + 1),
+          child: ListView.separated(
+            itemBuilder: _itemBuilder,
+            separatorBuilder: _separatorBuilder,
+            itemCount: data.length + 1,
+            physics: NeverScrollableScrollPhysics(),
+          ),
         ),
       ),
     );
@@ -46,16 +52,13 @@ class _SavedCompoundDataListviewState extends ConsumerState<SavedCompoundDataLis
 
     final pubChemClient = ref.read(pubChemClientProvider);
 
-    // print(pubChemClient.searchByFormula(data[index - 1]).then((value) => pubChemClient.getPropertiesFrom(value, properties: [PubChemProperties.MolecularWeight])));
-
-    print(data[index - 1].toMolecularFormula());
-
     return _ListRow(
       name: FutureBuilder(
         future: pubChemClient.getPropertiesOf(data[index - 1], {PubChemProperties.Title}),
         builder: (BuildContext context, AsyncSnapshot<PubChemCompoundData> snapshot) => snapshot.hasData
             ? Text(
                 '(${snapshot.data!.title})',
+                overflow: TextOverflow.clip,
               )
             : const SizedBox(
                 child: Center(
@@ -136,7 +139,7 @@ class _ListRow extends StatelessWidget {
             children: [
               molecularFormula,
               const SizedBox(width: 10),
-              if (name != null) name!,
+              if (name != null) Expanded(child: name!),
             ],
           )),
           Expanded(
