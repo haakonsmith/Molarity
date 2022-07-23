@@ -25,12 +25,12 @@ mixin HighlightElementsMixin<T extends ConsumerStatefulWidget> on ConsumerState<
 
   @override
   void initState() {
-    intialiseActions();
+    initialiseActions();
 
     super.initState();
   }
 
-  void intialiseActions() {
+  void initialiseActions() {
     actionMap = <Type, Action<Intent>>{
       ActivateIntent: CallbackAction<Intent>(
         onInvoke: (Intent intent) => setState(toggleSearch),

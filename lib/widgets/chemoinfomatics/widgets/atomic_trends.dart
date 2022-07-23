@@ -25,7 +25,7 @@ class AtomicTrends extends ConsumerStatefulWidget {
   const AtomicTrends({
     this.onAtomicPropertyChanged,
     this.element,
-    this.intialProperty,
+    this.initialProperty,
     this.displayLabels = true,
     this.displayGrid = true,
     this.intervalCount = 8,
@@ -36,7 +36,7 @@ class AtomicTrends extends ConsumerStatefulWidget {
   final int intervalCount;
   final bool displayLabels;
   final bool displayGrid;
-  final AtomicProperty? intialProperty;
+  final AtomicProperty? initialProperty;
   final ValueChanged<String>? onAtomicPropertyChanged;
 
   @override
@@ -49,10 +49,10 @@ class _AtomicTrendsState extends ConsumerState<AtomicTrends> {
 
   @override
   Widget build(BuildContext context) {
-    property = widget.intialProperty ?? ref.read(activeSelectorsProvider).atomicProperty;
+    property = widget.initialProperty ?? ref.read(activeSelectorsProvider).atomicProperty;
 
     final controlStrip = _ControlPanel(
-      intialProperty: property,
+      initialProperty: property,
       onCheckBoxChanged: (val) {
         setState(() => showAll = val);
       },
@@ -220,7 +220,11 @@ class _AtomicPropertyGraphState extends ConsumerState<AtomicPropertyGraph> {
     final annotationX = data.annotationX;
     final elementsData = data.elements;
 
-    final rangeAnnotations = data.annotationX != null
+    final borderSide = BorderSide(style: BorderStyle.solid, color: Colors.blueGrey.withAlpha(100));
+
+    final ignoreThisValue = !widget.showAll && (double.tryParse(widget.element?.getAssociatedStringValue(widget.atomicProperty) ?? "") == null);
+
+    final rangeAnnotations = data.annotationX != null && !ignoreThisValue
         ? RangeAnnotations(verticalRangeAnnotations: [
             if (widget.element != null) VerticalRangeAnnotation(x1: annotationX! - .15, x2: annotationX + .15, color: baseColor.withRed(200).desaturate(.05)),
           ])
@@ -241,6 +245,7 @@ class _AtomicPropertyGraphState extends ConsumerState<AtomicPropertyGraph> {
       rangeAnnotations: rangeAnnotations,
       lineTouchData: _getLineTouchData(widget.atomicProperty, context, elementsData),
       lineBarsData: lineBarsData,
+      borderData: FlBorderData(show: true, border: Border(left: borderSide, bottom: borderSide)),
       minY: 0,
       minX: 1,
       maxX: elementsData.length.toDouble(),
@@ -284,10 +289,10 @@ class _ControlPanel extends HookWidget {
     Key? key,
     this.onCheckBoxChanged,
     this.onDropDownChanged,
-    this.intialProperty,
+    this.initialProperty,
   }) : super(key: key);
 
-  final AtomicProperty? intialProperty;
+  final AtomicProperty? initialProperty;
   final ValueChanged<bool>? onCheckBoxChanged;
   final ValueChanged<String>? onDropDownChanged;
 
@@ -296,16 +301,14 @@ class _ControlPanel extends HookWidget {
     final atomicAttribute = useValueNotifier('Melting Point');
     final shouldRemove = useValueNotifier(true);
 
-    atomicAttribute.value = AtomicData.getPropertyStringName(intialProperty ?? AtomicProperty.density);
-    print(intialProperty);
-    print(atomicAttribute.value);
+    atomicAttribute.value = AtomicData.getPropertyStringName(initialProperty ?? AtomicProperty.density);
 
     final windowSize = MediaQuery.of(context).size;
     final shouldDisplayUnit = windowSize.width <= 530;
 
     final dropdown = AtomicPropertySelector(
       selectables: const ['Melting Point', 'Boiling Point', 'Density', 'Atomic Mass', 'Molar Heat', 'Electron Negativity'],
-      intialValue: atomicAttribute.value,
+      initialValue: atomicAttribute.value,
       onChanged: (val) {
         atomicAttribute.value = val!;
 

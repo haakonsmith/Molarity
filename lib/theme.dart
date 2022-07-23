@@ -5,7 +5,7 @@ final Map<AtomicElementCategory, Color> categoryColorMapping = {
   AtomicElementCategory.actinide: const HSLColor.fromAHSL(0.8, 279, 32 / 100, 25 / 100).toColor(),
   AtomicElementCategory.alkaliMetal: const HSLColor.fromAHSL(0.8, 345, 37 / 100, 45 / 100).toColor(),
   AtomicElementCategory.alkalineEarthMetal: const HSLColor.fromAHSL(0.8, 23, 27 / 100, 49 / 100).toColor(),
-  AtomicElementCategory.lanthanide: const Color.fromRGBO(120, 107, 151, 0.9),
+  AtomicElementCategory.lanthanide: Color.fromARGB(228, 120, 107, 151),
   AtomicElementCategory.metalloid: const Color.fromRGBO(74, 114, 146, 0.9),
   AtomicElementCategory.nobleGas: const Color.fromRGBO(136, 100, 170, 0.9),
   AtomicElementCategory.otherNonmetal: const Color.fromRGBO(91, 93, 153, 0.9),

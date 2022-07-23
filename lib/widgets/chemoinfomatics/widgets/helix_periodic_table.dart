@@ -15,10 +15,10 @@ import 'package:molarity/widgets/chemoinfomatics/widgets/interactive_box.dart';
 import 'package:molarity/widgets/chemoinfomatics/widgets/periodic_table_tile.dart';
 
 class HelixPeriodicTable extends ConsumerStatefulWidget {
-  const HelixPeriodicTable({this.intialElement, this.onSecondaryTileTap, Key? key}) : super(key: key);
+  const HelixPeriodicTable({this.initialElement, this.onSecondaryTileTap, Key? key}) : super(key: key);
 
   final AtomicDataCallback? onSecondaryTileTap;
-  final AtomicData? intialElement;
+  final AtomicData? initialElement;
 
   @override
   _HelixPeriodicTableState createState() => _HelixPeriodicTableState();
@@ -58,7 +58,7 @@ class _HelixPeriodicTableState extends ConsumerState<HelixPeriodicTable> {
       onCardChanged: (index) {
         ref.read(activeSelectorsProvider).atomicData = elements[index];
       },
-      intialCardIndex: (widget.intialElement?.atomicNumber ?? (ref.read(activeSelectorsProvider).atomicData?.atomicNumber ?? 1)) - 1,
+      initialCardIndex: (widget.initialElement?.atomicNumber ?? (ref.read(activeSelectorsProvider).atomicData?.atomicNumber ?? 1)) - 1,
     );
   }
 }

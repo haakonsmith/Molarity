@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:molarity/data/navigation_state.dart';
 import 'package:molarity/data/settings_bloc.dart';
 import 'package:molarity/widgets/app_bar.dart';
 import 'package:molarity/widgets/list_drawer.dart';
@@ -16,6 +17,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
+    ref.read(navigationState).isPeriodicTable = false;
 
     final children = [
       // SizedBox(height: 140),
@@ -23,7 +25,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         width: screenSize.width,
         height: 130,
         child: _SettingsCard(
-          title: const Text('Persistance Preferences'),
+          title: const Text('General'),
           children: [
             SwitchListTile.adaptive(
               title: const Text('Should Remember Atomic Properties Selected'),
@@ -36,10 +38,27 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ],
         ),
       ),
+      SizedBox(
+        width: screenSize.width,
+        height: 130,
+        child: _SettingsCard(
+          title: const Text('Experimental Options'),
+          children: [
+            SwitchListTile.adaptive(
+              title: const Text('Enable Keyboard Shortcuts'),
+              value: ref.watch(settingsBlocProvider).enableKeyboardShortcuts,
+              onChanged: (value) {
+                ref.read(settingsBlocProvider).enableKeyboardShortcuts = value;
+              },
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+          ],
+        ),
+      ),
       // Spacer(),
     ];
     return Scaffold(
-      appBar: MolarityAppBar.buildTitle(context, const Text('Settings')),
+      appBar: const MolarityAppBar(title: Text('Settings')),
       drawer: const ListDrawer(),
       body: Column(
         // mainAxisSize: MainAxisSize.max,

@@ -13,7 +13,7 @@ class TitledCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: Container(
-        padding: const EdgeInsets.all(15),
+        padding: const EdgeInsets.all(8),
         width: double.infinity,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

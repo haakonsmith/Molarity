@@ -9,15 +9,17 @@ import 'package:molarity/theme.dart';
 import 'package:molarity/util.dart';
 import 'package:molarity/widgets/app_bar.dart';
 import 'package:molarity/widgets/atomic_info_widgets/atomic_attribute.dart';
+import 'package:molarity/widgets/atomic_info_widgets/atomic_emission_spectra.dart';
 import 'package:molarity/widgets/atomic_info_widgets/atomic_image.dart';
 import 'package:molarity/widgets/atomic_info_widgets/atomic_properties.dart';
+import 'package:molarity/widgets/atomic_info_widgets/atomic_summary.dart';
 import 'package:molarity/widgets/atomic_info_widgets/bohr_model.dart';
 import 'package:molarity/widgets/atomic_info_widgets/trends_card.dart';
 import 'package:molarity/widgets/chemoinfomatics/data.dart';
 import 'package:molarity/widgets/chemoinfomatics/widgets/atomic_bohr_model.dart';
 import 'package:molarity/widgets/titled_card.dart';
 
-class AtomicInfoScreen extends StatelessWidget {
+class AtomicInfoScreen extends ConsumerWidget {
   AtomicInfoScreen(this.element, {Key? key}) : super(key: key);
 
   final AtomicData element;
@@ -25,7 +27,7 @@ class AtomicInfoScreen extends StatelessWidget {
   final _trendKey = GlobalKey();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final appBarTitle = Text.rich(
       TextSpan(children: [
         TextSpan(text: '${element.atomicNumber.toString()} – ${element.name} ', style: const TextStyle(fontSize: 25, fontWeight: FontWeight.w200, color: Colors.white)),
@@ -34,7 +36,7 @@ class AtomicInfoScreen extends StatelessWidget {
     );
 
     return Scaffold(
-      appBar: MolarityAppBar.buildTitle(context, appBarTitle),
+      appBar: MolarityAppBar(title: appBarTitle),
       body: SingleChildScrollView(
         child: LayoutBuilder(builder: (context, constraints) {
           return Padding(padding: const EdgeInsets.all(8), child: constraints.maxWidth > 940 ? _buildLargeScreen(context) : _buildSmallScreen(context));
@@ -47,10 +49,11 @@ class AtomicInfoScreen extends StatelessWidget {
     return LayoutGrid(
       gridFit: GridFit.loose,
       columnSizes: repeat(1, [1.fr]),
-      rowSizes: repeat(5, [auto]),
+      rowSizes: repeat(6, [auto]),
       areas: '''
       preview
       info
+      image
       prop
       trend
       spectra
@@ -58,11 +61,12 @@ class AtomicInfoScreen extends StatelessWidget {
       columnGap: 1,
       rowGap: 1,
       children: [
-        AspectRatio(aspectRatio: 2 / 1.5, child: AtomicInfoPreview(element)).inGridArea('preview'),
-        _AtomicDetails(element).inGridArea('info'),
+        AspectRatio(aspectRatio: 2 / 1.5, child: AtomicBohrCard(element)).inGridArea('preview'),
+        AtomicSummary(element).inGridArea('info'),
+        AtomicImage(element).inGridArea('image'),
         AtomicProperties(element).inGridArea('prop'),
         AspectRatio(aspectRatio: 2 / 1.5, child: TrendsCard(element: element, key: _trendKey)).inGridArea('trend'),
-        _AtomicEmissionSpectra(element).inGridArea('spectra'),
+        AtomicEmissionSpectra(element).inGridArea('spectra'),
       ],
     );
   }
@@ -74,7 +78,7 @@ class AtomicInfoScreen extends StatelessWidget {
       rowSizes: repeat(5, [auto]),
       areas: '''
       preview trend trend
-      preview trend trend
+      image trend trend
       prop prop prop
       info info info
       spectra spectra spectra
@@ -82,15 +86,15 @@ class AtomicInfoScreen extends StatelessWidget {
       columnGap: 1,
       rowGap: 1,
       children: [
-        AspectRatio(aspectRatio: 1 / 1.5, child: AtomicInfoPreview(element)).inGridArea('preview'),
+        AspectRatio(aspectRatio: 1 / 0.75, child: AtomicBohrCard(element)).inGridArea('preview'),
         AspectRatio(aspectRatio: 2 / 1.5, child: TrendsCard(element: element, key: _trendKey)).inGridArea('trend'),
         // _AtomicDetails(element, key: const ValueKey('Atomic Details')).inGridArea('preview'),
-        _AtomicDetails(element, key: const ValueKey('Atomic Details')).inGridArea('info'),
+        AtomicSummary(element, key: const ValueKey('Atomic Details')).inGridArea('info'),
         AtomicProperties(element).inGridArea('prop'),
         // AtomicProperties(element, maxLength: 2).inGridArea('preview'),
-        // const AtomicImage().inGridArea('preview'),
+        AspectRatio(aspectRatio: 1 / 0.75, child: AtomicImage(element)).inGridArea('image'),
         // AtomicBohrCard(atomicData: element).inGridArea('bohr'),
-        _AtomicEmissionSpectra(element).inGridArea('spectra'),
+        AtomicEmissionSpectra(element).inGridArea('spectra'),
       ],
     );
   }
@@ -133,48 +137,6 @@ class AtomicInfoPreview extends StatelessWidget {
           ).fittedBox(),
         ),
       ]),
-    );
-  }
-}
-
-class _AtomicEmissionSpectra extends ConsumerWidget {
-  const _AtomicEmissionSpectra(this.element, {Key? key}) : super(key: key);
-
-  final AtomicData element;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final elementsBloc = ref.watch(elementsBlocProvider);
-
-    return element.hasSpectralImage
-        ? TitledCard(
-            title: const Text('Emission Spectrum', textAlign: TextAlign.center),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(10.0),
-              child: (elementsBloc.getSpectralImage(element.name) ?? Container()),
-            ),
-          )
-        : Container();
-  }
-}
-
-// TODO rename to atomic summary
-class _AtomicDetails extends StatelessWidget {
-  const _AtomicDetails(this.element, {Key? key}) : super(key: key);
-
-  final AtomicData element;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8),
-      child: TitledCard(
-        title: const SelectableText(
-          'General',
-          textAlign: TextAlign.center,
-        ),
-        child: SelectableText(element.summary),
-      ),
     );
   }
 }

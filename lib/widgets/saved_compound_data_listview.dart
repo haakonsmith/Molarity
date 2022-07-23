@@ -31,16 +31,18 @@ class _SavedCompoundDataListviewState extends ConsumerState<SavedCompoundDataLis
       // color: Colors.white,
       width: MediaQuery.of(context).size.width,
       height: (data.length * 36) + (1 * 30) + 26,
-
       child: Card(
         // margin: const EdgeInsets.all(7),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
           child: ListView.separated(
+            padding: const EdgeInsets.only(top: 4),
+            // padding: const EdgeInsets.all(0),
+
             itemBuilder: _itemBuilder,
             separatorBuilder: _separatorBuilder,
             itemCount: data.length + 1,
-            physics: NeverScrollableScrollPhysics(),
+            physics: const NeverScrollableScrollPhysics(),
           ),
         ),
       ),
@@ -53,22 +55,19 @@ class _SavedCompoundDataListviewState extends ConsumerState<SavedCompoundDataLis
     final pubChemClient = ref.read(pubChemClientProvider);
 
     return _ListRow(
-      name: FutureBuilder(
-        future: pubChemClient.getPropertiesOf(data[index - 1], {PubChemProperties.Title}),
-        builder: (BuildContext context, AsyncSnapshot<PubChemCompoundData> snapshot) => snapshot.hasData
-            ? Text(
-                '(${snapshot.data!.title})',
-                overflow: TextOverflow.clip,
-              )
-            : const SizedBox(
-                child: Center(
-                    child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                )),
-                width: 16,
-                height: 16,
-              ),
-      ),
+      // name: FutureBuilder(
+      //   future: pubChemClient.getPropertiesOf(data[index - 1], {PubChemProperties.Title}),
+      //   builder: (BuildContext context, AsyncSnapshot<PubChemCompoundData> snapshot) => snapshot.hasData
+      //       ? Text('(${snapshot.data!.title})', overflow: TextOverflow.clip)
+      //       : const Align(
+      //           alignment: Alignment.centerLeft,
+      //           child: SizedBox(
+      //             child: CircularProgressIndicator(strokeWidth: 2),
+      //             width: 16,
+      //             height: 16,
+      //           ),
+      //         ),
+      // ),
       molecularFormula: Math.tex(data[index - 1].toTex()),
       molarMass: Math.tex(data[index - 1].molarMass.toStringAsFixed(2)),
       onDelete: () {
@@ -76,9 +75,7 @@ class _SavedCompoundDataListviewState extends ConsumerState<SavedCompoundDataLis
 
         widget.onDelete?.call(index - 1);
       },
-      onCopy: () {
-        Clipboard.setData(ClipboardData(text: data[index - 1].molarMass.toStringAsFixed(2)));
-      },
+      onCopy: () => Clipboard.setData(ClipboardData(text: data[index - 1].molarMass.toStringAsFixed(2))),
     );
   }
 
@@ -93,14 +90,8 @@ class _ListHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const _ListRow(
-      molecularFormula: Text(
-        'Molecular Formula',
-        style: TextStyle(fontWeight: FontWeight.bold),
-      ),
-      molarMass: Text(
-        'Molar Mass',
-        style: TextStyle(fontWeight: FontWeight.bold),
-      ),
+      molecularFormula: Text('Molecular Formula', style: TextStyle(fontWeight: FontWeight.bold)),
+      molarMass: Text('Molar Mass', style: TextStyle(fontWeight: FontWeight.bold)),
       isHeader: true,
     );
   }
@@ -130,7 +121,7 @@ class _ListRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: !isHeader ? 20 : 30,
+      height: !isHeader ? 20 : 20,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -144,6 +135,7 @@ class _ListRow extends StatelessWidget {
           )),
           Expanded(
               child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               molarMass,
               const Spacer(),
@@ -151,16 +143,16 @@ class _ListRow extends StatelessWidget {
                 IconButton(
                   onPressed: onDelete,
                   iconSize: 24,
-                  splashRadius: 20,
-                  icon: const Icon(Icons.delete),
+                  splashRadius: 16,
+                  icon: const Icon(Icons.delete_outlined),
                   padding: EdgeInsets.zero,
                 ),
               if (!isHeader)
                 IconButton(
                   onPressed: onCopy,
-                  iconSize: 24,
-                  splashRadius: 20,
-                  icon: const Icon(Icons.copy),
+                  iconSize: 20,
+                  splashRadius: 16,
+                  icon: const Icon(Icons.copy_outlined),
                   padding: EdgeInsets.zero,
                 ),
             ],

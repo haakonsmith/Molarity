@@ -20,16 +20,27 @@ class SettingsBloc extends ChangeNotifier with AsyncSafeData {
   /// Add defaults here
   void _loadDefaults(ElementsBloc elementsBloc) {
     _shouldPersistAtomicPreviewCategories = instance.getBool('shouldPersistAtomicPreviewCategories') ?? true;
+    _enableKeyboardShortcuts = instance.getBool('enableKeyboardShortcuts') ?? false;
     _savedCompounds = (instance.getStringList('savedCompounds') ?? []).map((e) => CompoundData.deserialise(e, elementsBloc)).toList();
     _savedAtomicPropertyCategories = instance.containsKey('savedAtomicPropertyCategories')
         ? instance.getStringList('savedAtomicPropertyCategories')!.map((e) => atomicPropertyFromString(e)).toList()
         : kSavedAtomicPropertyCategories;
-    // print('saved atomic property categories: $_savedAtomicPropertyCategories');
   }
 
   //////////////////////
   ////////////////////// Properties
   //////////////////////
+
+  late bool _enableKeyboardShortcuts;
+
+  set enableKeyboardShortcuts(bool value) {
+    instance.setBool('enableKeyboardShortcuts', value);
+    _enableKeyboardShortcuts = value;
+
+    notifyListeners();
+  }
+
+  bool get enableKeyboardShortcuts => asyncSafeData(() => _enableKeyboardShortcuts) ?? false;
 
   late bool _shouldPersistAtomicPreviewCategories;
 

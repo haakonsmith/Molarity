@@ -5,7 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 class AtomicPropertySelector extends HookConsumerWidget {
   const AtomicPropertySelector({
     this.onChanged,
-    this.intialValue = 'Density',
+    this.initialValue = 'Density',
     Key? key,
     this.selectables = kSelectables,
     this.backgroundColor = Colors.transparent,
@@ -13,7 +13,7 @@ class AtomicPropertySelector extends HookConsumerWidget {
 
   final ValueChanged<String?>? onChanged;
 
-  final String intialValue;
+  final String initialValue;
   final List<String> selectables;
 
   static const kSelectables = <String>[
@@ -32,11 +32,10 @@ class AtomicPropertySelector extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    if (!selectables.contains(intialValue)) throw ArgumentError.value(intialValue, 'AtomicAttributeSelector');
+    if (!selectables.contains(initialValue)) throw ArgumentError.value(initialValue, 'AtomicAttributeSelector');
 
-    final dropdownValue = useState(intialValue);
-    dropdownValue.value = intialValue;
-    print(dropdownValue.value);
+    final dropdownValue = useState(initialValue);
+    dropdownValue.value = initialValue;
 
     return Container(
       color: backgroundColor,

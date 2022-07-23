@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:molarity/data/active_selectors.dart';
 import 'package:molarity/data/elements_data_bloc.dart';
+import 'package:molarity/data/highlighted_search_bar_controller.dart';
+import 'package:molarity/data/navigation_state.dart';
 import 'package:molarity/highlight_elements_mixin.dart';
 import 'package:molarity/screen/atomic_info_screen.dart';
 import 'package:molarity/util.dart';
@@ -12,6 +14,7 @@ import 'package:molarity/widgets/app_bar.dart';
 import 'package:molarity/widgets/chemoinfomatics/data.dart';
 import 'package:molarity/widgets/chemoinfomatics/widgets/atomic_trends.dart';
 import 'package:molarity/widgets/chemoinfomatics/widgets/grid_periodic_table.dart';
+import 'package:molarity/widgets/highlight_elements_shortcut.dart';
 import 'package:molarity/widgets/list_drawer.dart';
 
 /// This is the first landing page and screen which shows the basic periodic table
@@ -22,9 +25,8 @@ class PeriodicTrendsTableScreen extends ConsumerStatefulWidget {
   _PeriodicTrendsTableScreenState createState() => _PeriodicTrendsTableScreenState();
 }
 
-class _PeriodicTrendsTableScreenState extends ConsumerState<PeriodicTrendsTableScreen> with HighlightElementsMixin, SingleTickerProviderStateMixin {
+class _PeriodicTrendsTableScreenState extends ConsumerState<PeriodicTrendsTableScreen> with SingleTickerProviderStateMixin {
   late List<double> elementsData = [];
-
   late String atomicProperty;
 
   bool _dataRequiresUpdate = true;
@@ -52,50 +54,40 @@ class _PeriodicTrendsTableScreenState extends ConsumerState<PeriodicTrendsTableS
   Widget build(BuildContext context) {
     atomicProperty = AtomicData.getPropertyStringName(ref.watch(activeSelectorsProvider).atomicProperty);
 
-    reFocus();
     _getData();
 
     final _yMax = elementsData.reduce((e1, e2) => max(e1, e2));
 
     final Widget content;
 
-    final windowSize = MediaQuery.of(context).size;
-
-    final searchBox = SizedBox(
-      width: windowSize.width / 2,
-      child: TextField(
-        style: const TextStyle(fontSize: 40),
-        focusNode: keyBoardFocusNode,
-        controller: searchController,
-        onChanged: highlightElements,
-        onSubmitted: (_) => Navigator.push(context, slidePageRoute(_key, AtomicInfoScreen(highlightedElements.first))).then(closeSearch),
-      ),
-    );
-
-    print(ref.read(activeSelectorsProvider).atomicProperty);
+    final highlightedElements = ref.watch(highlightedSearchBarController).highlightedElements;
 
     if (MediaQuery.of(context).size.width <= 500)
       content = const Center(
-        child: Text('Sorry, not working on mobile :)'),
+        child: Text('Sorry, not working on mobile :('),
       );
     else
       content = SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(30.0, 10.0, 30.0, 0),
+          padding: const EdgeInsets.fromLTRB(30.0, 90.0, 30.0, 30),
           child: GridPeriodicTable(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: AtomicTrends(
-                displayGrid: false,
-                displayLabels: false,
-                intialProperty: ref.read(activeSelectorsProvider).atomicProperty,
+              child: Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: AtomicTrends(
+                    displayGrid: false,
+                    displayLabels: false,
+                    initialProperty: ref.read(activeSelectorsProvider).atomicProperty,
+                  ),
+                ),
               ),
             ),
             tileColor: (atomicData) {
               final color = AtomicPropertyGraph.colorMap[atomicProperty]!.withOpacity(elementsData[atomicData.atomicNumber - 1] / (_yMax + 0.5)).desaturate(.05);
 
               if (highlightedElements.isEmpty) return color;
-
               return highlightedElements.contains(atomicData) ? color : color.darken(0.2).desaturate();
             },
           ),
@@ -103,15 +95,10 @@ class _PeriodicTrendsTableScreenState extends ConsumerState<PeriodicTrendsTableS
       );
 
     return Scaffold(
-      appBar: MolarityAppBar.buildTitle(context, !this.showSearch ? const Text('Periodic Table') : searchBox),
+      extendBodyBehindAppBar: true,
+      appBar: const MolarityAppBar(title: Text('Periodic Table'), hasSearchBar: true),
       drawer: const ListDrawer(),
-      body: FocusableActionDetector(
-        autofocus: true,
-        focusNode: shortcutFocusNode,
-        actions: actionMap,
-        shortcuts: shortcutMap,
-        child: content,
-      ),
+      body: content,
     );
   }
 

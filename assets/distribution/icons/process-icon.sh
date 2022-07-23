@@ -4,7 +4,7 @@ echo 'Converting to png'
 convert -background none icon.svg -resize 1024x1024 icon.png
 
 echo 'Converting rounding it for bigsur'
-iconsur -i icon.png -o iconsur.png set ../../../build/packages/Molarity.app
+iconsur -c 1A1F2C -i icon.png -o iconsur.png set ../../../build/packages/Molarity.app
 
 echo 'Creating icon.icns'
 mkdir icon.iconset
@@ -23,14 +23,14 @@ iconutil -c icns icon.iconset
 echo 'Generating .ico'
 convert -background none icon.svg -resize 1024x1024 icon-clear.png
 
-convert -size 1024x1024 -fill white -stroke white canvas:transparent -draw "circle 512,512 1024,512" \
+convert -size 1024x1024 -fill "#1A1F2C" canvas:transparent -draw "circle 512,512 1024,512" \
     -draw 'image SrcOver 100,100 800,800 icon-clear.png' \
     icon-windows.png
 
 convert icon-windows.png -resize 256x256 icon.ico 
 
 echo 'Cleaning up..'
-rm icon.png
+# rm icon.png
 rm iconsur.png
 rm icon-clear.png
 rm icon-windows.png

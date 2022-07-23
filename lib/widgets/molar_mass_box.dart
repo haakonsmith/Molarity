@@ -26,17 +26,17 @@ class _MolarMassBoxState extends ConsumerState<MolarMassBox> {
     final orientation = MediaQuery.of(context).orientation;
 
     final clearButton = _ControlButton(
-      icon: const Icon(Icons.delete_forever),
+      icon: const Icon(Icons.delete_outlined, size: 28),
       onTap: widget.onClear,
     );
 
     final closeButton = _ControlButton(
-      icon: const Icon(Icons.close),
+      icon: const Icon(Icons.close_outlined, size: 28),
       onTap: widget.onClose,
     );
 
     final saveButton = _ControlButton(
-      icon: const Icon(Icons.save),
+      icon: const Icon(Icons.save_outlined, size: 28),
       onTap: () {
         ref.read(preferencedCompoundsProvider).addSavedCompound(widget.compound.copy());
 
@@ -45,7 +45,7 @@ class _MolarMassBoxState extends ConsumerState<MolarMassBox> {
     );
 
     final copyToClipboard = _ControlButton(
-      icon: const Icon(Icons.copy),
+      icon: const Icon(Icons.copy, size: 28),
       onTap: () {
         Clipboard.setData(ClipboardData(text: widget.compound.molarMass.toString()));
       },
@@ -61,7 +61,7 @@ class _MolarMassBoxState extends ConsumerState<MolarMassBox> {
     ).texBreak().parts;
 
     final controlPanel = Card(
-      elevation: 10,
+      elevation: 4,
       margin: const EdgeInsets.all(15),
       child: Column(
         mainAxisSize: MainAxisSize.min,
