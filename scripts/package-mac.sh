@@ -1,7 +1,7 @@
 mkdir build/packages
 
 echo "Building Release Target..."
-# flutter build macos --release
+flutter build macos --release
 echo "Built!"
 
 # rsync -r --progress build/macos/Build/Products/Release/molarity.app build/packages/

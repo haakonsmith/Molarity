@@ -3,9 +3,12 @@ import 'dart:core';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:molarity/data/elements_data_bloc.dart';
+import 'package:molarity/screen/about_screen.dart';
 import 'package:molarity/screen/periodic_table_screen.dart';
 import 'package:molarity/screen/periodic_trends_table_screen.dart';
 import 'package:molarity/screen/settings_screen.dart';
+import 'package:molarity/widgets/chemoinfomatics/widgets/atomic_bohr_model.dart';
 import 'package:universal_platform/universal_platform.dart';
 
 extension IndexedIterable<E> on Iterable<E> {
@@ -59,6 +62,12 @@ class _ListDrawerState extends ConsumerState<ListDrawer> with TickerProviderStat
     );
   }
 
+  Route _createRouteAbout() {
+    return MaterialPageRoute(
+      builder: (context) => const AboutScreen(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final children = [
@@ -88,8 +97,28 @@ class _ListDrawerState extends ConsumerState<ListDrawer> with TickerProviderStat
           textScaleFactor: 1.2,
           style: TextStyle(fontWeight: FontWeight.w200),
         ),
+      ),
+      const SizedBox(height: 48),
+      ListDrawerTile(
+        leading: const Icon(Icons.info),
+        onClick: () => Navigator.of(context).pushReplacement(_createRouteAbout()),
+        child: const Text(
+          'About',
+          textScaleFactor: 1.2,
+          style: TextStyle(fontWeight: FontWeight.w200),
+        ),
       )
     ];
+
+    final atomicModel = SizedBox(
+      height: 160,
+      width: 160,
+      child: Padding(
+        // left: width/2
+        padding: const EdgeInsets.only(left: 0),
+        child: AtomicBohrModel(ref.read(elementsBlocProvider).getElementByAtomicNumber(1)),
+      ),
+    );
 
     return SafeArea(
       child: Column(
@@ -100,13 +129,13 @@ class _ListDrawerState extends ConsumerState<ListDrawer> with TickerProviderStat
               color: Theme.of(context).scaffoldBackgroundColor,
             ),
             margin: EdgeInsets.fromLTRB(10, (UniversalPlatform.isMacOS ? 25 : 0) + 50, 0, 0),
-            height: 48 * 3,
+            height: 48.0 * children.length + 160,
             child: AnimatedBuilder(
               animation: _animation,
               builder: (BuildContext context, Widget? child) {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: children.mapIndexed((e, i) => Transform.translate(offset: Offset(_offset(i, _animation.value), 0), child: e)).toList(),
+                  children: [atomicModel].cast<Widget>() + children.mapIndexed((e, i) => Transform.translate(offset: Offset(_offset(i, _animation.value), 0), child: e)).toList().cast<Widget>(),
                 );
               },
             ),

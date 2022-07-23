@@ -47,7 +47,7 @@ class ElementsBloc extends ChangeNotifier with AsyncSafeData {
     for (final AtomicData element in _elements) {
       if (element.hasSpectralImage) {
         result[element.name] = Image.asset(
-          '$atomicSpectraRootPath/${element.name}.jpg',
+          '$atomicSpectraRootPath/emission_spectrum/${element.name}.jpg',
           fit: BoxFit.fill,
         );
       }

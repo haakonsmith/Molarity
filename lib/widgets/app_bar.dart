@@ -2,18 +2,58 @@ import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:molarity/data/elements_data_bloc.dart';
+import 'package:molarity/data/highlighted_search_bar_controller.dart';
+import 'package:molarity/screen/atomic_info_screen.dart';
 import 'package:molarity/util.dart';
 import 'package:universal_platform/universal_platform.dart';
 
-// ignore: avoid_classes_with_only_static_members
-class MolarityAppBar {
-  static PreferredSizeWidget buildTitle(BuildContext context, Widget? title, {double? height}) {
+class MolarityAppBar extends ConsumerStatefulWidget with PreferredSizeWidget {
+  const MolarityAppBar({this.hasSearchBar = false, this.height, this.title, Key? key}) : super(key: key);
+
+  final Widget? title;
+  final double? height;
+  final bool hasSearchBar;
+
+  @override
+  ConsumerState<ConsumerStatefulWidget> createState() => _MolarityAppBarState();
+
+  @override
+  Size get preferredSize => Size.fromHeight(height ?? 90);
+}
+
+class _MolarityAppBarState extends ConsumerState<MolarityAppBar> {
+  @override
+  Widget build(BuildContext context) {
+    final windowSize = MediaQuery.of(context).size;
+
     final appBar = AppbarWithTab(
-      title: title!,
+      title: !(ref.watch(highlightedSearchBarController).showSearchBar && widget.hasSearchBar)
+          ? widget.title!
+          : SizedBox(
+              width: windowSize.width / 2,
+              child: TextField(
+                style: const TextStyle(fontSize: 40),
+                focusNode: ref.read(highlightedSearchBarController).keyBoardFocusNode,
+                autofocus: true,
+                controller: ref.read(highlightedSearchBarController).searchController,
+                onChanged: (value) {
+                  ref.read(highlightedSearchBarController).highlightedElements = ref.read(elementsBlocProvider).elements.where((element) => element.symbol.toLowerCase().contains(value)).toList();
+                  ref.read(highlightedSearchBarController).keyBoardFocusNode.requestFocus();
+                },
+                // onEditingComplete: () => ref.read(highlightedSearchBarController).showSearchBar = false,
+                onSubmitted: (_) => Navigator.push(context, MaterialPageRoute(builder: (context) {
+                  ref.read(highlightedSearchBarController).shortcutFocusNode.requestFocus();
+
+                  return AtomicInfoScreen(ref.read(highlightedSearchBarController).highlightedElements.first);
+                })).then((_) => ref.read(highlightedSearchBarController).showSearchBar = false),
+              ),
+            ),
     );
 
     final preferredSize = PreferredSize(
-      preferredSize: Size.fromHeight(height ?? computePrefferedSize(context)),
+      preferredSize: Size.fromHeight(computePrefferedSize(context)),
       child: Container(
         color: Colors.transparent,
         padding: const EdgeInsets.fromLTRB(0, 25, 0, 0),

@@ -165,7 +165,7 @@ class _InfoDataRowState extends ConsumerState<_InfoDataRow> {
                 if (widget.numberOfChildren > 0)
                   ElementalInfo(
                     widget.element,
-                    intialValue: settingsBloc.shouldPersistAtomicPreviewCategories ? settingsBloc.savedAtomicPropertyCategories[0] : AtomicProperty.boilingPoint,
+                    initialValue: settingsBloc.shouldPersistAtomicPreviewCategories ? settingsBloc.savedAtomicPropertyCategories[0] : AtomicProperty.boilingPoint,
                     onChanged: (property) {
                       if (settingsBloc.shouldPersistAtomicPreviewCategories) settingsBloc.setSavedAtomicPropertyCategory(0, property);
                     },
@@ -173,7 +173,7 @@ class _InfoDataRowState extends ConsumerState<_InfoDataRow> {
                 if (widget.numberOfChildren > 1)
                   ElementalInfo(
                     widget.element,
-                    intialValue: settingsBloc.shouldPersistAtomicPreviewCategories ? settingsBloc.savedAtomicPropertyCategories[1] : AtomicProperty.meltingPoint,
+                    initialValue: settingsBloc.shouldPersistAtomicPreviewCategories ? settingsBloc.savedAtomicPropertyCategories[1] : AtomicProperty.meltingPoint,
                     onChanged: (property) {
                       if (settingsBloc.shouldPersistAtomicPreviewCategories) settingsBloc.setSavedAtomicPropertyCategory(1, property);
                     },
@@ -181,7 +181,7 @@ class _InfoDataRowState extends ConsumerState<_InfoDataRow> {
                 if (widget.numberOfChildren > 2)
                   ElementalInfo(
                     widget.element,
-                    intialValue: settingsBloc.shouldPersistAtomicPreviewCategories ? settingsBloc.savedAtomicPropertyCategories[2] : AtomicProperty.phase,
+                    initialValue: settingsBloc.shouldPersistAtomicPreviewCategories ? settingsBloc.savedAtomicPropertyCategories[2] : AtomicProperty.phase,
                     onChanged: (property) {
                       if (settingsBloc.shouldPersistAtomicPreviewCategories) settingsBloc.setSavedAtomicPropertyCategory(2, property);
                     },
@@ -193,10 +193,10 @@ class _InfoDataRowState extends ConsumerState<_InfoDataRow> {
 }
 
 class ElementalInfo extends ConsumerStatefulWidget {
-  const ElementalInfo(this.elementData, {this.onChanged, this.intialValue, Key? key}) : super(key: key);
+  const ElementalInfo(this.elementData, {this.onChanged, this.initialValue, Key? key}) : super(key: key);
 
   final AtomicData elementData;
-  final AtomicProperty? intialValue;
+  final AtomicProperty? initialValue;
   final void Function(AtomicProperty)? onChanged;
 
   @override
@@ -208,7 +208,7 @@ class _ElementalInfoState extends ConsumerState<ElementalInfo> {
 
   @override
   void initState() {
-    atomicProperty = widget.intialValue ?? AtomicProperty.density;
+    atomicProperty = widget.initialValue ?? AtomicProperty.density;
 
     super.initState();
   }
@@ -220,7 +220,7 @@ class _ElementalInfoState extends ConsumerState<ElementalInfo> {
     final dropDown = Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8),
       child: AtomicPropertySelector(
-          intialValue: AtomicData.getPropertyStringName(atomicProperty),
+          initialValue: AtomicData.getPropertyStringName(atomicProperty),
           onChanged: (val) {
             setState(() => atomicProperty = atomicPropertyFromString(val!));
             widget.onChanged?.call(atomicPropertyFromString(val!));

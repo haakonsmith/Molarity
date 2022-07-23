@@ -39,17 +39,13 @@ class _AtomicBohrModelState extends State<AtomicBohrModel> with TickerProviderSt
   @override
   Widget build(BuildContext context) {
     return FittedBox(
-      fit: BoxFit.fitWidth,
-      child: SizedBox(
-        width: widget.width,
-        height: widget.height,
-        child: RepaintBoundary(
-          child: CustomPaint(
-            size: const Size(100, 100),
-            painter: AtomicBohrModelPainter(
-              element: widget.element,
-              listenable: _animation,
-            ),
+      fit: BoxFit.cover,
+      child: RepaintBoundary(
+        child: CustomPaint(
+          size: const Size(100, 100),
+          painter: AtomicBohrModelPainter(
+            element: widget.element,
+            listenable: _animation,
           ),
         ),
       ),

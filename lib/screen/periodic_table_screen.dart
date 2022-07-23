@@ -1,9 +1,12 @@
 import 'package:flutter/foundation.dart';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:molarity/data/active_selectors.dart';
 import 'package:molarity/data/elements_data_bloc.dart';
+import 'package:molarity/data/highlighted_search_bar_controller.dart';
+import 'package:molarity/data/navigation_state.dart';
 import 'package:molarity/highlight_elements_mixin.dart';
 import 'package:molarity/screen/atomic_info_screen.dart';
 import 'package:molarity/theme.dart';
@@ -15,14 +18,15 @@ import 'package:molarity/widgets/chemoinfomatics/widgets/grid_periodic_table.dar
 
 import 'package:molarity/widgets/chemoinfomatics/widgets/helix_periodic_table.dart';
 import 'package:molarity/widgets/chemoinfomatics/widgets/interactive_box.dart';
+import 'package:molarity/widgets/highlight_elements_shortcut.dart';
 import 'package:molarity/widgets/list_drawer.dart';
 import 'package:molarity/widgets/saved_compound_data_listview.dart';
 
-class PeriodicTableScreen extends StatelessWidget {
+class PeriodicTableScreen extends ConsumerWidget {
   const PeriodicTableScreen({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     if (MediaQuery.of(context).size.width <= 500)
       return const MobilePeriodicTableScreen();
     else
@@ -85,7 +89,8 @@ class _MobilePeriodicTableScreenState extends ConsumerState<MobilePeriodicTableS
     );
 
     return Scaffold(
-      appBar: MolarityAppBar.buildTitle(context, title),
+      extendBodyBehindAppBar: true,
+      appBar: MolarityAppBar(title: title, hasSearchBar: true),
       drawer: const ListDrawer(),
       body: SingleChildScrollView(
         physics: shouldAllowScroll ? null : const NeverScrollableScrollPhysics(),
@@ -94,13 +99,14 @@ class _MobilePeriodicTableScreenState extends ConsumerState<MobilePeriodicTableS
           padding: EdgeInsets.fromLTRB(windowSize.width / 30, 10.0, windowSize.width / 30, 20),
           child: Column(
             children: [
+              const SizedBox(height: 30),
               // This means that the scrolling doesn't doesn't interfere with the helix periodic table.
               Listener(
                 onPointerDown: (_) => setState(() => shouldAllowScroll = false),
                 onPointerUp: (_) => setState(() => shouldAllowScroll = true),
                 child: MouseRegion(
                   child: HelixPeriodicTable(
-                    intialElement: highlightedElements.isNotEmpty ? highlightedElements.first : null,
+                    initialElement: highlightedElements.isNotEmpty ? highlightedElements.first : null,
                   ),
                   onEnter: (_) => setState(() => shouldAllowScroll = false),
                   onExit: (_) => setState(() => shouldAllowScroll = true),
@@ -125,17 +131,15 @@ class DesktopPeriodicTableScreen extends ConsumerStatefulWidget {
   _PeriodicDesktopTableScreenState createState() => _PeriodicDesktopTableScreenState();
 }
 
-class _PeriodicDesktopTableScreenState extends ConsumerState<DesktopPeriodicTableScreen> with AutomaticKeepAliveClientMixin, HighlightElementsMixin {
-  final GlobalKey _key = GlobalKey();
-
+class _PeriodicDesktopTableScreenState extends ConsumerState<DesktopPeriodicTableScreen> with AutomaticKeepAliveClientMixin {
   @override
   Widget build(BuildContext context) {
     super.build(context);
 
-    reFocus();
-
     final elementsBloc = ref.watch(elementsBlocProvider);
     final windowSize = MediaQuery.of(context).size;
+
+    final highlightedElements = ref.watch(highlightedSearchBarController).highlightedElements;
 
     final content = Column(
       children: [
@@ -156,30 +160,14 @@ class _PeriodicDesktopTableScreenState extends ConsumerState<DesktopPeriodicTabl
       ],
     );
 
-    final searchBox = SizedBox(
-      width: windowSize.width / 2,
-      child: TextField(
-        style: const TextStyle(fontSize: 40),
-        focusNode: keyBoardFocusNode,
-        controller: searchController,
-        onChanged: highlightElements,
-        onSubmitted: (_) => Navigator.push(context, slidePageRoute(_key, AtomicInfoScreen(highlightedElements.first))).then(closeSearch),
-      ),
-    );
-
     return Scaffold(
-      appBar: MolarityAppBar.buildTitle(context, !this.showSearch ? const Text('Periodic Table') : searchBox),
+      extendBodyBehindAppBar: true,
+      appBar: const MolarityAppBar(title: Text('Periodic Table'), hasSearchBar: true),
       drawer: const ListDrawer(),
       body: SingleChildScrollView(
         child: Padding(
-          padding: EdgeInsets.fromLTRB(windowSize.width / 30, 10.0, windowSize.width / 30, 20),
-          child: FocusableActionDetector(
-            autofocus: true,
-            focusNode: shortcutFocusNode,
-            actions: actionMap,
-            shortcuts: shortcutMap,
-            child: content,
-          ),
+          padding: EdgeInsets.fromLTRB(windowSize.width / 30, 90.0, windowSize.width / 30, 20),
+          child: content,
         ),
       ),
     );

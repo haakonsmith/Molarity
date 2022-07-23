@@ -19,11 +19,11 @@ class TileData {
 }
 
 class Helix extends StatefulWidget {
-  const Helix({this.children, Key? key, this.onCardChanged, this.intialCardIndex = 0}) : super(key: key);
+  const Helix({this.children, Key? key, this.onCardChanged, this.initialCardIndex = 0}) : super(key: key);
 
   final List<Widget>? children;
   final void Function(int index)? onCardChanged;
-  final int intialCardIndex;
+  final int initialCardIndex;
 
   @override
   _HelixState createState() => _HelixState();
@@ -55,7 +55,7 @@ class _HelixState extends State<Helix> with TickerProviderStateMixin {
 
   @override
   void initState() {
-    selectedCard = ValueNotifier(widget.intialCardIndex);
+    selectedCard = ValueNotifier(widget.initialCardIndex);
 
     totalAngle = pi * (widget.children!.length / 10 * 2);
 
@@ -67,9 +67,6 @@ class _HelixState extends State<Helix> with TickerProviderStateMixin {
     selectedCard.addListener(() => widget.onCardChanged?.call(selectedCard.value));
 
     _scaleController = AnimationController(duration: const Duration(milliseconds: 500), vsync: this);
-    // _scaleController.addListener(() => setState(() {
-    //       // print('scale');
-    //     }));
 
     _xOffsetController = AnimationController(duration: const Duration(milliseconds: 500), vsync: this, lowerBound: -200, upperBound: 200);
     _xOffsetController.value = 0;
@@ -130,9 +127,9 @@ class _HelixState extends State<Helix> with TickerProviderStateMixin {
   @override
   void didUpdateWidget(covariant Helix oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.intialCardIndex != selectedCard.value) {
-      _rotationController.animateTo(_angleFromCardIndex(widget.intialCardIndex), duration: const Duration(seconds: 1), curve: Curves.fastLinearToSlowEaseIn);
-      Future.microtask(() => selectedCard.value = widget.intialCardIndex);
+    if (widget.initialCardIndex != selectedCard.value) {
+      _rotationController.animateTo(_angleFromCardIndex(widget.initialCardIndex), duration: const Duration(seconds: 1), curve: Curves.fastLinearToSlowEaseIn);
+      Future.microtask(() => selectedCard.value = widget.initialCardIndex);
     }
   }
 
@@ -297,8 +294,6 @@ class _HelixState extends State<Helix> with TickerProviderStateMixin {
     for (var i = 0; i < tileData.length; ++i) {
       final card = tileData[i];
       final angleOffset = angle + card.idx * radioStep + _offsetX;
-
-      // print(angleOffset);
 
       card.angle = angleOffset + pi / 2;
       card.x = cos(angleOffset) * radio;
