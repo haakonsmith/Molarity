@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:molarity/data/navigation_state.dart';
 import 'package:molarity/data/settings_bloc.dart';
 import 'package:molarity/widgets/app_bar.dart';
 import 'package:molarity/widgets/list_drawer.dart';
@@ -17,7 +16,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
-    ref.read(navigationState).isPeriodicTable = false;
 
     final children = [
       // SizedBox(height: 140),
