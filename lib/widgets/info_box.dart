@@ -5,6 +5,7 @@ import 'package:molarity/data/settings_bloc.dart';
 
 import 'package:molarity/theme.dart';
 import 'package:molarity/util.dart';
+import 'package:molarity/widgets/atomic_info_widgets/atomic_bohr_modal.dart';
 import 'package:molarity/widgets/chemoinfomatics/data.dart';
 import 'package:molarity/widgets/chemoinfomatics/util.dart';
 import 'package:molarity/widgets/chemoinfomatics/widgets/atomic_bohr_model.dart';
@@ -52,10 +53,10 @@ class InfoBox extends HookConsumerWidget {
         ),
       ),
       Expanded(
-        child: Hero(
-          tag: 'bohrModel',
-          child: Padding(
-            padding: const EdgeInsets.all(10),
+        child: GestureDetector(
+          onTap: () => _showModal(context),
+          child: Hero(
+            tag: 'bohrModel',
             child: AtomicBohrModel(
               element!,
               key: ValueKey('${element!.symbol}atomic$numberOfInfoboxes'),
@@ -64,6 +65,13 @@ class InfoBox extends HookConsumerWidget {
         ),
       ),
     ]);
+  }
+
+  void _showModal(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AtomicBohrModal(element!),
+    );
   }
 
   Widget _buildNullElement(BuildContext context, WidgetRef ref) {

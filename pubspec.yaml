@@ -1,5 +1,5 @@
 name: molarity
-description: A new Flutter project.
+description: A fancy periodic table.
 
 # The following line prevents the package from being accidentally published to
 # pub.dev using `pub publish`. This is preferred for private packages.
@@ -15,7 +15,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 1.0.2+1
+version: 1.0.3+1
 
 environment:
   sdk: '>=2.14.0 <3.0.0'
@@ -33,6 +33,7 @@ dependencies:
   flutter_hooks: ^0.18.0
   fl_chart: ^0.40.0
   universal_platform: ^1.0.0+1
+  styled_widget: 
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -51,7 +52,7 @@ flutter_icons:
   android: true
   ios: true
   image_path_android: "assets/distribution/icons/icon.png"
-  image_path_ios: "assets/distribution/icons/icon.png"
+  image_path_ios: "assets/distribution/icons/icon_colored.png"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

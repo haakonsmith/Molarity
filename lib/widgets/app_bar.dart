@@ -20,7 +20,7 @@ class MolarityAppBar extends ConsumerStatefulWidget with PreferredSizeWidget {
   ConsumerState<ConsumerStatefulWidget> createState() => _MolarityAppBarState();
 
   @override
-  Size get preferredSize => Size.fromHeight(height ?? 90);
+  Size get preferredSize => Size.fromHeight(height ?? 80);
 }
 
 class _MolarityAppBarState extends ConsumerState<MolarityAppBar> {
@@ -53,7 +53,7 @@ class _MolarityAppBarState extends ConsumerState<MolarityAppBar> {
     );
 
     final preferredSize = PreferredSize(
-      preferredSize: Size.fromHeight(computePrefferedSize(context)),
+      preferredSize: Size.fromHeight(20),
       child: Container(
         color: Colors.transparent,
         padding: const EdgeInsets.fromLTRB(0, 25, 0, 0),
@@ -70,7 +70,7 @@ class _MolarityAppBarState extends ConsumerState<MolarityAppBar> {
 
     // if (!UniversalPlatform.isDesktop) height = 30;
 
-    return max(75, height);
+    return 20;
     // return (MediaQuery.of(context).size.width / 25).clamp(50, 70);
   }
 }
@@ -96,7 +96,7 @@ class AppbarWithTab extends StatefulWidget implements PreferredSizeWidget {
     this.onPressed,
     this.leading,
     this.onTitleTapped,
-    this.elevation = 10,
+    this.elevation = 8,
     this.backgroundColor,
     this.automaticallyImplyLeading = true,
     this.bottom,
@@ -212,20 +212,6 @@ class _AppbarWithTabState extends State<AppbarWithTab> {
           Hero(
             tag: '_topBarBtn',
             transitionOnUserGestures: true,
-            createRectTween: (Rect? begin, Rect? end) => RectTween(
-              begin: Rect.fromCenter(
-                center: Offset(
-                  // Make a rectangle that is centred at the middle of the right main split app bar
-                  // MediaQuery.of(context).size.width - MediaQuery.of(context).size.width / (1.5 * 2),
-                  begin!.center.dx,
-                  begin.center.dy,
-                ),
-                // Make a rectangle that is the width of the right main split app bar
-                width: MediaQuery.of(context).size.width / 2,
-                height: begin.height,
-              ),
-              end: end,
-            ),
             child: _buildAppbar(context),
           ).expanded(flex: 2),
         ],

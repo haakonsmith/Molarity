@@ -1,4 +1,5 @@
 mkdir build/packages
+rm -rf build/packages/Molarity.app
 
 echo "Building Release Target..."
 flutter build macos --release
@@ -8,8 +9,8 @@ echo "Built!"
 mv build/macos/Build/Products/Release/molarity.app build/packages/
 mv build/packages/molarity.app build/packages/Molarity.app
 
-echo "Changing Icon..."
-cp assets/distribution/icons/icon.icns build/packages/Molarity.app/Contents/Resources/AppIcon.icns
+# echo "Changing Icon..."
+# cp assets/distribution/icons/icon.icns build/packages/Molarity.app/Contents/Resources/AppIcon.icns
 
 # echo 'Zipping'
 # zip -qr -X - build/packages/Molarity.app | pv -s $(($(du -sk build/packages/Molarity.app | awk '{print $1}') * 1024 )) > build/packages/Molarity.zip

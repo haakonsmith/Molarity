@@ -14,11 +14,11 @@ class AtomicSummary extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(8),
       child: TitledCard(
-        title: const SelectableText(
-          'General',
-          textAlign: TextAlign.center,
+        title: const SelectableText('General'),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: SelectableText(element.summary),
         ),
-        child: SelectableText(element.summary),
       ),
     );
   }

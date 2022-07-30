@@ -17,27 +17,29 @@ class AtomicImage extends StatelessWidget {
       padding: const EdgeInsets.all(8),
       child: TitledCard(
         title: const Text('Photo'),
-        child: Center(
-          child: FutureBuilder<String>(
-            future: _findImage(),
-            builder: (context, snapshot) {
-              if (snapshot.hasData)
-                return GestureDetector(
-                  child: Image.asset(
-                    snapshot.data!,
-                    scale: 0.7,
-                  ),
-                  // Dart should have partial functions, bite me
-                  onTap: () => _showModal(context, snapshot.data!),
+        child: Container(
+          clipBehavior: Clip.antiAlias,
+          decoration: const BoxDecoration(borderRadius: BorderRadius.only(bottomLeft: Radius.circular(16), bottomRight: Radius.circular(16))),
+          child: Center(
+            child: FutureBuilder<String>(
+              future: _findImage(),
+              builder: (context, snapshot) {
+                if (snapshot.hasData)
+                  return GestureDetector(
+                    child: Image.asset(snapshot.data!, scale: 0.7),
+                    onTap: () => _showModal(context, snapshot.data!), // Dart should have partial functions, bite me
+                  );
+                if (snapshot.hasError)
+                  return const Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: Text('No Image Found.'),
+                  );
+                return const SizedBox.square(
+                  dimension: 20,
+                  child: CircularProgressIndicator(),
                 );
-              if (snapshot.hasError)
-                return const Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Text('No Image Found.'),
-                );
-
-              return const SizedBox.square(dimension: 20, child: CircularProgressIndicator());
-            },
+              },
+            ),
           ),
         ),
       ),

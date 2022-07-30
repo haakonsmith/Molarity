@@ -9,7 +9,11 @@ class ImageModal extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(8),
-      child: Image.asset(imagePath),
+      child: Container(
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(borderRadius: BorderRadius.only(bottomLeft: Radius.circular(16))),
+        child: Image.asset(imagePath),
+      ),
     );
   }
 }

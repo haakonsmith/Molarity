@@ -110,14 +110,12 @@ class _ListDrawerState extends ConsumerState<ListDrawer> with TickerProviderStat
       )
     ];
 
-    final atomicModel = SizedBox(
-      height: 160,
-      width: 160,
-      child: Padding(
-        // left: width/2
-        padding: const EdgeInsets.only(left: 0),
-        child: AtomicBohrModel(ref.read(elementsBlocProvider).getElementByAtomicNumber(1)),
-      ),
+    // final headerSize = UniversalPlatform.isDesktop ? 250.0 : 250.0;
+    const headerSize = 250.0;
+
+    final atomicModel = SizedBox.square(
+      dimension: headerSize,
+      child: AtomicBohrModel(ref.read(elementsBlocProvider).getElementByAtomicNumber(1)),
     );
 
     return SafeArea(
@@ -129,7 +127,7 @@ class _ListDrawerState extends ConsumerState<ListDrawer> with TickerProviderStat
               color: Theme.of(context).scaffoldBackgroundColor,
             ),
             margin: EdgeInsets.fromLTRB(10, (UniversalPlatform.isMacOS ? 25 : 0) + 50, 0, 0),
-            height: 48.0 * children.length + 160,
+            height: 48.0 * children.length + headerSize,
             child: AnimatedBuilder(
               animation: _animation,
               builder: (BuildContext context, Widget? child) {

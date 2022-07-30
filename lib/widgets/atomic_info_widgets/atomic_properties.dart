@@ -20,7 +20,7 @@ class AtomicProperties extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(8),
       child: TitledCard(
-        title: const Text('Properties', textAlign: TextAlign.center),
+        title: const Text('Properties'),
         child: Wrap(
           alignment: WrapAlignment.center,
           spacing: 20,

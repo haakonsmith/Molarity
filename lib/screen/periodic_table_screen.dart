@@ -6,7 +6,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:molarity/data/active_selectors.dart';
 import 'package:molarity/data/elements_data_bloc.dart';
 import 'package:molarity/data/highlighted_search_bar_controller.dart';
-import 'package:molarity/data/navigation_state.dart';
+
 import 'package:molarity/highlight_elements_mixin.dart';
 import 'package:molarity/screen/atomic_info_screen.dart';
 import 'package:molarity/theme.dart';
@@ -99,7 +99,7 @@ class _MobilePeriodicTableScreenState extends ConsumerState<MobilePeriodicTableS
           padding: EdgeInsets.fromLTRB(windowSize.width / 30, 10.0, windowSize.width / 30, 20),
           child: Column(
             children: [
-              const SizedBox(height: 30),
+              const SizedBox(height: 50),
               // This means that the scrolling doesn't doesn't interfere with the helix periodic table.
               Listener(
                 onPointerDown: (_) => setState(() => shouldAllowScroll = false),

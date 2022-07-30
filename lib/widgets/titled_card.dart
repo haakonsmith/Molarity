@@ -12,21 +12,27 @@ class TitledCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      child: Container(
-        padding: const EdgeInsets.all(8),
-        width: double.infinity,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            DefaultTextStyle(
-              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
-              child: title,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: double.infinity,
+            clipBehavior: Clip.antiAlias,
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardColor.darken(0.02),
+              borderRadius: BorderRadius.only(topLeft: Radius.circular(16), topRight: Radius.circular(16)),
+            ),
+            child: DefaultTextStyle(
+              style: Theme.of(context).textTheme.headline6!,
+              child: Padding(
+                padding: const EdgeInsets.only(left: 8.0, top: 2),
+                child: title,
+              ),
               textAlign: TextAlign.left,
             ),
-            const Divider(),
-            child.expanded(),
-          ],
-        ),
+          ),
+          child.expanded(),
+        ],
       ),
     );
   }

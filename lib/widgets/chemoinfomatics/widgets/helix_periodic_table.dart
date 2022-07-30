@@ -35,17 +35,19 @@ class _HelixPeriodicTableState extends ConsumerState<HelixPeriodicTable> {
     final handle = ref.read(interactiveBoxHandle);
 
     children = elements
-        .map((element) => PeriodicTableTile(
-              element,
-              borderRadius: BorderRadius.circular(20),
-              padding: const EdgeInsets.all(8),
-              tileColor: categoryColorMapping[element.category],
-              onSecondaryTap: (element) {
-                handle.compound += element;
-                handle.state = InteractiveState.calculationBox;
-              },
-              key: ValueKey('tile: ${element.atomicNumber}'),
-            ))
+        .map(
+          (element) => PeriodicTableTile(
+            element,
+            borderRadius: BorderRadius.circular(20),
+            padding: const EdgeInsets.all(8),
+            tileColor: categoryColorMapping[element.category],
+            onSecondaryTap: (element) {
+              handle.compound += element;
+              handle.state = InteractiveState.calculationBox;
+            },
+            key: ValueKey('tile: ${element.atomicNumber}'),
+          ),
+        )
         .toList();
 
     super.initState();

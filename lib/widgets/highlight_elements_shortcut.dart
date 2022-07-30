@@ -11,7 +11,7 @@ class HighlightElementsShortcut extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    if (!ref.read(settingsBlocProvider).enableKeyboardShortcuts) return child;
+    if (!ref.watch(settingsBlocProvider).enableKeyboardShortcuts) return child;
 
     return CallbackShortcuts(
       bindings: {

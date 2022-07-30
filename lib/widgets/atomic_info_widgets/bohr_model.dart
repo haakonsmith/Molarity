@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:molarity/theme.dart';
 import 'package:molarity/util.dart';
+import 'package:molarity/widgets/atomic_info_widgets/atomic_bohr_modal.dart';
 import 'package:molarity/widgets/chemoinfomatics/data.dart';
 import 'package:molarity/widgets/chemoinfomatics/widgets/atomic_bohr_model.dart';
 import 'package:molarity/widgets/titled_card.dart';
@@ -42,33 +43,9 @@ class AtomicBohrCard extends StatelessWidget {
   }
 
   void _showModal(BuildContext context) {
-    final appBarTitle = Padding(
-      padding: const EdgeInsets.all(8),
-      child: Text.rich(
-        TextSpan(children: [
-          TextSpan(text: '${atomicData.atomicNumber.toString()} – ${atomicData.name} ', style: const TextStyle(fontSize: 25, fontWeight: FontWeight.w200, color: Colors.white)),
-          TextSpan(text: atomicData.categoryValue.capitalizeFirstofEach, style: TextStyle(color: categoryColorMapping[atomicData.category], fontWeight: FontWeight.w200, fontSize: 18)),
-        ]),
-      ),
-    );
-
     showDialog(
       context: context,
-      builder: (context) => GestureDetector(
-          child: Container(
-            color: Theme.of(context).scaffoldBackgroundColor,
-            margin: const EdgeInsets.all(80),
-            child: Column(
-              children: [
-                Align(
-                  child: Card(child: appBarTitle),
-                  alignment: Alignment.topLeft,
-                ),
-                AtomicBohrModel(atomicData).expanded(),
-              ],
-            ),
-          ),
-          onTap: () => Navigator.pop(context)),
+      builder: (context) => AtomicBohrModal(atomicData),
     );
   }
 }
