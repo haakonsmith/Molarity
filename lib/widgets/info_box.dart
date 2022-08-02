@@ -19,6 +19,8 @@ class InfoBox extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // debugPrint("Build InfoBox");
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(8.0, 8, 8, 0),
       child: Card(
@@ -177,6 +179,7 @@ class _InfoDataRowState extends ConsumerState<_InfoDataRow> {
                     onChanged: (property) {
                       if (settingsBloc.shouldPersistAtomicPreviewCategories) settingsBloc.setSavedAtomicPropertyCategory(0, property);
                     },
+                    // key: ValueKey(widget.element.name),
                   ).expanded(),
                 if (widget.numberOfChildren > 1)
                   ElementalInfo(
@@ -185,6 +188,7 @@ class _InfoDataRowState extends ConsumerState<_InfoDataRow> {
                     onChanged: (property) {
                       if (settingsBloc.shouldPersistAtomicPreviewCategories) settingsBloc.setSavedAtomicPropertyCategory(1, property);
                     },
+                    // key: ValueKey(widget.element.name),
                   ).expanded(),
                 if (widget.numberOfChildren > 2)
                   ElementalInfo(
@@ -193,6 +197,7 @@ class _InfoDataRowState extends ConsumerState<_InfoDataRow> {
                     onChanged: (property) {
                       if (settingsBloc.shouldPersistAtomicPreviewCategories) settingsBloc.setSavedAtomicPropertyCategory(2, property);
                     },
+                    // key: ValueKey(widget.element.name),
                   ).expanded(),
               ],
       ),
@@ -227,13 +232,17 @@ class _ElementalInfoState extends ConsumerState<ElementalInfo> {
 
     final dropDown = Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8),
+      key: ValueKey(atomicProperty.index),
       child: AtomicPropertySelector(
-          initialValue: AtomicData.getPropertyStringName(atomicProperty),
-          onChanged: (val) {
-            setState(() => atomicProperty = atomicPropertyFromString(val!));
-            widget.onChanged?.call(atomicPropertyFromString(val!));
-          }),
+        initialValue: AtomicData.getPropertyStringName(atomicProperty),
+        onChanged: (val) {
+          setState(() => atomicProperty = atomicPropertyFromString(val!));
+          widget.onChanged?.call(atomicPropertyFromString(val!));
+        },
+      ),
     );
+
+    // final dropDown = Text('test');
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
@@ -247,16 +256,13 @@ class _ElementalInfoState extends ConsumerState<ElementalInfo> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              SelectableText(
+              Text(
                 widget.elementData.getAssociatedStringValue(AtomicData.getPropertyStringName(atomicProperty)) == 'null'
                     ? 'Unknown'
                     : widget.elementData.getAssociatedStringValue(AtomicData.getPropertyStringName(atomicProperty)),
                 style: const TextStyle(fontWeight: FontWeight.w200),
               ),
-              AtomicUnit(
-                AtomicData.getPropertyStringName(atomicProperty),
-                fontSize: 14,
-              ).withPaddingOnly(bottom: 2),
+              AtomicUnit(atomicProperty, fontSize: 14).withPaddingOnly(bottom: 2),
             ],
           ),
         ).fittedBox(fit: BoxFit.fitWidth).expanded(),

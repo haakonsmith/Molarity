@@ -46,7 +46,7 @@ class AtomicBohrModal extends StatelessWidget {
     return GestureDetector(
       child: Card(
         color: Theme.of(context).scaffoldBackgroundColor,
-        margin: const EdgeInsets.all(80),
+        margin: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.width / 10, vertical: 40),
         child: SingleChildScrollView(
           child: Column(
             children: [

@@ -37,7 +37,7 @@ class AtomicTrends extends ConsumerStatefulWidget {
   final bool displayLabels;
   final bool displayGrid;
   final AtomicProperty? initialProperty;
-  final ValueChanged<String>? onAtomicPropertyChanged;
+  final ValueChanged<AtomicProperty>? onAtomicPropertyChanged;
 
   @override
   _AtomicTrendsState createState() => _AtomicTrendsState();
@@ -49,7 +49,7 @@ class _AtomicTrendsState extends ConsumerState<AtomicTrends> {
 
   @override
   Widget build(BuildContext context) {
-    property = widget.initialProperty ?? ref.read(activeSelectorsProvider).atomicProperty;
+    property = widget.initialProperty ?? ref.read(activeAtomicProperties).atomicProperty;
 
     final controlStrip = _ControlPanel(
       initialProperty: property,
@@ -59,9 +59,9 @@ class _AtomicTrendsState extends ConsumerState<AtomicTrends> {
       onDropDownChanged: (val) {
         if (widget.onAtomicPropertyChanged != null) widget.onAtomicPropertyChanged!(val);
 
-        ref.read(activeSelectorsProvider).atomicProperty = atomicPropertyFromString(val);
+        ref.read(activeAtomicProperties).atomicProperty = val;
         setState(() {
-          property = atomicPropertyFromString(val);
+          property = val;
         });
       },
     );
@@ -294,25 +294,23 @@ class _ControlPanel extends HookWidget {
 
   final AtomicProperty? initialProperty;
   final ValueChanged<bool>? onCheckBoxChanged;
-  final ValueChanged<String>? onDropDownChanged;
+  final ValueChanged<AtomicProperty>? onDropDownChanged;
 
   @override
   Widget build(BuildContext context) {
-    final atomicAttribute = useValueNotifier('Melting Point');
+    final atomicProperty = useValueNotifier(initialProperty ?? AtomicProperty.density);
     final shouldRemove = useValueNotifier(true);
-
-    atomicAttribute.value = AtomicData.getPropertyStringName(initialProperty ?? AtomicProperty.density);
 
     final windowSize = MediaQuery.of(context).size;
     final shouldDisplayUnit = windowSize.width <= 530;
 
     final dropdown = AtomicPropertySelector(
       selectables: const ['Melting Point', 'Boiling Point', 'Density', 'Atomic Mass', 'Molar Heat', 'Electron Negativity'],
-      initialValue: atomicAttribute.value,
+      initialValue: AtomicData.getPropertyStringName(atomicProperty.value),
       onChanged: (val) {
-        atomicAttribute.value = val!;
+        atomicProperty.value = atomicPropertyFromString(val!);
 
-        if (onDropDownChanged != null) onDropDownChanged!(val);
+        if (onDropDownChanged != null) onDropDownChanged!(atomicProperty.value);
       },
     );
 
@@ -350,8 +348,8 @@ class _ControlPanel extends HookWidget {
           ),
         if (!shouldDisplayUnit)
           ValueListenableBuilder(
-            valueListenable: atomicAttribute,
-            builder: (context, String value, child) => Padding(
+            valueListenable: atomicProperty,
+            builder: (context, AtomicProperty value, child) => Padding(
               padding: const EdgeInsets.only(left: 5, bottom: 5),
               child: AtomicUnit(value, fontSize: 14),
             ),

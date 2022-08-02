@@ -9,8 +9,10 @@ import 'package:molarity/util.dart';
 import 'package:molarity/widgets/chemoinfomatics/data.dart';
 
 class ElementsBloc extends ChangeNotifier with AsyncSafeData {
+  Future<void>? elementsFuture;
+
   ElementsBloc() {
-    final elementsFuture = asyncDataUpdate(() async {
+    elementsFuture = asyncDataUpdate(() async {
       _elements = await _loadElements();
       notifyListeners();
     });

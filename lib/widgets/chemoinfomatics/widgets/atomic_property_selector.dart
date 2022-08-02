@@ -32,7 +32,7 @@ class AtomicPropertySelector extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    if (!selectables.contains(initialValue)) throw ArgumentError.value(initialValue, 'AtomicAttributeSelector');
+    // if (!selectables.contains(initialValue)) throw ArgumentError.value(initialValue, 'AtomicAttributeSelector');
 
     final dropdownValue = useState(initialValue);
     dropdownValue.value = initialValue;
@@ -44,17 +44,16 @@ class AtomicPropertySelector extends HookConsumerWidget {
         dropdownColor: Theme.of(context).scaffoldBackgroundColor,
         // underline: Container(),
         value: dropdownValue.value,
-        items: selectables
-            .map(
-              (String value) => DropdownMenuItem<String>(
-                value: value,
-                child: Text(
-                  value,
-                  style: const TextStyle(fontWeight: FontWeight.w200, color: Colors.white54),
-                ),
+        items: [
+          for (final value in selectables)
+            DropdownMenuItem<String>(
+              value: value,
+              child: Text(
+                value,
+                style: const TextStyle(fontWeight: FontWeight.w200, color: Colors.white54),
               ),
             )
-            .toList(),
+        ],
         onChanged: (val) {
           onChanged?.call(val);
 

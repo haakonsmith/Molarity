@@ -5,16 +5,21 @@ import 'package:molarity/widgets/chemoinfomatics/data.dart';
 typedef AtomicPropertyChangedCallback = void Function(AtomicProperty? oldValue, AtomicProperty? newValue);
 
 /// This is basically all the active selectors in the app. E.g. atomic category and active atomic data.
-class ActiveSelectors extends ChangeNotifier {
+class ActiveAtomicData extends ChangeNotifier {
   AtomicData? _atomicData;
-  AtomicProperty _atomicProperty = AtomicProperty.density;
 
   AtomicData? get atomicData => _atomicData;
 
   set atomicData(AtomicData? other) {
-    _atomicData = other;
-    notifyListeners();
+    if (_atomicData != other) {
+      _atomicData = other;
+      notifyListeners();
+    }
   }
+}
+
+class ActiveAtomicProperty extends ChangeNotifier {
+  AtomicProperty _atomicProperty = AtomicProperty.density;
 
   AtomicProperty get atomicProperty => _atomicProperty;
 
@@ -24,4 +29,5 @@ class ActiveSelectors extends ChangeNotifier {
   }
 }
 
-final activeSelectorsProvider = ChangeNotifierProvider((_) => ActiveSelectors());
+final activeAtomicData = ChangeNotifierProvider((_) => ActiveAtomicData());
+final activeAtomicProperties = ChangeNotifierProvider((_) => ActiveAtomicProperty());

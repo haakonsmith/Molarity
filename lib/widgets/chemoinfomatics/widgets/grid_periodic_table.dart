@@ -6,9 +6,11 @@ import 'package:flutter_layout_grid/flutter_layout_grid.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:molarity/data/active_selectors.dart';
 import 'package:molarity/data/elements_data_bloc.dart';
+import 'package:molarity/data/route_observer.dart';
 import 'package:molarity/widgets/chemoinfomatics/data.dart';
 import 'package:molarity/widgets/chemoinfomatics/widgets/interactive_box.dart';
 import 'package:molarity/widgets/chemoinfomatics/widgets/periodic_table_tile.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 
 class GridPeriodicTable extends ConsumerStatefulWidget {
   const GridPeriodicTable({this.tileColor, this.child, Key? key}) : super(key: key);
@@ -21,30 +23,70 @@ class GridPeriodicTable extends ConsumerStatefulWidget {
   _GridPeriodicTableState createState() => _GridPeriodicTableState();
 }
 
-class _GridPeriodicTableState extends ConsumerState<GridPeriodicTable> with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
+class _GridPeriodicTableState extends ConsumerState<GridPeriodicTable> with SingleTickerProviderStateMixin, RouteAware {
+  late final AnimationController _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 3000));
   late final Animation<double> _animation;
+
+  final _key = GlobalKey();
+
+  // @override
+  // void didPush() {
+  //   print('HomePage: Called didPush');
+  //   super.didPush();
+  // }
+
+  // @override
+  // void didPop() {
+  //   print('HomePage: Called didPop');
+  //   super.didPop();
+  // }
+
+  @override
+  void didPopNext() {
+    setState(() {});
+
+    super.didPopNext();
+  }
+
+  // @override
+  // void didPushNext() {
+  //   print('HomePage: Called didPushNext');
+  //   super.didPushNext();
+  // }
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 3000));
+
+    WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
+      ref.read(routeObserver).subscribe(this, ModalRoute.of(context)!);
+    });
 
     _animation = _controller.drive(Tween<double>(begin: -1, end: 10));
-
-    if (!ref.read(elementsBlocProvider).loading)
-      _controller.forward();
-    else
-      ref.read(elementsBlocProvider).addListener(() => _controller.forward());
   }
 
   @override
   Widget build(BuildContext context) {
-    return ref.watch(elementsBlocProvider).loading ? const Center(child: CircularProgressIndicator()) : _buildGrid(context, ref);
+    if (!ModalRoute.of(context)!.isCurrent) return Container();
+
+    debugPrint(ModalRoute.of(context)?.isCurrent.toString());
+    return FutureBuilder<void>(
+      future: ref.read(elementsBlocProvider).elementsFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.done) {
+          _controller.forward();
+          return _buildGrid(context);
+        }
+
+        return const Center(child: CircularProgressIndicator());
+      },
+    );
+    // return ref.watch(elementsBlocProvider).loading ? const Center(child: CircularProgressIndicator()) : _buildGrid(context, ref);
   }
 
-  Widget _buildGrid(BuildContext context, WidgetRef ref) {
+  Widget _buildGrid(BuildContext context) {
     final windowSize = MediaQuery.of(context).size;
+    // final windowSize = Size(1000, 600);
 
     final elementsBloc = ref.watch(elementsBlocProvider);
     final handle = ref.read(interactiveBoxHandle);
@@ -61,7 +103,7 @@ class _GridPeriodicTableState extends ConsumerState<GridPeriodicTable> with Sing
 
     final table = LayoutGrid(
       gridFit: GridFit.loose,
-      columnSizes: repeat(18, [1.fr]),
+      columnSizes: repeat(18, [fixed(windowSize.width / 20)]),
       rowSizes: repeat(10, [auto]),
       columnGap: windowSize.width / 600,
       rowGap: windowSize.width / 600,
@@ -82,7 +124,7 @@ class _GridPeriodicTableState extends ConsumerState<GridPeriodicTable> with Sing
       child: AnimatedBuilder(
         animation: _animation,
         builder: (context, child) {
-          final double value = _animation.value - sqrt(e.x * e.x + e.y * e.y) / 10;
+          final double value = _animation.value - (e.x * e.x + e.y * e.y) / 100;
 
           return Opacity(opacity: value.clamp(0, 1), child: child);
         },
@@ -93,7 +135,7 @@ class _GridPeriodicTableState extends ConsumerState<GridPeriodicTable> with Sing
             handle.state = InteractiveState.calculationBox;
           },
           onHover: (element) {
-            ref.read(activeSelectorsProvider).atomicData = element;
+            ref.read(activeAtomicData).atomicData = element;
             if (handle.state != InteractiveState.calculationBox) handle.state = InteractiveState.element;
           },
           tileColor: tileColor,

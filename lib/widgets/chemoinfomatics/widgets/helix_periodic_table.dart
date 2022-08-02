@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/physics.dart';
@@ -58,9 +56,9 @@ class _HelixPeriodicTableState extends ConsumerState<HelixPeriodicTable> {
     return Helix(
       children: children,
       onCardChanged: (index) {
-        ref.read(activeSelectorsProvider).atomicData = elements[index];
+        ref.read(activeAtomicData).atomicData = elements[index];
       },
-      initialCardIndex: (widget.initialElement?.atomicNumber ?? (ref.read(activeSelectorsProvider).atomicData?.atomicNumber ?? 1)) - 1,
+      initialCardIndex: (widget.initialElement?.atomicNumber ?? (ref.read(activeAtomicData).atomicData?.atomicNumber ?? 1)) - 1,
     );
   }
 }

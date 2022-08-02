@@ -20,7 +20,7 @@ class MolarityAppBar extends ConsumerStatefulWidget with PreferredSizeWidget {
   ConsumerState<ConsumerStatefulWidget> createState() => _MolarityAppBarState();
 
   @override
-  Size get preferredSize => Size.fromHeight(height ?? 80);
+  Size get preferredSize => Size.fromHeight(height ?? (UniversalPlatform.isDesktopOrWeb ? 80 : 65));
 }
 
 class _MolarityAppBarState extends ConsumerState<MolarityAppBar> {
@@ -66,11 +66,12 @@ class _MolarityAppBarState extends ConsumerState<MolarityAppBar> {
 
   static double computePrefferedSize(BuildContext context) {
     // final double height = (MediaQuery.of(context).size.width / 25) >= 60 ? MediaQuery.of(context).size.width / 25 : 60;
-    final double height = (MediaQuery.of(context).size.width / 20);
+    // final double height = (MediaQuery.of(context).size.width / 20);
+    double height = 80;
 
-    // if (!UniversalPlatform.isDesktop) height = 30;
+    if (!UniversalPlatform.isDesktop) height = 65;
 
-    return 20;
+    return height;
     // return (MediaQuery.of(context).size.width / 25).clamp(50, 70);
   }
 }

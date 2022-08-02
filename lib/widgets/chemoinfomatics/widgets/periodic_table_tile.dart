@@ -56,8 +56,6 @@ class _PeriodicTableTileState extends AnimatedWidgetBaseState<PeriodicTableTile>
 
   bool _isPressured = false;
 
-  final GlobalKey _key = GlobalKey();
-
   @override
   void initState() {
     tileColor = widget.tileColor ?? categoryColorMapping[widget.element.category]!;
@@ -130,8 +128,7 @@ class _PeriodicTableTileState extends AnimatedWidgetBaseState<PeriodicTableTile>
       ),
     );
     return MouseRegion(
-      key: _key,
-      onHover: (value) {
+      onEnter: (value) {
         widget.onHover?.call(widget.element);
 
         setState(() {
@@ -144,49 +141,38 @@ class _PeriodicTableTileState extends AnimatedWidgetBaseState<PeriodicTableTile>
         isDimmed = false;
       }),
       cursor: SystemMouseCursors.click,
-      child: Consumer(
-        builder: (context, ref, child) {
-          final rawGestureDetector = RawGestureDetector(
-            gestures: {
-              ForcePressGestureRecognizer: GestureRecognizerFactoryWithHandlers<ForcePressGestureRecognizer>(
-                () => ForcePressGestureRecognizer(),
-                (ForcePressGestureRecognizer instance) {
-                  instance.onUpdate = (details) {
-                    if (details.pressure > 0.4) {
-                      if (!_isPressured) {
-                        widget.onSecondaryTap?.call(widget.element);
-                        _isPressured = true;
-                        HapticFeedback.lightImpact();
-                      }
-                    }
+      child: RawGestureDetector(
+        gestures: {
+          ForcePressGestureRecognizer: GestureRecognizerFactoryWithHandlers<ForcePressGestureRecognizer>(
+            () => ForcePressGestureRecognizer(),
+            (ForcePressGestureRecognizer instance) {
+              instance.onUpdate = (details) {
+                if (details.pressure > 0.4) {
+                  if (!_isPressured) {
+                    widget.onSecondaryTap?.call(widget.element);
+                    _isPressured = true;
+                    HapticFeedback.lightImpact();
+                  }
+                }
 
-                    if (details.pressure < 0.4) _isPressured = false;
-                  };
-                },
-              ),
+                if (details.pressure < 0.4) _isPressured = false;
+              };
             },
-            child: child,
-          );
-
-          return GestureDetector(
-            onTap: () => Navigator.of(context).push(slidePageRoute(_key, AtomicInfoScreen(widget.element))),
-            onSecondaryTap: () => widget.onSecondaryTap?.call(widget.element),
-            onDoubleTap: () => widget.onSecondaryTap?.call(widget.element),
-            onLongPress: () => widget.onSecondaryTap?.call(widget.element),
-            child: rawGestureDetector,
-          );
+          ),
         },
-        child: card,
+        child: GestureDetector(
+          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => AtomicInfoScreen(widget.element), maintainState: false)),
+          onSecondaryTap: () => widget.onSecondaryTap?.call(widget.element),
+          // This adds an annoying delay
+          // onDoubleTap: () => widget.onSecondaryTap?.call(widget.element),
+          onLongPress: () => widget.onSecondaryTap?.call(widget.element),
+          child: card,
+        ),
+        // child: card,
       ),
     );
   }
 }
-
-// () {
-//               final read = ref.read(interactiveBoxHandle);
-//               read.compound += widget.element;
-//               read.state = InteractiveState.calculationBox;
-//             },
 
 class _TileSymbol extends StatelessWidget {
   const _TileSymbol(

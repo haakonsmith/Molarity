@@ -17,11 +17,13 @@ class InteractiveBox extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // debugPrint("Build InteractiveBox");
+
     final handle = ref.watch(interactiveBoxHandle);
 
     switch (handle.state) {
       case InteractiveState.element:
-        return InfoBox(element: ref.watch(activeSelectorsProvider).atomicData, numberOfInfoboxes: numberOfInfoboxes);
+        return InfoBox(element: ref.watch(activeAtomicData).atomicData, numberOfInfoboxes: numberOfInfoboxes);
       case InteractiveState.calculationBox:
         return MolarMassBox(
           compound: handle.compound,

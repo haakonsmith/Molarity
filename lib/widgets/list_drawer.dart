@@ -70,48 +70,35 @@ class _ListDrawerState extends ConsumerState<ListDrawer> with TickerProviderStat
 
   @override
   Widget build(BuildContext context) {
+    const buttonStyle = TextStyle(fontWeight: FontWeight.w200, fontSize: 24);
+    const buttonHeight = 54.0;
+
     final children = [
       ListDrawerTile(
         leading: const Icon(Icons.table_chart),
         onClick: () => Navigator.of(context).pushReplacement(_createRoutePeriodicTable()),
-        child: const Text(
-          'Periodic Table',
-          textScaleFactor: 1.2,
-          style: TextStyle(fontWeight: FontWeight.w200),
-        ),
+        child: const Text('Periodic Table', style: buttonStyle),
       ),
       ListDrawerTile(
         leading: const Icon(Icons.auto_graph),
         onClick: () => Navigator.of(context).pushReplacement(_createRoutePeriodicTrendsTable()),
-        child: const Text(
-          'Periodicity',
-          textScaleFactor: 1.2,
-          style: TextStyle(fontWeight: FontWeight.w200),
-        ),
+        child: const Text('Periodicity', style: buttonStyle),
       ),
       ListDrawerTile(
         leading: const Icon(Icons.settings),
         onClick: () => Navigator.of(context).pushReplacement(_createRouteSettings()),
-        child: const Text(
-          'Settings',
-          textScaleFactor: 1.2,
-          style: TextStyle(fontWeight: FontWeight.w200),
-        ),
+        child: const Text('Settings', style: buttonStyle),
       ),
-      const SizedBox(height: 48),
+      const SizedBox(height: buttonHeight),
       ListDrawerTile(
         leading: const Icon(Icons.info),
         onClick: () => Navigator.of(context).pushReplacement(_createRouteAbout()),
-        child: const Text(
-          'About',
-          textScaleFactor: 1.2,
-          style: TextStyle(fontWeight: FontWeight.w200),
-        ),
+        child: const Text('About', style: buttonStyle),
       )
     ];
 
     // final headerSize = UniversalPlatform.isDesktop ? 250.0 : 250.0;
-    const headerSize = 250.0;
+    final headerSize = (MediaQuery.of(context).orientation != Orientation.landscape) ? 250.0 : 0.0;
 
     final atomicModel = SizedBox.square(
       dimension: headerSize,
@@ -127,13 +114,14 @@ class _ListDrawerState extends ConsumerState<ListDrawer> with TickerProviderStat
               color: Theme.of(context).scaffoldBackgroundColor,
             ),
             margin: EdgeInsets.fromLTRB(10, (UniversalPlatform.isMacOS ? 25 : 0) + 50, 0, 0),
-            height: 48.0 * children.length + headerSize,
+            height: buttonHeight * children.length + headerSize,
             child: AnimatedBuilder(
               animation: _animation,
               builder: (BuildContext context, Widget? child) {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [atomicModel].cast<Widget>() + children.mapIndexed((e, i) => Transform.translate(offset: Offset(_offset(i, _animation.value), 0), child: e)).toList().cast<Widget>(),
+                  children: [if (MediaQuery.of(context).orientation != Orientation.landscape) atomicModel].cast<Widget>() +
+                      children.mapIndexed((e, i) => Transform.translate(offset: Offset(_offset(i, _animation.value), 0), child: e)).toList().cast<Widget>(),
                 );
               },
             ),
@@ -175,6 +163,7 @@ class ListDrawerTile extends StatelessWidget {
     return Card(
       color: _backgroundColor,
       child: InkWell(
+        // mouseCursor: MaterialStateMouseCursor.clickable,
         borderRadius: const BorderRadius.all(Radius.circular(20)),
         onTap: onClick,
         child: Container(

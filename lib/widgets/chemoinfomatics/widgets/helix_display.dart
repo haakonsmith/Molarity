@@ -54,6 +54,16 @@ class _HelixState extends State<Helix> with TickerProviderStateMixin {
   late final Listenable _onAnimateListenable;
 
   @override
+  void dispose() {
+    _scaleController.dispose();
+    _rotationController.dispose();
+    _yShiftController.dispose();
+    _xOffsetController.dispose();
+
+    super.dispose();
+  }
+
+  @override
   void initState() {
     selectedCard = ValueNotifier(widget.initialCardIndex);
 

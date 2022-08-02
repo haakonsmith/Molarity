@@ -61,7 +61,7 @@ class _MobilePeriodicTableScreenState extends ConsumerState<MobilePeriodicTableS
         onChanged: (string) {
           highlightElements(string);
 
-          if (highlightedElements.isNotEmpty) ref.read(activeSelectorsProvider).atomicData = highlightedElements.first;
+          if (highlightedElements.isNotEmpty) ref.read(activeAtomicData).atomicData = highlightedElements.first;
         },
         onSubmitted: (_) => Navigator.push(context, slidePageRoute(_key, AtomicInfoScreen(highlightedElements.first))).then(closeSearch),
       ),

@@ -5,7 +5,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:molarity/data/active_selectors.dart';
 import 'package:molarity/data/elements_data_bloc.dart';
 import 'package:molarity/data/highlighted_search_bar_controller.dart';
-import 'package:molarity/data/navigation_state.dart';
 import 'package:molarity/highlight_elements_mixin.dart';
 import 'package:molarity/screen/atomic_info_screen.dart';
 import 'package:molarity/util.dart';
@@ -35,7 +34,7 @@ class _PeriodicTrendsTableScreenState extends ConsumerState<PeriodicTrendsTableS
 
   @override
   void initState() {
-    ref.read(activeSelectorsProvider).addListener(() {
+    ref.read(activeAtomicData).addListener(() {
       _dataRequiresUpdate = true;
     });
 
@@ -52,7 +51,7 @@ class _PeriodicTrendsTableScreenState extends ConsumerState<PeriodicTrendsTableS
 
   @override
   Widget build(BuildContext context) {
-    atomicProperty = AtomicData.getPropertyStringName(ref.watch(activeSelectorsProvider).atomicProperty);
+    atomicProperty = AtomicData.getPropertyStringName(ref.watch(activeAtomicProperties).atomicProperty);
 
     _getData();
 
@@ -79,7 +78,7 @@ class _PeriodicTrendsTableScreenState extends ConsumerState<PeriodicTrendsTableS
                   child: AtomicTrends(
                     displayGrid: false,
                     displayLabels: false,
-                    initialProperty: ref.read(activeSelectorsProvider).atomicProperty,
+                    initialProperty: ref.read(activeAtomicProperties).atomicProperty,
                   ),
                 ),
               ),

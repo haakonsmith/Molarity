@@ -135,7 +135,7 @@ mixin AsyncSafeData {
 
   bool get loading => _loading;
 
-  Future<void> asyncDataUpdate(Future<void> Function() update) async {
+  Future asyncDataUpdate(Future Function() update) async {
     _loading = true;
 
     await update();
