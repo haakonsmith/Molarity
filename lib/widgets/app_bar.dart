@@ -69,7 +69,7 @@ class _MolarityAppBarState extends ConsumerState<MolarityAppBar> {
           child: Row(
             children: [
               Expanded(child: MoveWindow()),
-              if (UniversalPlatform.isWindows) const Padding(padding: EdgeInsets.only(bottom: 5), child: WindowButtons()),
+              if (UniversalPlatform.isWindows) const WindowButtons(),
             ],
           ),
         ).fixedSize(width: MediaQuery.of(context).size.width, height: 30),
@@ -112,11 +112,14 @@ class _WindowButtonsState extends State<WindowButtons> {
   }
 
   Widget _buildCard(Widget child) {
-    return Card(
-      margin: EdgeInsets.zero,
-      color: Theme.of(context).cardColor.darken(0.01),
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.only(bottomLeft: Radius.circular(8))),
-      child: child,
+    return Hero(
+      tag: "_windowButtons",
+      child: Card(
+        margin: const EdgeInsets.only(bottom: 5),
+        color: Theme.of(context).cardColor.darken(0.01),
+        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.only(bottomLeft: Radius.circular(8))),
+        child: child,
+      ),
     );
   }
 
