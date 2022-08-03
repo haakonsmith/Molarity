@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -53,7 +54,7 @@ class _MolarityAppBarState extends ConsumerState<MolarityAppBar> {
     );
 
     final preferredSize = PreferredSize(
-      preferredSize: Size.fromHeight(20),
+      preferredSize: const Size.fromHeight(20),
       child: Container(
         color: Colors.transparent,
         padding: const EdgeInsets.fromLTRB(0, 25, 0, 0),
@@ -61,7 +62,22 @@ class _MolarityAppBarState extends ConsumerState<MolarityAppBar> {
       ),
     );
 
-    return UniversalPlatform.isMacOS ? preferredSize : appBar;
+    return PreferredSize(
+      preferredSize: Size(MediaQuery.of(context).size.width, 80),
+      child: Column(children: [
+        WindowTitleBarBox(
+          child: Row(
+            children: [
+              Expanded(child: MoveWindow()),
+              if (UniversalPlatform.isWindows) const Padding(padding: EdgeInsets.only(bottom: 5), child: WindowButtons()),
+            ],
+          ),
+        ).fixedSize(width: MediaQuery.of(context).size.width, height: 30),
+        // const SizedBox(height: 5),
+        appBar.fixedSize(width: MediaQuery.of(context).size.width, height: 40),
+        // UniversalPlatform.isMacOS ? preferredSize : appBar
+      ]),
+    );
   }
 
   static double computePrefferedSize(BuildContext context) {
@@ -73,6 +89,63 @@ class _MolarityAppBarState extends ConsumerState<MolarityAppBar> {
 
     return height;
     // return (MediaQuery.of(context).size.width / 25).clamp(50, 70);
+  }
+}
+
+final buttonColors = WindowButtonColors(
+    iconNormal: const Color(0xFF805306), mouseOver: const Color(0xFFF6A00C), mouseDown: const Color(0xFF805306), iconMouseOver: const Color(0xFF805306), iconMouseDown: const Color(0xFFFFD500));
+
+final closeButtonColors = WindowButtonColors(mouseOver: const Color(0xFFD32F2F), mouseDown: const Color(0xFFB71C1C), iconNormal: const Color(0xFF805306), iconMouseOver: Colors.white);
+
+class WindowButtons extends StatefulWidget {
+  const WindowButtons({Key? key}) : super(key: key);
+
+  @override
+  _WindowButtonsState createState() => _WindowButtonsState();
+}
+
+class _WindowButtonsState extends State<WindowButtons> {
+  void maximizeOrRestore() {
+    setState(() {
+      appWindow.maximizeOrRestore();
+    });
+  }
+
+  Widget _buildCard(Widget child) {
+    return Card(
+      margin: EdgeInsets.zero,
+      color: Theme.of(context).cardColor.darken(0.01),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.only(bottomLeft: Radius.circular(8))),
+      child: child,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _buildCard(
+      Row(
+        children: [
+          IconButton(
+            onPressed: appWindow.minimize,
+            icon: const Icon(Icons.minimize),
+            padding: EdgeInsets.zero,
+            iconSize: 18,
+          ),
+          IconButton(
+            onPressed: maximizeOrRestore,
+            icon: Icon(appWindow.isMaximized ? Icons.fullscreen_exit : Icons.fullscreen),
+            padding: EdgeInsets.zero,
+            iconSize: 18,
+          ),
+          IconButton(
+            onPressed: appWindow.close,
+            icon: const Icon(Icons.close),
+            padding: EdgeInsets.zero,
+            iconSize: 18,
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -201,10 +274,10 @@ class _AppbarWithTabState extends State<AppbarWithTab> {
     }
 
     return SafeArea(
-      top: true,
+      top: false,
       left: false,
       right: false,
-      minimum: const EdgeInsets.only(top: 10),
+      minimum: const EdgeInsets.only(top: 0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [

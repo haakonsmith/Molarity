@@ -98,7 +98,7 @@ class _ListDrawerState extends ConsumerState<ListDrawer> with TickerProviderStat
     ];
 
     // final headerSize = UniversalPlatform.isDesktop ? 250.0 : 250.0;
-    final headerSize = (MediaQuery.of(context).orientation != Orientation.landscape) ? 250.0 : 0.0;
+    final headerSize = (MediaQuery.of(context).orientation != Orientation.landscape || UniversalPlatform.isDesktopOrWeb) ? 250.0 : 0.0;
 
     final atomicModel = SizedBox.square(
       dimension: headerSize,
@@ -120,7 +120,7 @@ class _ListDrawerState extends ConsumerState<ListDrawer> with TickerProviderStat
               builder: (BuildContext context, Widget? child) {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [if (MediaQuery.of(context).orientation != Orientation.landscape) atomicModel].cast<Widget>() +
+                  children: [if (MediaQuery.of(context).orientation != Orientation.landscape || UniversalPlatform.isDesktopOrWeb) atomicModel].cast<Widget>() +
                       children.mapIndexed((e, i) => Transform.translate(offset: Offset(_offset(i, _animation.value), 0), child: e)).toList().cast<Widget>(),
                 );
               },

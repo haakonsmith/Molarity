@@ -68,7 +68,7 @@ class _PeriodicTrendsTableScreenState extends ConsumerState<PeriodicTrendsTableS
     else
       content = SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(30.0, 90.0, 30.0, 30),
+          padding: const EdgeInsets.fromLTRB(30.0, 90.0, 0.0, 0),
           child: GridPeriodicTable(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -80,6 +80,7 @@ class _PeriodicTrendsTableScreenState extends ConsumerState<PeriodicTrendsTableS
                     displayLabels: false,
                     initialProperty: ref.read(activeAtomicProperties).atomicProperty,
                   ),
+                  // child: Placeholder(),
                 ),
               ),
             ),

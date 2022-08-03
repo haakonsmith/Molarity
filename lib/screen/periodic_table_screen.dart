@@ -51,46 +51,11 @@ class _MobilePeriodicTableScreenState extends ConsumerState<MobilePeriodicTableS
     if (ref.watch(elementsBlocProvider).loading) return const Center(child: CircularProgressIndicator());
 
     final windowSize = MediaQuery.of(context).size;
-
-    final searchBox = SizedBox(
-      width: windowSize.width / 2,
-      child: TextField(
-        style: const TextStyle(fontSize: 40),
-        focusNode: keyBoardFocusNode,
-        controller: searchController,
-        onChanged: (string) {
-          highlightElements(string);
-
-          if (highlightedElements.isNotEmpty) ref.read(activeAtomicData).atomicData = highlightedElements.first;
-        },
-        onSubmitted: (_) => Navigator.push(context, slidePageRoute(_key, AtomicInfoScreen(highlightedElements.first))).then(closeSearch),
-      ),
-    );
-
-    final title = GestureDetector(
-      onTap: () {
-        setState(toggleSearch);
-      },
-      child: Row(
-        children: [
-          if (this.showSearch)
-            const Icon(
-              Icons.close,
-              size: 40,
-            ),
-          if (!this.showSearch)
-            const Text(
-              'Periodic Table',
-            )
-          else
-            searchBox,
-        ],
-      ),
-    );
+    final highlightedElements = ref.watch(highlightedSearchBarController).highlightedElements;
 
     return Scaffold(
       extendBodyBehindAppBar: true,
-      appBar: MolarityAppBar(title: title, hasSearchBar: true),
+      appBar: const MolarityAppBar(title: Text('Periodic Table'), hasSearchBar: true),
       drawer: const ListDrawer(),
       body: SingleChildScrollView(
         physics: shouldAllowScroll ? null : const NeverScrollableScrollPhysics(),

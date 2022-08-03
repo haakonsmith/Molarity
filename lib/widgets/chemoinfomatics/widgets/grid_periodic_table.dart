@@ -6,10 +6,10 @@ import 'package:flutter_layout_grid/flutter_layout_grid.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:molarity/data/active_selectors.dart';
 import 'package:molarity/data/elements_data_bloc.dart';
-import 'package:molarity/data/route_observer.dart';
 import 'package:molarity/widgets/chemoinfomatics/data.dart';
 import 'package:molarity/widgets/chemoinfomatics/widgets/interactive_box.dart';
 import 'package:molarity/widgets/chemoinfomatics/widgets/periodic_table_tile.dart';
+import 'package:molarity/widgets/layout_boundary.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
 class GridPeriodicTable extends ConsumerStatefulWidget {
@@ -23,7 +23,7 @@ class GridPeriodicTable extends ConsumerStatefulWidget {
   _GridPeriodicTableState createState() => _GridPeriodicTableState();
 }
 
-class _GridPeriodicTableState extends ConsumerState<GridPeriodicTable> with SingleTickerProviderStateMixin, RouteAware {
+class _GridPeriodicTableState extends ConsumerState<GridPeriodicTable> with SingleTickerProviderStateMixin {
   late final AnimationController _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 3000));
   late final Animation<double> _animation;
 
@@ -41,14 +41,6 @@ class _GridPeriodicTableState extends ConsumerState<GridPeriodicTable> with Sing
   //   super.didPop();
   // }
 
-  @override
-  void didPopNext() {
-    setState(() {});
-
-    super.didPopNext();
-  }
-
-  // @override
   // void didPushNext() {
   //   print('HomePage: Called didPushNext');
   //   super.didPushNext();
@@ -58,30 +50,25 @@ class _GridPeriodicTableState extends ConsumerState<GridPeriodicTable> with Sing
   void initState() {
     super.initState();
 
-    WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
-      ref.read(routeObserver).subscribe(this, ModalRoute.of(context)!);
-    });
-
     _animation = _controller.drive(Tween<double>(begin: -1, end: 10));
   }
 
   @override
   Widget build(BuildContext context) {
-    if (!ModalRoute.of(context)!.isCurrent) return Container();
+    return LayoutBoundary(
+      child: FutureBuilder<void>(
+        future: ref.read(elementsBlocProvider).elementsFuture,
+        builder: (context, snapshot) {
+          print("build");
+          if (snapshot.connectionState == ConnectionState.done) {
+            _controller.forward();
+            return _buildGrid(context);
+          }
 
-    debugPrint(ModalRoute.of(context)?.isCurrent.toString());
-    return FutureBuilder<void>(
-      future: ref.read(elementsBlocProvider).elementsFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.done) {
-          _controller.forward();
-          return _buildGrid(context);
-        }
-
-        return const Center(child: CircularProgressIndicator());
-      },
+          return const Center(child: CircularProgressIndicator());
+        },
+      ),
     );
-    // return ref.watch(elementsBlocProvider).loading ? const Center(child: CircularProgressIndicator()) : _buildGrid(context, ref);
   }
 
   Widget _buildGrid(BuildContext context) {
